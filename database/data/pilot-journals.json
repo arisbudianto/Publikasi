@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Jurnal Cakrawala Pendidikan",
+    "publisher": "Universitas Negeri Yogyakarta",
+    "issn": "0216-1370",
+    "official_url": "https://journal.uny.ac.id/index.php/cp",
+    "subject": "Pendidikan umum",
+    "scope_summary": "Menerima penelitian empiris orisinal tentang pendidikan dari peneliti, akademisi dan praktisi.",
+    "scope_source_url": "https://journal.uny.ac.id/index.php/cp/about",
+    "checked_at": "2026-10-11",
+    "status": "published"
+  },
+  {
+    "name": "Jurnal Pendidikan Vokasi",
+    "publisher": "Universitas Negeri Yogyakarta dan ADGVI",
+    "issn": "2088-2866",
+    "official_url": "https://journal.uny.ac.id/index.php/jpv",
+    "subject": "Pendidikan vokasi",
+    "scope_summary": "Kajian pendidikan vokasi meliputi kurikulum, pembelajaran, evaluasi, manajemen, teknologi, kebijakan dan pelatihan teknis.",
+    "scope_source_url": "https://journal.uny.ac.id/index.php/jpv/about",
+    "checked_at": "2026-10-11",
+    "status": "published"
+  },
+  {
+    "name": "Indonesian Journal of Applied Linguistics",
+    "publisher": "Universitas Pendidikan Indonesia",
+    "issn": "2301-9468",
+    "official_url": "https://ejournal.upi.edu/index.php/IJAL",
+    "subject": "Pendidikan bahasa",
+    "scope_summary": "Kajian linguistik terapan mencakup pembelajaran bahasa pertama, kedua dan asing, bahasa dalam pendidikan, pengujian bahasa dan pengembangan kurikulum.",
+    "scope_source_url": "https://ejournal.upi.edu/index.php/IJAL/about/editorialPolicies",
+    "checked_at": "2026-10-11",
+    "status": "published"
+  },
+  {
+    "name": "Jurnal Pendidikan IPA Indonesia",
+    "publisher": "Universitas Negeri Semarang",
+    "issn": "2339-1286",
+    "official_url": "https://journal.unnes.ac.id/journals/jpii",
+    "subject": "Pendidikan sains",
+    "scope_summary": "Penelitian dan kajian literatur pendidikan sains pada jenjang dasar, menengah dan tinggi, termasuk pendidikan lingkungan.",
+    "scope_source_url": "https://journal.unnes.ac.id/journals/jpii",
+    "checked_at": "2026-10-11",
+    "status": "published"
+  },
+  {
+    "name": "International Journal of Evaluation and Research in Education",
+    "publisher": "Institute of Advanced Engineering and Science",
+    "issn": "2252-8822",
+    "official_url": "https://ijere.iaescore.com/index.php/IJERE",
+    "subject": "Evaluasi pendidikan",
+    "scope_summary": "Kajian empiris, konseptual dan metodologis mengenai evaluasi pendidikan, kurikulum, pengajaran, pendidikan bahasa dan lingkungan belajar berbantuan teknologi.",
+    "scope_source_url": "https://ijere.iaescore.com/index.php/IJERE",
+    "checked_at": "2026-10-11",
+    "status": "published"
+  }
+]
