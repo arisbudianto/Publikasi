@@ -18,22 +18,23 @@ Controller validasi request dan otorisasi; aturan bisnis berada di service; data
 Database MySQL dengan utf8mb4. Versi, SQL mode dan dukungan index harus diuji sebelum migration.
 
 ## Pemeriksaan hosting aktual
-Tidak ada sesi cPanel/SSH atau output runtime untuk aplikasi ini dalam sesi M00.
+Pemeriksaan cPanel 2026-10-11: login berhasil, Terminal tersedia, Git 2.56.0, PHP CLI 8.4.26.
 Akses public domain tidak memberi bukti PHP CLI, Composer, database, cron, atau document root.
-Percobaan membaca https://publikasi.speakverse.id melalui web lookup tidak berhasil. Ini bukan bukti domain tidak aktif.
+Document root terverifikasi melalui cPanel DomainInfo: /home/speakver/publikasi.speakverse.id/public. Direktori proyek hanya berisi public sebelum deployment dokumen; public berisi konfigurasi hosting, belum ada aplikasi.
+PHP web, extension, MySQL, backup/restore dan uji Laravel belum diverifikasi.
 Status keseluruhan: UNKNOWN, belum GO.
 
 | Check | Kebutuhan/kriteria | Bukti yang perlu dicatat | Status |
 |---|---|---|---|
-| PHP web dan CLI | Kompatibel Laravel 13, PHP >=8.3 | Versi PHP kedua konteks | UNKNOWN |
+| PHP web dan CLI | Kompatibel Laravel 13, PHP >=8.3 | CLI 8.4.26; versi web belum diperiksa | PARTIAL |
 | Extensions | Ctype, cURL, DOM, Fileinfo, Filter, Hash, Mbstring, OpenSSL, PCRE, PDO, Session, Tokenizer, XML; pdo_mysql | Daftar extension web/CLI | UNKNOWN |
 | Database | MySQL kompatibel, utf8mb4, create/migrate/index | Versi, test DB terisolasi | UNKNOWN |
-| Document root | Hanya direktori public terlayani | Pengaturan subdomain dan uji file nonpublic | UNKNOWN |
+| Document root | Hanya direktori public terlayani | DomainInfo mengarah ke direktori public; uji HTTP nonpublic belum dilakukan | PARTIAL |
 | Rewrite | Routing front controller berfungsi | Uji route non-root pada staging | UNKNOWN |
 | HTTPS | Sertifikat valid dan renewal tersedia | Uji TLS domain | UNKNOWN |
 | Storage permissions | storage/bootstrap/cache writable terbatas | Uji permission staging | UNKNOWN |
 | Build/deploy | Composer di hosting atau vendor dibangun di lingkungan kompatibel | Metode release yang dipilih | UNKNOWN |
-| Shell/Artisan | SSH/Terminal atau jalur operasi setara yang aman | Kemampuan menjalankan Artisan | UNKNOWN |
+| Shell/Artisan | SSH/Terminal atau jalur operasi setara yang aman | Terminal dan Git 2.56.0 tersedia; belum ada Artisan | PARTIAL |
 | Cron | Tidak blocking katalog; perlu untuk jadwal tahap lanjutan | Cron test bila dipakai | UNKNOWN |
 | Outbound HTTPS | Tidak blocking MVP offline; perlu enrichment/AI | Uji endpoint bila integrasi dipilih | UNKNOWN |
 | Limits | Memory, execution, disk/inode sesuai dataset | Nilai cPanel dan pengukuran pilot | UNKNOWN |
