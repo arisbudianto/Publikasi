@@ -3,7 +3,7 @@ Updated: 2026-10-11 (Asia/Jakarta).
 M00_DOCUMENTS=COMPLETE
 BLUEPRINT=NOT READY
 MVP_SCOPE=NOT READY (draft terdefinisi; scope pilot dan akses belum dikonfirmasi)
-ARCHITECTURE=NOT READY (rekomendasi tersedia; runtime belum diverifikasi)
+ARCHITECTURE=NOT READY (rekomendasi tersedia; Laravel 13 dan MySQL ditetapkan; runtime hosting belum diverifikasi)
 HOSTING=UNKNOWN
 DATA_PILOT=NOT CURATED
 APPLICATION_TESTS=NOT RUN
@@ -12,16 +12,17 @@ DEVELOPMENT=NOT STARTED
 ## Fakta terkonfirmasi
 Pengguna meminta aplikasi pencocokan jurnal, repository arisbudianto/Publikasi, deployment cPanel publikasi.speakverse.id.
 Pengguna mengizinkan unggah dokumen M00 ke repository.
+Pengguna menetapkan Laravel 13 dan database MySQL pada 2026-10-11.
 Repository kosong sebelum unggahan M00; default branch main; plugin menunjukkan izin push tersedia.
 01_DISCOVERY_BLUEPRINT.md sudah dibaca; 02 sampai 07 belum dimuat.
 
-## Rekomendasi belum disetujui
+## Keputusan dan hal terbuka
 | ID | Keputusan | Rekomendasi sementara | Dampak/blocker |
 |---|---|---|---|
 | D01 | Bidang pilot | Pendidikan/teknologi pendidikan | Menentukan katalog dan evaluasi; blocking M01 dataset |
 | D02 | Sumber data pengguna/hak pakai | Kurasi manual bersumber; tidak scraping massal | Blocking publish dataset |
 | D03 | Akses produk | Guest untuk matching sementara; admin login | Blocking auth/routing produk M01 |
-| D04 | Runtime cPanel | Laravel + Blade + MySQL; kandidat 13 jika PHP >=8.3 | Blocking pin runtime dan deployment |
+| D04 | Kompatibilitas cPanel | Laravel 13 + MySQL sudah ditetapkan; Blade direkomendasikan | Bukti PHP >=8.3, extension dan MySQL belum tersedia; blocking verifikasi runtime/deployment |
 | D05 | Biaya dan deadline | MVP tanpa AI/pembayaran; jadwal setelah bukti | Tidak blocking dokumen; perlu sebelum komitmen build |
 
 ## Bukti yang belum tersedia
@@ -31,7 +32,7 @@ Belum ada sesi cPanel atau perubahan database/domain/hosting.
 Lookup public domain gagal memberikan konten; tidak menyimpulkan site down.
 
 ## Langkah berikutnya
-1. Selesaikan D01 sampai D04 menggunakan jawaban pengguna atau bukti host yang aman.
+1. Selesaikan D01 sampai D03 melalui jawaban pengguna; verifikasi D04 memakai bukti host yang aman.
 2. Kurasi sampel 5 jurnal lengkap sebagai proof-of-data sebelum memperbesar katalog.
 3. Tetapkan rules/input boundaries dan evaluator kasus pilot.
 4. Ubah gate hanya setelah bukti terkait tersedia.
