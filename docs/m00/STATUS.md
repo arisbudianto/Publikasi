@@ -4,14 +4,14 @@ M00_DOCUMENTS=COMPLETE
 BLUEPRINT=NOT READY
 MVP_SCOPE=NOT READY (draft terdefinisi; scope pilot dan akses belum dikonfirmasi)
 ARCHITECTURE=NOT READY (rekomendasi tersedia; Laravel 13 dan MySQL ditetapkan; runtime hosting belum diverifikasi)
-HOSTING=UNKNOWN
+HOSTING=PARTIALLY VERIFIED (PHP CLI 8.4.26, Terminal/Git, public document root; PHP web/MySQL pending)
 DATA_PILOT=NOT CURATED
 APPLICATION_TESTS=NOT RUN
 DEVELOPMENT=NOT STARTED
 
 ## Fakta terkonfirmasi
 Pengguna meminta aplikasi pencocokan jurnal, repository arisbudianto/Publikasi, deployment cPanel publikasi.speakverse.id.
-Pengguna mengizinkan unggah dokumen M00 ke repository.
+Pengguna mengizinkan unggah dokumen M00 ke repository dan deployment ke cPanel. Alur selanjutnya: verifikasi, push GitHub, deploy cPanel, periksa domain.
 Pengguna menetapkan Laravel 13 dan database MySQL pada 2026-10-11.
 Repository kosong sebelum unggahan M00; default branch main; plugin menunjukkan izin push tersedia.
 01_DISCOVERY_BLUEPRINT.md sudah dibaca; 02 sampai 07 belum dimuat.
@@ -26,9 +26,9 @@ Repository kosong sebelum unggahan M00; default branch main; plugin menunjukkan 
 | D05 | Biaya dan deadline | MVP tanpa AI/pembayaran; jadwal setelah bukti | Tidak blocking dokumen; perlu sebelum komitmen build |
 
 ## Bukti yang belum tersedia
-Screenshot/output PHP web/CLI, extension, DB, document root, resource limits, deployment method, backup/restore.
+PHP web, extension, DB, resource limits, backup/restore. CLI PHP 8.4.26, Git 2.56.0, Terminal dan document root public telah diperiksa melalui cPanel.
 Dataset atau izin yang diberikan pengguna; belum ada sampel jurnal verified.
-Belum ada sesi cPanel atau perubahan database/domain/hosting.
+Sesi cPanel berhasil pada 2026-10-11. Preflight read-only selesai; database dan konfigurasi domain tidak diubah. Deployment dokumen M00 dilakukan terpisah dari aplikasi runtime.
 Lookup public domain gagal memberikan konten; tidak menyimpulkan site down.
 
 ## Langkah berikutnya
@@ -39,7 +39,7 @@ Lookup public domain gagal memberikan konten; tidak menyimpulkan site down.
 5. Saat READY, muat standar development dan protokol relevan sebelum scaffold M01.
 
 ## Handoff
-Tidak ada aplikasi, SQL, migration, CI executable, secret, atau perubahan hosting dalam paket ini.
+Tidak ada aplikasi, SQL, migration, CI executable atau secret dalam paket ini. Dokumen M00 disalin ke direktori proyek di luar document root; hasil deployment harus diverifikasi terpisah.
 Dokumen berisi requirement dan rekomendasi; statistik pada acceptance criteria adalah target, bukan hasil.
 Jangan mengklaim M00 gate lulus hanya karena dokumen sudah diunggah.
 Tidak mengirim email ke penyedia sumber atau membuat akun API.
