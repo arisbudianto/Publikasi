@@ -1,10 +1,11 @@
 # M00 Arsitektur dan kelayakan hosting
 ## Rekomendasi
-Satu aplikasi modular Laravel + Blade + MySQL; pencocokan aturan berjalan lokal terhadap katalog.
+Keputusan pengguna 2026-10-11: Laravel 13 dan MySQL.
+Satu aplikasi modular Laravel 13 + Blade + MySQL; pencocokan aturan berjalan lokal terhadap katalog.
 Tidak memerlukan Redis, server vektor, worker permanen atau AI API untuk MVP.
 Frontend assets dibangun di CI/lokal lalu dikirim ke hosting; Node di cPanel bukan persyaratan runtime.
 
-Baseline kandidat Laravel 13 memerlukan PHP >=8.3 beserta extension resmi. Versi final dipilih setelah pemeriksaan hosting; jangan downgrade runtime atau memilih framework lama tanpa review support.
+Laravel 13 memerlukan PHP >=8.3 beserta extension resmi. Framework dan database sudah ditetapkan pengguna; pemeriksaan hosting memastikan kompatibilitas, bukan memilih framework atau mengganti MySQL dengan MariaDB.
 Sumber diperiksa 2026-10-11:
 https://laravel.com/framework/docs/13.x/deployment
 Dokumentasi menekankan entrypoint public/index.php, directory writable storage dan bootstrap/cache, serta debug produksi false.
@@ -14,7 +15,7 @@ Catalog -> Query/Filter -> MatchingRules -> Comparison.
 AdminCurator mengelola Catalog + Evidence + Audit.
 Adapter enrichment terpisah; pencarian publik tidak memanggil sumber eksternal langsung pada MVP.
 Controller validasi request dan otorisasi; aturan bisnis berada di service; data observations terpisah dari tampilan.
-Database MySQL/MariaDB dengan utf8mb4. Versi, SQL mode dan dukungan index harus diuji sebelum migration.
+Database MySQL dengan utf8mb4. Versi, SQL mode dan dukungan index harus diuji sebelum migration.
 
 ## Pemeriksaan hosting aktual
 Tidak ada sesi cPanel/SSH atau output runtime untuk aplikasi ini dalam sesi M00.
@@ -24,9 +25,9 @@ Status keseluruhan: UNKNOWN, belum GO.
 
 | Check | Kebutuhan/kriteria | Bukti yang perlu dicatat | Status |
 |---|---|---|---|
-| PHP web dan CLI | Kompatibel versi framework yang dipilih, PHP >=8.3 untuk kandidat 13 | Versi PHP kedua konteks | UNKNOWN |
+| PHP web dan CLI | Kompatibel Laravel 13, PHP >=8.3 | Versi PHP kedua konteks | UNKNOWN |
 | Extensions | Ctype, cURL, DOM, Fileinfo, Filter, Hash, Mbstring, OpenSSL, PCRE, PDO, Session, Tokenizer, XML; pdo_mysql | Daftar extension web/CLI | UNKNOWN |
-| Database | MySQL/MariaDB kompatibel, utf8mb4, create/migrate/index | Versi, test DB terisolasi | UNKNOWN |
+| Database | MySQL kompatibel, utf8mb4, create/migrate/index | Versi, test DB terisolasi | UNKNOWN |
 | Document root | Hanya direktori public terlayani | Pengaturan subdomain dan uji file nonpublic | UNKNOWN |
 | Rewrite | Routing front controller berfungsi | Uji route non-root pada staging | UNKNOWN |
 | HTTPS | Sertifikat valid dan renewal tersedia | Uji TLS domain | UNKNOWN |
