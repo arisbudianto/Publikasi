@@ -97,13 +97,14 @@ AI, SMTP, kurs otomatis tidak diperlukan M01 sampai M03.
 
 ## 11. Material constraints
 GitHub pengguna sebagai source of truth; deployment cPanel.
+Keputusan pengguna 2026-10-11: framework Laravel 13 dan database MySQL. Blade direkomendasikan untuk tampilan; runtime hosting belum diverifikasi.
 Usulan pilot pendidikan/teknologi pendidikan, 30 sampai 50 jurnal dan 20 kasus evaluasi.
-Budget, deadline, domain scope, model akses, dataset pengguna dan runtime belum diberikan.
+Budget, deadline, domain scope, model akses, dataset pengguna dan bukti runtime hosting belum diberikan.
 Rekomendasi pilot bukan persetujuan pengguna. Dataset riil belum dikurasi.
 
 ## 12. Acceptance criteria
 Lihat ACCEPTANCE_CRITERIA.md untuk kasus observable dan gate.
 
 ## 13. Open/blocking decisions
-Sumber data yang boleh digunakan, scope pilot, model akses, kapasitas hosting, batas biaya/jadwal.
+Sumber data yang boleh digunakan, scope pilot, model akses, kompatibilitas hosting dengan Laravel 13 dan MySQL, batas biaya/jadwal.
 Blueprint konten dapat direview sekarang; development belum boleh dimulai sampai blocker yang relevan selesai.
