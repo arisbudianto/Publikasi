@@ -1,7 +1,7 @@
 @extends('layout')
 @section('title','Perbandingan jurnal')
 @section('content')
-<a class="back" href="{{ route('catalog.index',['ids'=>$ids]) }}">← Ubah pilihan</a>
+<a class="back" href="{{ route($origin, array_merge($returnFilters, ['ids'=>$ids])) }}">← Ubah pilihan</a>
 <p class="eyebrow">PERBANDINGAN JURNAL</p><h1>Bandingkan sebelum submit.</h1><p>Data ditampilkan sesuai sumbernya. Tidak ada skor atau jaminan penerimaan.</p>
 <div class="comparison-scroll" tabindex="0" role="region" aria-label="Tabel perbandingan jurnal"><table class="comparison"><caption>Perbandingan {{ $journals->count() }} jurnal pendidikan</caption><thead><tr><th scope="col">Informasi</th>@foreach($journals as $journal)<th scope="col"><a href="{{ route('catalog.show',$journal) }}">{{ $journal->name }}</a></th>@endforeach</tr></thead><tbody>
 @foreach(['publisher'=>'Penerbit','issn'=>'ISSN','subject'=>'Bidang pendidikan','scope_summary'=>'Scope'] as $field=>$label)<tr><th scope="row">{{ $label }}</th>@foreach($journals as $journal)<td>{{ $journal->$field }}</td>@endforeach</tr>@endforeach
