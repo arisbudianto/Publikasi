@@ -32,3 +32,11 @@ Application root: `/home/speakver/publikasi.speakverse.id`
 ## Batas bukti
 
 Seluruh verifikasi tersebut membuktikan pemasangan fitur dan impor additive; bukan status akreditasi terkini atau kebenaran semua identitas sumber. `publikasi:health`, authenticated production writes, database backup/restore, dan rollback rehearsal tidak dijalankan. Jangan menghapus `journal_sources` setelah impor. Katalog terkurasi tidak berubah dan hasil impor belum masuk ke matcher sebelum verifikasi editorial.
+
+## Ekspansi semua bidang (12 Oktober 2026)
+
+Release `6e0aa10d133f5c674ba1168552b6c43f92fb0f6a` memperluas direktori agar menampilkan seluruh 999 sumber, termasuk 691 yang tidak berlabel Pendidikan dan 75 rekaman tanpa nama. Pencarian menerima ID SINTA agar rekaman tanpa nama dapat ditemukan. Alur admin dapat menyiapkan draft lintas-subjek jika nama tersedia dan scope telah diperiksa. Lima jurnal terkurasi tetap ditampilkan di katalog terpisah dan tidak berubah.
+
+Enam file runtime lama dicadangkan sebelum perubahan di `/home/speakver/publikasi_backups/pre-sinta-all-fields-20261012-1710.tar.gz`; SHA-256 `0cb271aa4608a846ba6ec6a6dcdfcb1ceba30aeefda1225380637b638c4df549`. Source checkout fast-forward ke `6e0aa10`, working tree bersih. Deploy mengganti controller dan Blade views dalam maintenance singkat; Blade cache dibangun ulang, aplikasi kembali live. Tidak ada perubahan migrasi atau baris database.
+
+Verifikasi sesudah deploy: homepage menyebut lima jurnal katalog terkurasi dan 999 sumber lintas bidang; `/sumber-jurnal` menampilkan total 999 dan kategori semua bidang; `/sumber-jurnal?q=15` mengembalikan satu rekaman tanpa nama dengan ID SINTA 15. Hitungan database: sources999, education308, other691, unnamed75, journals5. Tes lokal sesudah patch: 66 tests / 506 assertions PASS; Pint, route/view cache, diff check PASS.
