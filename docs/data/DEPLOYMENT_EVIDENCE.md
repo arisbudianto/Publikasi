@@ -50,3 +50,11 @@ Sebelum deployment, file runtime lama dicadangkan di `/home/speakver/publikasi_b
 Dry-run memvalidasi 2.697 baris dengan rank SINTA 1–6 berjumlah 28, 192, 658, 1.130, 610, dan 79. Ditemukan 83 kecocokan sumber melalui ISSN valid, 2.592 tidak cocok, 18 ISSN checksum tidak valid, 4 tanpa ISSN, dan tidak ada kecocokan ke lima jurnal kurasi. Hitungan produksi setelah apply: `journal_accreditations=2697`, `journal_source_id` terisi 83, `journal_id` terisi 0; status `matched=83`, `unmatched=2592`, `invalid_issn=18`, `missing_issn=4`. Data lama tetap `journal_sources=999`, `journals=5`, `users=1`.
 
 Smoke test publik membuka `/akreditasi-sinta`, menampilkan 2.697 keputusan, dan mencari ISSN `23556544`. Hasil tunggal “Geoplanning: Journal of Geomatics and Planning” tampil pada SINTA 1 dan terhubung ke rekaman sumber `/sumber-jurnal/932`. Tes lokal: 69 tests / 556 assertions PASS; Pint, route/view cache, dan diff check PASS. Verifikasi ini membuktikan impor serta keterhubungan identitas ISSN untuk data yang cocok, bukan pemeriksaan independen terkini atas seluruh status akreditasi.
+
+### Kategori SINTA 1–4
+
+Release `20e501ac8d9e7dc7faa80bd2e90e7060148e3ee2` menambahkan kartu kategori yang mengarah langsung ke filter peringkat 1–4. Jumlah dihitung dari rekaman keputusan: SINTA 1=28, SINTA 2=192, SINTA 3=658, SINTA 4=1.130. Peringkat 5–6 tetap tersedia di filter lengkap.
+
+Sebelum penggantian, tiga file runtime dicadangkan di `/home/speakver/publikasi_backups/pre-sinta-categories-20261012-182246.tar.gz`; SHA-256 `0224508481c0bd988619b75fdf7b2f890e5f6887386349b948de42a50faa45fd`. Controller, view, stylesheet, dan catatan impor dipasang; Blade cache dibangun ulang dan aplikasi kembali live. Tidak ada perubahan skema atau data.
+
+Smoke publik mengonfirmasi empat kartu dan label hitungannya. Filter `/akreditasi-sinta?rank=4` terpilih pada peringkat 4, menampilkan 1.130 keputusan, dan daftar berisi rekaman SINTA 4. Tes lokal setelah penambahan: 69 tests / 563 assertions PASS; Pint, route/view cache, dan diff check PASS.
