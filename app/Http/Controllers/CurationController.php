@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Journal;
 use App\Services\ObservationReview;
+use App\Services\StructuredObservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class CurationController extends Controller
 {
@@ -36,7 +36,7 @@ class CurationController extends Controller
 
     public function publish(Request $r, Journal $journal, ObservationReview $service)
     {
-        $data = $r->validate(['kind' => ['required', Rule::in(['index', 'fee', 'time'])], 'label' => 'required|string|max:120', 'value' => ['required', 'string', 'max:255', Rule::notIn(['unknown', 'Belum diketahui', 'belum diketahui'])], 'verification' => ['required', Rule::in(['publisher_claim', 'verified'])], 'source_url' => 'required|url:https|max:1000', 'checked_at' => 'required|date_format:Y-m-d|before_or_equal:today', 'period' => 'nullable|string|max:120', 'review_note' => 'required|string|min:20|max:3000', 'confirmed' => 'accepted']);
+        $data = validator(StructuredObservation::normalize($r->all()), StructuredObservation::rules())->validate();
         unset($data['confirmed']);
         $data['label'] = trim($data['label']);
         $service->publish($journal, $data, $r->user()->id);

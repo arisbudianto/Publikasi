@@ -31,7 +31,7 @@ class CatalogController extends Controller
         $subjects = Journal::where('status', 'published')->distinct()->orderBy('subject')->pluck('subject');
         $publishers = Journal::where('status', 'published')->distinct()->orderBy('publisher')->pluck('publisher');
         $query = Journal::where('status', 'published')
-            ->when($q !== '', fn ($b) => $b->where(fn ($x) => $x->where('name', 'like', '%'.addcslashes($q, '%_\\').'%')->orWhere('issn', $q)))
+            ->when($q !== '', fn ($b) => $b->where(fn ($x) => $x->where('name', 'like', '%'.addcslashes($q, '%_\\').'%')->orWhere('issn', $q)->orWhereHas('identifiers', fn ($i) => $i->where('value', strtoupper($q)))))
             ->when($filters['subject'] ?? '', fn ($b, $v) => $b->where('subject', $v))
             ->when($filters['publisher'] ?? '', fn ($b, $v) => $b->where('publisher', $v));
         if (! empty($filters['information']) && ! empty($filters['availability'])) {
@@ -49,7 +49,7 @@ class CatalogController extends Controller
     {
         $data = $r->validate(['ids' => 'required|array|min:1|max:3', 'ids.*' => 'required|integer|min:1|distinct']);
         $ids = array_map('intval', $data['ids']);
-        $journals = Journal::with('observations')->where('status', 'published')->whereIn('id', $ids)->get()->sortBy(fn ($j) => array_search($j->id, $ids))->values();
+        $journals = Journal::with(['observations', 'identifiers'])->where('status', 'published')->whereIn('id', $ids)->get()->sortBy(fn ($j) => array_search($j->id, $ids))->values();
         abort_unless($journals->count() === count($ids), 404);
 
         return view('catalog.compare', compact('journals', 'ids'));
@@ -58,7 +58,7 @@ class CatalogController extends Controller
     public function show(Journal $journal)
     {
         abort_unless($journal->status === 'published' || auth()->user()?->is_admin, 404);
-        $journal->load(['observations', 'accreditations']);
+        $journal->load(['observations', 'accreditations', 'identifiers']);
 
         return view('catalog.show', compact('journal'));
     }

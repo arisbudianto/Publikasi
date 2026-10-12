@@ -77,7 +77,7 @@ class SintaAccreditationDataset
 
         $existing = JournalAccreditation::whereIn('item_key', array_keys($seen))->count();
         $sourceMap = $this->issnMap(JournalSource::query()->get(['id', 'p_issn', 'e_issn'])->all(), ['p_issn', 'e_issn']);
-        $journalMap = $this->issnMap(Journal::query()->get(['id', 'issn'])->all(), ['issn']);
+        $journalMap = $this->journalIssnMap();
         $matchCounts = ['matched' => 0, 'matched_sources' => 0, 'matched_journals' => 0, 'unmatched' => 0, 'ambiguous' => 0, 'invalid_issn' => 0, 'missing_issn' => 0];
         foreach ($rows as $row) {
             $match = $this->match($row, $sourceMap, $journalMap);
@@ -95,7 +95,7 @@ class SintaAccreditationDataset
 
         return DB::transaction(function () use ($preview) {
             $sourceMap = $this->issnMap(JournalSource::query()->get(['id', 'p_issn', 'e_issn'])->all(), ['p_issn', 'e_issn']);
-            $journalMap = $this->issnMap(Journal::query()->get(['id', 'issn'])->all(), ['issn']);
+            $journalMap = $this->journalIssnMap();
             $created = 0;
             $linkedSources = 0;
             $linkedJournals = 0;
@@ -150,6 +150,21 @@ class SintaAccreditationDataset
                 $issn = strtoupper(str_replace('-', '', (string) $model->{$field}));
                 if ($issn !== '') {
                     $map[$issn][$model->id] = true;
+                }
+            }
+        }
+
+        return array_map(fn ($ids) => array_keys($ids), $map);
+    }
+
+    private function journalIssnMap(): array
+    {
+        $map = [];
+        foreach (Journal::query()->with('identifiers')->get(['id', 'issn']) as $journal) {
+            foreach (array_merge([$journal->issn], $journal->identifiers->pluck('value')->all()) as $value) {
+                $issn = strtoupper(str_replace('-', '', (string) $value));
+                if ($issn !== '') {
+                    $map[$issn][$journal->id] = true;
                 }
             }
         }

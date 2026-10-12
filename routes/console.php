@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Services\OperationalHealth;
+use App\Services\JournalAccreditationLinker;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use Illuminate\Support\Facades\Artisan;
@@ -73,3 +74,13 @@ Artisan::command('publikasi:import-sinta-accreditation {--apply}', function (Sin
         $this->line('DRY RUN: tidak ada penulisan. Gunakan --apply untuk impor additive.');
     }
 })->purpose('Impor keputusan akreditasi SINTA dari dokumen resmi dengan tautan ISSN dan jejak sumber');
+
+Artisan::command('publikasi:link-sinta-accreditations {--apply}', function (JournalAccreditationLinker $linker) {
+    $preview = $linker->preview();
+    $this->line(json_encode($preview));
+    if ($this->option('apply')) {
+        $this->line(json_encode($linker->apply()));
+    } else {
+        $this->line('DRY RUN: tidak ada penulisan. Gunakan --apply untuk menautkan hanya kecocokan ISSN yang valid dan tunggal.');
+    }
+})->purpose('Pratinjau atau tautkan keputusan SINTA yang belum terhubung ke jurnal kurasi melalui ISSN valid');
