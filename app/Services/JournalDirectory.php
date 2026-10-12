@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\JournalObservation;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JournalDirectory
 {
@@ -18,7 +19,7 @@ class JournalDirectory
         ];
     }
 
-    public function currentObservations(Builder $query): Builder
+    public function currentObservations(Builder|HasMany $query): Builder|HasMany
     {
         $today = today()->toDateString();
 
