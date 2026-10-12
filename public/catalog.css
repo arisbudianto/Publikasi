@@ -5,3 +5,5 @@
 .match-form label{display:block;margin-bottom:20px}.match-form input,.match-form textarea{display:block;width:100%;margin-top:8px;box-sizing:border-box}.match-results .panel{margin:20px 0}
 
 .consent{display:flex!important;align-items:flex-start;gap:12px}.consent input{width:auto;margin:6px 0!important}.semantic-result{margin:24px 0}button:disabled{opacity:.5;cursor:not-allowed}
+
+.shortlist-action{margin-top:16px}.history-item{margin:20px 0}

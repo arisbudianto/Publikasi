@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PrivateCatalog;
 use App\Services\SemanticMatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -36,7 +37,12 @@ class SemanticController extends Controller
         RateLimiter::hit($limit, 86400);
         $data = $v->validated();
         try {
-            return $this->page(['results' => $matcher->match($data['title'], $data['abstract'], $data['context'] ?? '')]);
+            $results = $matcher->match($data['title'], $data['abstract'], $data['context'] ?? '');
+            if ($r->user() && $r->boolean('save_history')) {
+                app(PrivateCatalog::class)->record($r->user(), $data['title'], 'semantic', $results);
+            }
+
+            return $this->page(['results' => $results]);
         } catch (RuntimeException $e) {
             return $this->page(['failure' => $e->getMessage()], 503);
         }

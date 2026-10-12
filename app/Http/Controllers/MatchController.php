@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\BasicMatcher;
+use App\Services\PrivateCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,6 +27,10 @@ class MatchController extends Controller
         }
         $data = $validator->validated();
         $results = $matcher->match($data['title'], $data['abstract'], $data['context'] ?? '');
+
+        if ($request->user() && $request->boolean('save_history')) {
+            app(PrivateCatalog::class)->record($request->user(), $data['title'], 'keyword', $results);
+        }
 
         return response()->view('match.index', ['results' => $results])->header('Cache-Control', 'no-store, private');
     }

@@ -26,3 +26,17 @@ Route::middleware(['auth', RequireAdmin::class])->prefix('admin')->name('admin.'
     Route::post('/import/commit', [C::class, 'commitImport'])->name('commit');
     Route::get('/import/template', [C::class, 'template'])->name('template');
 });
+
+Route::get('/akun/login', [\App\Http\Controllers\AccountController::class,'loginForm'])->name('account.login');
+Route::post('/akun/login', [\App\Http\Controllers\AccountController::class,'login'])->middleware('throttle:10,1');
+Route::get('/akun/daftar', [\App\Http\Controllers\AccountController::class,'registerForm'])->name('account.register');
+Route::post('/akun/daftar', [\App\Http\Controllers\AccountController::class,'register'])->middleware('throttle:3,1');
+Route::middleware(\App\Http\Middleware\RequireAccount::class)->prefix('akun')->name('account.')->group(function(){
+    Route::get('/',[\App\Http\Controllers\AccountController::class,'index'])->name('index');
+    Route::post('/keluar',[\App\Http\Controllers\AccountController::class,'logout'])->name('logout');
+    Route::post('/shortlist/{journal}',[\App\Http\Controllers\AccountController::class,'saveJournal'])->name('save');
+    Route::delete('/shortlist/{shortlist}',[\App\Http\Controllers\AccountController::class,'removeJournal'])->name('remove');
+    Route::delete('/riwayat/{history}',[\App\Http\Controllers\AccountController::class,'removeHistory'])->name('history.remove');
+    Route::put('/profil',[\App\Http\Controllers\AccountController::class,'profile'])->name('profile');
+    Route::put('/password',[\App\Http\Controllers\AccountController::class,'password'])->middleware('throttle:5,1')->name('password');
+});
