@@ -1,8 +1,9 @@
 <?php
 
 use App\Models\User;
-use App\Services\OperationalHealth;
 use App\Services\JournalAccreditationLinker;
+use App\Services\OperationalHealth;
+use App\Services\ScopusDiscontinuedDataset;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use Illuminate\Support\Facades\Artisan;
@@ -84,3 +85,25 @@ Artisan::command('publikasi:link-sinta-accreditations {--apply}', function (Jour
         $this->line('DRY RUN: tidak ada penulisan. Gunakan --apply untuk menautkan hanya kecocokan ISSN yang valid dan tunggal.');
     }
 })->purpose('Pratinjau atau tautkan keputusan SINTA yang belum terhubung ke jurnal kurasi melalui ISSN valid');
+
+Artisan::command('publikasi:import-scopus-discontinued {file} {--source-as-of=} {--apply}', function (ScopusDiscontinuedDataset $dataset) {
+    $sourceAsOf = (string) $this->option('source-as-of');
+    if ($sourceAsOf === '') {
+        $this->error('Isi --source-as-of=YYYY-MM-DD sesuai tanggal pada daftar resmi.');
+
+        return 1;
+    }
+    $preview = $dataset->preview($this->argument('file'), $sourceAsOf);
+    $this->line(json_encode(['rows' => $preview['total'], 'valid' => count($preview['rows']), 'errors' => $preview['errors'], 'source_as_of' => $preview['source_as_of'], 'sha256' => $preview['sha256']]));
+    if ($preview['errors']) {
+        $this->error('Impor dibatalkan: perbaiki baris bermasalah dan jalankan ulang preview.');
+
+        return 1;
+    }
+    if (! $this->option('apply')) {
+        $this->line('DRY RUN: database tidak diubah. Tambahkan --apply hanya setelah meninjau ringkasan dan checksum.');
+
+        return 0;
+    }
+    $this->line(json_encode($dataset->import($preview['rows'], $sourceAsOf)));
+})->purpose('Pratinjau atau impor snapshot CSV official Scopus discontinued berdasarkan ISSN');

@@ -4,7 +4,7 @@ Mode: APOPS BROWNFIELD (lanjutan Rencana Modul 11 Oktober 2026)
 Repository: https://github.com/arisbudianto/Publikasi.git
 Deployment: publikasi.speakverse.id melalui cPanel
 Basis prototipe: rilis df62fad (M08/M09) sesuai .ai/STATE.md
-Status: rencana desain, belum implementasi.
+Status: blueprint yang direalisasikan bertahap; status rilis tercatat di `.ai/STATE.md`.
 
 ## 1. Tujuan dan batas replikasi
 Melengkapi prototipe Publikasi dengan fungsi yang terbukti dipakai di dua aplikasi referensi:
@@ -136,6 +136,8 @@ Kriteria selesai:
 - Skor dan kategori deterministik untuk jawaban yang sama; versi kriteria dicatat.
 - Kuesioner tidak menyimpan apa pun untuk tamu; pengguna login boleh menyimpan secara opt-in.
 Keputusan terbuka D11 untuk daftar predator: lihat bagian 8. Sampai diputuskan, modul ini tidak menerbitkan daftar nama jurnal atau penerbit berlabel predator.
+
+Realisasi M12: checklist versi `2026-10-v1` memakai tiga kategori tanpa vonis, tamu tidak menyimpan jawaban, akun menyimpan hanya setelah opt-in, dan pengguna dapat menghapus hasil miliknya. Daftar discontinued memakai snapshot CSV resmi Elsevier yang diimpor operator; kode menyediakan validasi ISSN, preview/checksum, dan impor snapshot bertanggal. Tidak ada daftar atau data contoh yang disertakan. Sebelum snapshot resmi pertama diimpor, halaman discontinued tetap menjelaskan bahwa belum ada data lokal.
 
 ### M13 Cek referensi
 Tujuan: mendeteksi sitasi yang tidak ada, DOI yang salah, dan artikel yang ditarik, termasuk daftar pustaka hasil AI.

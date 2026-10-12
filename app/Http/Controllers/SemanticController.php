@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\DiscontinuedSourceLookup;
 use App\Services\PrivateCatalog;
 use App\Services\SemanticMatcher;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class SemanticController extends Controller
         return response()->view('match.semantic', $data + ['ready' => (bool) (config('semantic.enabled') && config('semantic.key'))], $status)->header('Cache-Control', 'no-store, private');
     }
 
-    public function match(Request $r, SemanticMatcher $matcher)
+    public function match(Request $r, SemanticMatcher $matcher, DiscontinuedSourceLookup $discontinuedLookup)
     {
         $v = Validator::make($r->only('title', 'abstract', 'context', 'consent'), ['title' => 'required|string|min:10|max:300', 'abstract' => 'required|string|min:80|max:5000', 'context' => 'nullable|string|max:500', 'consent' => 'accepted']);
         if ($v->fails()) {
@@ -38,11 +39,12 @@ class SemanticController extends Controller
         $data = $v->validated();
         try {
             $results = $matcher->match($data['title'], $data['abstract'], $data['context'] ?? '');
+            $discontinuedByJournal = $discontinuedLookup->forJournals(array_column($results, 'journal'));
             if ($r->user() && $r->boolean('save_history')) {
                 app(PrivateCatalog::class)->record($r->user(), $data['title'], 'semantic', $results);
             }
 
-            return $this->page(['results' => $results]);
+            return $this->page(compact('results', 'discontinuedByJournal'));
         } catch (RuntimeException $e) {
             return $this->page(['failure' => $e->getMessage()], 503);
         }
