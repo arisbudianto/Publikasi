@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Journal;
+use App\Models\JournalSource;
 use App\Services\Catalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,7 +40,9 @@ class CatalogController extends Controller
         }
         $journals = $query->orderBy('name')->paginate(12)->withQueryString();
 
-        return view('catalog.index', compact('journals', 'q', 'filters', 'subjects', 'publishers', 'selected', 'selectedIds'));
+        $sourceCount = JournalSource::count();
+
+        return view('catalog.index', compact('journals', 'q', 'filters', 'subjects', 'publishers', 'selected', 'selectedIds', 'sourceCount'));
     }
 
     public function compare(Request $r)

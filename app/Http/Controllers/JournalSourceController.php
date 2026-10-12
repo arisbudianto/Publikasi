@@ -15,16 +15,24 @@ class JournalSourceController extends Controller
         $r->validate(['q' => 'nullable|string|max:120']);
         $q = trim((string) $r->query('q', ''));
         $compact = str_replace('-', '', $q);
-        $query = JournalSource::where('education', true)->whereNotNull('name')->when($q !== '', fn ($s) => $s->where(function ($s) use ($q, $compact) {
-            $s->where('name', 'like', '%'.$q.'%')->orWhere('publisher', 'like', '%'.$q.'%')->orWhere('p_issn', $q)->orWhere('e_issn', $q)->orWhereRaw('REPLACE(p_issn, ?, ?) = ?', ['-', '', $compact])->orWhereRaw('REPLACE(e_issn, ?, ?) = ?', ['-', '', $compact])->orWhereRaw('CAST(article_titles AS CHAR) LIKE ?', ['%'.$q.'%']);
-        }));
+        $sourceId = ctype_digit($q) && (int) $q >= 1 && (int) $q <= 1000 ? (int) $q : null;
+        $query = JournalSource::when($q !== '', fn ($s) => $sourceId
+            ? $s->where('source_id', $sourceId)
+            : $s->where(function ($s) use ($q, $compact) {
+                $s->where('name', 'like', '%'.$q.'%')->orWhere('publisher', 'like', '%'.$q.'%')->orWhere('p_issn', $q)->orWhere('e_issn', $q)->orWhere('source_id', $q)->orWhereRaw('REPLACE(p_issn, ?, ?) = ?', ['-', '', $compact])->orWhereRaw('REPLACE(e_issn, ?, ?) = ?', ['-', '', $compact])->orWhereRaw('CAST(article_titles AS CHAR) LIKE ?', ['%'.$q.'%']);
+            }));
 
-        return view('sources.index', ['sources' => $query->orderBy('name')->paginate(18)->withQueryString(), 'q' => $q]);
+        return view('sources.index', [
+            'sources' => $query->orderByRaw('name IS NULL')->orderBy('name')->orderBy('source_id')->paginate(18)->withQueryString(),
+            'q' => $q,
+            'totalSources' => JournalSource::count(),
+            'educationSources' => JournalSource::where('education', true)->count(),
+            'otherSources' => JournalSource::where('education', false)->count(),
+        ]);
     }
 
     public function show(JournalSource $source)
     {
-        abort_unless($source->education && filled($source->name), 404);
         $ids = array_values(array_filter([$source->p_issn, $source->e_issn]));
         $matches = $ids ? Journal::where('status', 'published')->whereIn('issn', $ids)->get() : collect();
 
@@ -33,7 +41,7 @@ class JournalSourceController extends Controller
 
     public function prepare(JournalSource $source)
     {
-        abort_unless($source->education && filled($source->name), 404);
+        abort_unless(filled($source->name), 404);
 
         $matchingJournal = Journal::whereIn('issn', array_filter([$source->p_issn, $source->e_issn]))->first();
 
@@ -42,7 +50,7 @@ class JournalSourceController extends Controller
 
     public function promote(Request $r, JournalSource $source, Catalog $catalog)
     {
-        abort_unless($source->education && filled($source->name), 404);
+        abort_unless(filled($source->name), 404);
         abort_if(Journal::whereIn('issn', array_filter([$source->p_issn, $source->e_issn]))->exists(), 409, 'ISSN sudah tercatat di katalog. Buka jurnal yang ada untuk meninjaunya; draft tidak dibuat.');
         $d = $r->validate($catalog->rules() + ['confirm' => 'accepted']);
         unset($d['confirm']);

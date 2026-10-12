@@ -20,15 +20,21 @@ class SintaDatasetTest extends TestCase
         $this->assertSame(999, count($p['rows']));
         $this->assertSame(308, $p['manifest']['education']);
         $this->assertSame(75, $p['manifest']['unnamed']);
+        $this->assertSame(691, $p['manifest']['total'] - $p['manifest']['education']);
         $this->assertSame(['created' => 999, 'skipped' => 0], $service->import());
         $this->assertSame(['created' => 0, 'skipped' => 999], $service->import());
         $this->assertDatabaseCount('journals', 0);
         $this->assertDatabaseCount('journal_observations', 0);
         $this->assertSame(308, JournalSource::where('education', true)->count());
-        $this->get('/sumber-jurnal')->assertOk()->assertSee('308')->assertSee('bukan status terkini');
+        $this->assertSame(691, JournalSource::where('education', false)->count());
+        $this->get('/sumber-jurnal')->assertOk()->assertSee('999 rekaman sesuai pencarian')->assertSee('308 berlabel Pendidikan')->assertSee('691 bidang lainnya')->assertSee('bukan status terkini');
+        $this->get('/')->assertOk()->assertSee('Database terpisah memuat 999 rekaman');
         $this->get('/sumber-jurnal?q=24423904')->assertSee('Jurnal Pendidikan Sains');
         $this->get('/sumber-jurnal?q=Problem-Based%20Learning')->assertSee('Jurnal Pendidikan Sains');
-        $this->get('/sumber-jurnal/'.JournalSource::where('source_id', 15)->first()->id)->assertNotFound();
+        $this->get('/sumber-jurnal?q=978')->assertSee('Padjadjaran Journal of Dentistry');
+        $unnamed = JournalSource::where('source_id', 15)->first();
+        $this->get('/sumber-jurnal?q=15')->assertSee('Nama jurnal tidak tersedia (SINTA #15)');
+        $this->get('/sumber-jurnal/'.$unnamed->id)->assertOk()->assertSee('Nama jurnal tidak tersedia (SINTA #15)');
         $this->get('/sumber-jurnal/'.JournalSource::where('source_id', 1)->first()->id)->assertSee('belum tersedia')->assertSee('20/03/2025');
     }
 
@@ -62,11 +68,6 @@ class SintaDatasetTest extends TestCase
         $this->post($url, $this->data())->assertStatus(409);
         $this->assertDatabaseCount('journals', 1);
         $this->assertDatabaseCount('catalog_audits', 1);
-        $s2 = $s->replicate();
-        $s2->source_id = 2;
-        $s2->education = false;
-        $s2->save();
-        $this->post('/admin/sumber-jurnal/'.$s2->id.'/draft', $this->data())->assertNotFound();
     }
 
     public function test_snapshot_with_another_fingerprint_cannot_be_overwritten(): void
@@ -74,6 +75,24 @@ class SintaDatasetTest extends TestCase
         $s = $this->source();
         $this->expectException(\RuntimeException::class);
         app(SintaDataset::class)->import();
+    }
+
+    public function test_non_education_sources_are_public_and_can_be_promoted_only_as_reviewed_drafts(): void
+    {
+        $s = JournalSource::create(['source_id' => 42, 'name' => 'Journal of Regional History', 'publisher' => 'Institute of History', 'subject' => 'History', 'education' => false, 'source_url' => 'https://sinta.kemdikbud.go.id/journals/profile/42', 'captured_at' => '2025-03-20', 'raw_identifiers' => [], 'article_titles' => ['Historical archives and public memory'], 'dataset_sha256' => str_repeat('b', 64)]);
+        $this->get('/sumber-jurnal')->assertOk()->assertSee('Journal of Regional History')->assertSee('Bidang lainnya');
+        $this->get('/sumber-jurnal/'.$s->id)->assertOk()->assertSee('Journal of Regional History')->assertSee('History');
+
+        $admin = User::factory()->create();
+        $admin->is_admin = true;
+        $admin->save();
+        $this->actingAs($admin)->get('/admin/sumber-jurnal/'.$s->id)->assertOk()->assertSee('Bidang/subjek');
+        $data = $this->data();
+        $data['name'] = 'Journal of Regional History';
+        $data['subject'] = 'History';
+        $this->post('/admin/sumber-jurnal/'.$s->id.'/draft', $data)->assertRedirect();
+        $this->assertSame('draft', Journal::first()->status);
+        $this->assertSame('History', Journal::first()->subject);
     }
 
     public function test_existing_issn_is_linked_for_review_not_created_as_duplicate(): void
