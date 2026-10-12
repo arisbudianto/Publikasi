@@ -23,6 +23,7 @@ Route::get('/cocokkan', [MatchController::class, 'form'])->name('match.form');
 Route::post('/cocokkan', [MatchController::class, 'match'])->middleware('throttle:20,1')->name('match.run');
 Route::get('/', [JournalSourceController::class, 'index'])->name('sources.home');
 Route::get('/katalog-terkurasi', [C::class, 'index'])->name('catalog.index');
+Route::get('/tanpa-apc', [C::class, 'noApc'])->name('catalog.no-apc');
 Route::get('/bandingkan', [C::class, 'compare'])->name('catalog.compare');
 Route::get('/jurnal/{journal}', [C::class, 'show'])->name('catalog.show');
 Route::get('/admin/login', [C::class, 'loginForm'])->name('login');
