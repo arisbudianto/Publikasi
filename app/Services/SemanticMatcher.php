@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use App\Models\Journal;
-use Illuminate\Support\Facades\Cache;
+use App\Models\JournalEmbedding;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class SemanticMatcher
@@ -19,26 +20,48 @@ class SemanticMatcher
         if ($journals->isEmpty()) {
             return [];
         }
-        $texts = [mb_substr(strip_tags($title."\n".$abstract."\n".$context), 0, 6000)];
-        $keys = [];
-        $scopes = [];
+        $query = $this->ai->vectors([mb_substr(strip_tags($title."\n".$abstract."\n".$context), 0, 6000)])[0];
+        $scopeTexts = [];
+        $scopeHashes = [];
         foreach ($journals as $j) {
             $scope = mb_substr($j->subject."\n".$j->scope_summary, 0, 5500);
-            $key = 'semantic-scope-v1-'.hash('sha256', config('semantic.model').$scope);
-            $keys[$j->id] = $key;
-            $cached = Cache::get($key);
-            if (is_array($cached)) {
-                $scopes[$j->id] = $cached;
-            } else {
-                $texts[] = $scope;
-            }
+            $scopeHashes[$j->id] = hash('sha256', config('semantic.model')."\0".$scope);
+            $scopeTexts[$j->id] = $scope;
         }
-        $vectors = $this->ai->vectors($texts);
-        $query = array_shift($vectors);
+        $stored = JournalEmbedding::query()->where('model', config('semantic.model'))
+            ->whereIn('journal_id', $journals->modelKeys())->get()->keyBy('journal_id');
+        $scopes = [];
+        $missing = [];
         foreach ($journals as $j) {
-            if (! isset($scopes[$j->id])) {
-                $scopes[$j->id] = array_shift($vectors);
-                Cache::put($keys[$j->id], $scopes[$j->id], now()->addDay());
+            $embedding = $stored->get($j->id);
+            if ($embedding && hash_equals($scopeHashes[$j->id], $embedding->scope_hash) && $embedding->dimensions === count($query)) {
+                try {
+                    $scopes[$j->id] = $embedding->decodedVector();
+                    continue;
+                } catch (RuntimeException) {
+                    // A corrupt stored vector is refreshed from the current scope below.
+                }
+            }
+            $missing[$j->id] = $scopeTexts[$j->id];
+        }
+        foreach (array_chunk($missing, max(1, (int) config('semantic.embedding_batch_size', 50)), true) as $batch) {
+            $vectors = $this->ai->vectors(array_values($batch));
+            foreach (array_keys($batch) as $offset => $journalId) {
+                $vector = $vectors[$offset];
+                if (count($vector) !== count($query)) {
+                    throw new RuntimeException('Dimensi embedding tidak konsisten.');
+                }
+                $scopes[$journalId] = $vector;
+                $timestamp = now();
+                DB::table('journal_embeddings')->upsert([[
+                    'journal_id' => $journalId,
+                    'model' => config('semantic.model'),
+                    'scope_hash' => $scopeHashes[$journalId],
+                    'dimensions' => count($vector),
+                    'vector' => JournalEmbedding::encode($vector),
+                    'created_at' => $timestamp,
+                    'updated_at' => $timestamp,
+                ]], ['journal_id', 'model'], ['scope_hash', 'dimensions', 'vector', 'updated_at']);
             }
         }
         $results = [];

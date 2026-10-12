@@ -14,7 +14,7 @@ class Catalog
 
     public function rules(?Journal $journal = null): array
     {
-        return ['name' => 'required|string|max:255', 'publisher' => 'required|string|max:255', 'issn' => ['required', new ValidIssn, Rule::unique('journals')->ignore($journal?->id)],
+        return ['name' => 'required|string|max:255', 'publisher' => 'required|string|max:255', 'issn' => ['required', new ValidIssn, Rule::unique('journals')->ignore($journal?->id), Rule::unique('journal_identifiers', 'value')],
             'official_url' => 'required|url:https|max:1000', 'subject' => 'required|string|max:255', 'scope_summary' => 'required|string|max:5000', 'scope_source_url' => 'required|url:https|max:1000',
             'checked_at' => 'required|date_format:Y-m-d|before_or_equal:today', 'status' => ['required', Rule::in(['draft', 'published', 'archived'])]];
     }

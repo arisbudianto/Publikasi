@@ -28,6 +28,16 @@ class Journal extends Model
         return $this->hasMany(JournalAccreditation::class);
     }
 
+    public function identifiers()
+    {
+        return $this->hasMany(JournalIdentifier::class)->whereNull('retired_at');
+    }
+
+    public function allIdentifiers()
+    {
+        return $this->hasMany(JournalIdentifier::class);
+    }
+
     public function needsReview(): bool
     {
         return $this->checked_at->lt(today()->subDays(180));
