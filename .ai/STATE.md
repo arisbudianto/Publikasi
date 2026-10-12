@@ -1,6 +1,5 @@
 # Publikasi state
-M03 production verification PASS, application commit 152e8257852d79ade42c63cf638d82692071a5d9. See docs/m03/DEPLOYMENT_EVIDENCE.md.
-Laravel13/Blade/MariaDB mysql driver; database/user speakver_publikasi. Do not run provision-cpanel.php on configured deployment.
-M03 basic bilingual keyword matching title/abstract/context, max10 published candidates, reasons/provenance, no retained manuscript input. Not semantic AI/acceptance predictor.
-22 tests / 145 assertions PASS. Production POST 200 match/empty, invalid422, CSRF419. No schema/dependency/credential changes.
-Target /home/speakver/publikasi.speakverse.id/public; source /home/speakver/publikasi_m00_source. Backup pre-m03-20261012.tar.gz verified.
+M03 production PASS df296e5. M04 implemented with Dinoiki embeddings and Crossref article metadata. Provider chosen by owner.
+Local29 tests /178 assertions PASS. HTTP fakes; real Dinoiki NOT VERIFIED. Default disabled until owner enters DINOIKI_API_KEY and SEMANTIC_AI_ENABLED=true on cPanel. Never put key in chat/repo.
+No schema/dependency changes. Published-only max50 scopes, shortlist3, article sample3 each; explicit input-transfer consent, no persisted manuscript.
+Target /home/speakver/publikasi.speakverse.id/public, source /home/speakver/publikasi_m00_source. See docs/m04/README.md. Do not run provision-cpanel.php.
