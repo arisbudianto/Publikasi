@@ -1,0 +1,106 @@
+{
+  "dataset": "sinta-accreditation-2025-period-3",
+  "record_count": 2697,
+  "decree_number": "355/DST/D.D1/HM.01.01/2026",
+  "decree_date": "2026-07-24",
+  "period": "3 Tahun 2025",
+  "notice_number": "862/DST/D.D1/HM.01.01/2026",
+  "notice_date": "2026-07-28",
+  "source_document": "Pemberitahuan Hasil Akreditasi Baru Jurnal Ilmiah Periode 3 Tahun 2025",
+  "source_pdf_sha256": "76336ef18a3ef7fb71080502db80b7fd0164ac67848878cfe176cd98e8e7395f",
+  "source_pdf_pages": 244,
+  "records_with_eissn": 2693,
+  "records_without_eissn": 4,
+  "eissn_checksum_valid": 2675,
+  "eissn_checksum_invalid": 18,
+  "rank_counts": {
+    "1": 28,
+    "2": 192,
+    "3": 658,
+    "4": 1130,
+    "5": 610,
+    "6": 79
+  },
+  "decision_type_counts": {
+    "Akreditasi Baru": 1343,
+    "Akreditasi Tetap": 150,
+    "Akreditasi Naik": 88,
+    "Reakreditasi Tetap": 415,
+    "Reakreditasi Naik": 625,
+    "Akreditasi Turun": 25,
+    "unknown": 1,
+    "Reakreditasi Turun": 50
+  },
+  "parts": [
+    {
+      "file": "part-001.json",
+      "count": 200,
+      "sha256": "71109d08de6b3d01dd302b1c2450d005f4bcf01b76e990a7f42b2002bf245dd1"
+    },
+    {
+      "file": "part-002.json",
+      "count": 200,
+      "sha256": "2f7b013049c8d814c279789299e73e7343880007c8e8faaad38e63ad7a500207"
+    },
+    {
+      "file": "part-003.json",
+      "count": 200,
+      "sha256": "071747c643f19c62206962bd35cebc2987f4c008ee1092b82b0b7b2ae56f800f"
+    },
+    {
+      "file": "part-004.json",
+      "count": 200,
+      "sha256": "f527c52117ae1eafb5d9eea41507c4b5dac822a50a10592bc232bf2486467336"
+    },
+    {
+      "file": "part-005.json",
+      "count": 200,
+      "sha256": "9e6390e245cbe63199fb621dd815c27d58b4a67df6562a149b35ab228b736eb0"
+    },
+    {
+      "file": "part-006.json",
+      "count": 200,
+      "sha256": "5779f0e85f754c30453d7a1bcc3e7d00ae6f301ece137ce56e01c87a07fcf781"
+    },
+    {
+      "file": "part-007.json",
+      "count": 200,
+      "sha256": "1bf3de44eccf71335ef50e9a0fe28fa989a8fa5fe032439d9cb6bab79432bde9"
+    },
+    {
+      "file": "part-008.json",
+      "count": 200,
+      "sha256": "248d774f3d56a5a3420a9777c4b8854c63fee313cf32d8ee5e131e31204dc63e"
+    },
+    {
+      "file": "part-009.json",
+      "count": 200,
+      "sha256": "b1a0bcf75f08dda7d5c47a5b08677266fe614d663cf702c4f07d7c60167ea91f"
+    },
+    {
+      "file": "part-010.json",
+      "count": 200,
+      "sha256": "f21a1f0a3cb35d0ee2cbf8b14044265c85c5009027f731edb580164e1791fd20"
+    },
+    {
+      "file": "part-011.json",
+      "count": 200,
+      "sha256": "0fc9b6547bba5a2829e437791a75ebbd6900c1637c89d230781c0f07d9d9dd1b"
+    },
+    {
+      "file": "part-012.json",
+      "count": 200,
+      "sha256": "0c59aed36754b51a6d97455c072d16ceea1ce018816fd9592eb73e4b3de328a3"
+    },
+    {
+      "file": "part-013.json",
+      "count": 200,
+      "sha256": "7419d93e388a2562958118f332eb723f3a4da6de4e8f36ad379a2cb2044627ec"
+    },
+    {
+      "file": "part-014.json",
+      "count": 97,
+      "sha256": "5cd9bfd442e5ea0c7334724ba6bd5966d232b296c15dd93c17f16f8cb4aecc68"
+    }
+  ]
+}

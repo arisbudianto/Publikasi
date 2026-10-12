@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Journal;
+use App\Models\JournalAccreditation;
 use App\Models\JournalSource;
 use App\Services\Catalog;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class JournalSourceController extends Controller
         $q = trim((string) $r->query('q', ''));
         $compact = str_replace('-', '', $q);
         $sourceId = ctype_digit($q) && (int) $q >= 1 && (int) $q <= 1000 ? (int) $q : null;
-        $query = JournalSource::when($q !== '', fn ($s) => $sourceId
+        $query = JournalSource::with('accreditations')->when($q !== '', fn ($s) => $sourceId
             ? $s->where('source_id', $sourceId)
             : $s->where(function ($s) use ($q, $compact) {
                 $s->where('name', 'like', '%'.$q.'%')->orWhere('publisher', 'like', '%'.$q.'%')->orWhere('p_issn', $q)->orWhere('e_issn', $q)->orWhere('source_id', $q)->orWhereRaw('REPLACE(p_issn, ?, ?) = ?', ['-', '', $compact])->orWhereRaw('REPLACE(e_issn, ?, ?) = ?', ['-', '', $compact])->orWhereRaw('CAST(article_titles AS CHAR) LIKE ?', ['%'.$q.'%']);
@@ -28,11 +29,14 @@ class JournalSourceController extends Controller
             'totalSources' => JournalSource::count(),
             'educationSources' => JournalSource::where('education', true)->count(),
             'otherSources' => JournalSource::where('education', false)->count(),
+            'accreditationCount' => JournalAccreditation::count(),
+            'matchedAccreditationCount' => JournalAccreditation::where('match_status', 'matched')->count(),
         ]);
     }
 
     public function show(JournalSource $source)
     {
+        $source->load('accreditations');
         $ids = array_values(array_filter([$source->p_issn, $source->e_issn]));
         $matches = $ids ? Journal::where('status', 'published')->whereIn('issn', $ids)->get() : collect();
 

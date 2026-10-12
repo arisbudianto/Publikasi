@@ -17,4 +17,9 @@ class JournalSource extends Model
     {
         return $this->belongsTo(Journal::class);
     }
+
+    public function accreditations()
+    {
+        return $this->hasMany(JournalAccreditation::class);
+    }
 }

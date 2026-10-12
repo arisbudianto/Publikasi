@@ -58,7 +58,7 @@ class CatalogController extends Controller
     public function show(Journal $journal)
     {
         abort_unless($journal->status === 'published' || auth()->user()?->is_admin, 404);
-        $journal->load('observations');
+        $journal->load(['observations', 'accreditations']);
 
         return view('catalog.show', compact('journal'));
     }

@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Services\OperationalHealth;
+use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use Illuminate\Support\Facades\Artisan;
 
@@ -53,3 +54,22 @@ Artisan::command('publikasi:import-sinta {--apply}', function (SintaDataset $dat
         $this->line('DRY RUN: tidak ada penulisan. Gunakan --apply untuk impor additive.');
     }
 })->purpose('Impor snapshot SINTA pemilik, idempotent tanpa menimpa katalog');
+
+Artisan::command('publikasi:import-sinta-accreditation {--apply}', function (SintaAccreditationDataset $dataset) {
+    $preview = $dataset->preview();
+    $this->line(json_encode([
+        'total' => count($preview['rows']),
+        'rank_counts' => $preview['manifest']['rank_counts'],
+        'new' => $preview['new'],
+        'existing' => $preview['existing'],
+        'matches' => $preview['matches'],
+        'decree' => $preview['manifest']['decree_number'],
+        'decree_date' => $preview['manifest']['decree_date'],
+        'source_pdf_sha256' => $preview['manifest']['source_pdf_sha256'],
+    ]));
+    if ($this->option('apply')) {
+        $this->line(json_encode($dataset->import()));
+    } else {
+        $this->line('DRY RUN: tidak ada penulisan. Gunakan --apply untuk impor additive.');
+    }
+})->purpose('Impor keputusan akreditasi SINTA dari dokumen resmi dengan tautan ISSN dan jejak sumber');

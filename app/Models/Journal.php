@@ -23,6 +23,11 @@ class Journal extends Model
         return $this->hasMany(JournalObservation::class);
     }
 
+    public function accreditations()
+    {
+        return $this->hasMany(JournalAccreditation::class);
+    }
+
     public function needsReview(): bool
     {
         return $this->checked_at->lt(today()->subDays(180));

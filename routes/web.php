@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CatalogController as C;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\CurationController;
+use App\Http\Controllers\JournalAccreditationController;
 use App\Http\Controllers\JournalSourceController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\OperationsController;
@@ -84,6 +85,7 @@ Route::middleware(['auth', RequireAdmin::class])->prefix('admin')->name('admin.'
 
 Route::get('/sumber-jurnal', [JournalSourceController::class, 'index'])->name('sources.index');
 Route::get('/sumber-jurnal/{source}', [JournalSourceController::class, 'show'])->name('sources.show');
+Route::get('/akreditasi-sinta', [JournalAccreditationController::class, 'index'])->name('accreditations.index');
 Route::middleware(['auth', RequireAdmin::class])->prefix('admin/sumber-jurnal')->name('admin.sources.')->group(function () {
     Route::get('/{source}', [JournalSourceController::class, 'prepare'])->name('prepare');
     Route::post('/{source}/draft', [JournalSourceController::class, 'promote'])->middleware('throttle:10,1')->name('promote');
