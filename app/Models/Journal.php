@@ -28,6 +28,11 @@ class Journal extends Model
         return $this->hasMany(JournalAccreditation::class);
     }
 
+    public function discontinuedSources()
+    {
+        return $this->hasMany(JournalDiscontinuedSource::class, 'issn', 'issn');
+    }
+
     public function identifiers()
     {
         return $this->hasMany(JournalIdentifier::class)->whereNull('retired_at');

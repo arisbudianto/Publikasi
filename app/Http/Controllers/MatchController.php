@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\BasicMatcher;
+use App\Services\DiscontinuedSourceLookup;
 use App\Services\PrivateCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,7 +15,7 @@ class MatchController extends Controller
         return response()->view('match.index')->header('Cache-Control', 'no-store, private');
     }
 
-    public function match(Request $request, BasicMatcher $matcher)
+    public function match(Request $request, BasicMatcher $matcher, DiscontinuedSourceLookup $discontinuedLookup)
     {
         $validator = Validator::make($request->only('title', 'abstract', 'context'), [
             'title' => 'required|string|min:10|max:300',
@@ -32,6 +33,8 @@ class MatchController extends Controller
             app(PrivateCatalog::class)->record($request->user(), $data['title'], 'keyword', $results);
         }
 
-        return response()->view('match.index', ['results' => $results])->header('Cache-Control', 'no-store, private');
+        $discontinuedByJournal = $discontinuedLookup->forJournals(array_column($results, 'journal'));
+
+        return response()->view('match.index', compact('results', 'discontinuedByJournal'))->header('Cache-Control', 'no-store, private');
     }
 }

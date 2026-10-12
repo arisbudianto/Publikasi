@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Journal;
+use App\Models\JournalIntegrityAssessment;
 use App\Models\MatchHistory;
 use App\Models\PersonalShortlist;
 use App\Models\SubmissionChecklist;
@@ -19,6 +20,7 @@ class AccountController extends Controller
     {
         if ($view === 'account.index') {
             $data['checklists'] = SubmissionChecklist::with('journal')->where('user_id', auth()->id())->latest()->paginate(10, ['*'], 'checklist_page');
+            $data['integrityAssessments'] ??= JournalIntegrityAssessment::with('journal')->where('user_id', auth()->id())->latest()->paginate(10, ['*'], 'integrity_page');
         }
 
         return response()->view($view, $data, $status)->header('Cache-Control', 'no-store, private');
@@ -91,7 +93,7 @@ class AccountController extends Controller
 
     public function index(Request $r)
     {
-        return $this->page('account.index', ['shortlists' => PersonalShortlist::with('journal')->where('user_id', $r->user()->id)->latest()->paginate(12, ['*'], 'shortlist_page'), 'histories' => MatchHistory::where('user_id', $r->user()->id)->latest()->paginate(10, ['*'], 'history_page')]);
+        return $this->page('account.index', ['shortlists' => PersonalShortlist::with('journal')->where('user_id', $r->user()->id)->latest()->paginate(12, ['*'], 'shortlist_page'), 'histories' => MatchHistory::where('user_id', $r->user()->id)->latest()->paginate(10, ['*'], 'history_page'), 'integrityAssessments' => JournalIntegrityAssessment::with('journal')->where('user_id', $r->user()->id)->latest()->paginate(10, ['*'], 'integrity_page')]);
     }
 
     public function saveJournal(Request $r, Journal $journal)

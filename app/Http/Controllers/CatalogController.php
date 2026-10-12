@@ -6,6 +6,7 @@ use App\Models\Journal;
 use App\Models\JournalObservation;
 use App\Models\JournalSource;
 use App\Services\Catalog;
+use App\Services\DiscontinuedSourceLookup;
 use App\Services\JournalDirectory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -111,12 +112,13 @@ class CatalogController extends Controller
         return view('catalog.compare', compact('journals', 'ids', 'returnFilters', 'origin'));
     }
 
-    public function show(Journal $journal)
+    public function show(Journal $journal, DiscontinuedSourceLookup $discontinuedLookup)
     {
         abort_unless($journal->status === 'published' || auth()->user()?->is_admin, 404);
         $journal->load(['observations', 'accreditations', 'identifiers']);
+        $discontinuedByJournal = $discontinuedLookup->forJournals([$journal]);
 
-        return view('catalog.show', compact('journal'));
+        return view('catalog.show', compact('journal', 'discontinuedByJournal'));
     }
 
     public function loginForm()
