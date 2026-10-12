@@ -1,7 +1,7 @@
 @extends('layout')
 @section('content')
 <section class="hero"><div><p class="eyebrow">KATALOG TERBUKA · PENDIDIKAN</p><h1>Kenali jurnal sebelum<br>menentukan tujuan submit.</h1><p>Lihat scope dan sumber informasinya. Mulai dari nama jurnal atau ISSN yang ingin diperiksa.</p></div><div class="hero-note"><b>{{ $journals->total() }}</b><span>jurnal dalam hasil pencarian</span><small>Gunakan pencocokan dasar untuk mencari scope dari judul dan abstrak.</small></div></section>
-<div class="notice">Katalog ini memuat {{ $journals->total() }} jurnal dengan scope terkurasi. Database terpisah memuat {{ $sourceCount }} rekaman SINTA semua bidang. <a href="{{ route('sources.index',['q'=>$q]) }}">Buka database sumber seluruh bidang</a>. Data impor belum menjadi rekomendasi scope terkurasi.</div><form class="search" action="{{ route('catalog.index') }}">
+<div class="notice">Katalog ini memuat {{ $journals->total() }} jurnal dengan scope terkurasi. Sumber SINTA semua bidang tersedia pada <a href="{{ route('sources.home',['q'=>$q]) }}">database utama berisi {{ $sourceCount }} rekaman</a>. Data impor belum menjadi rekomendasi scope terkurasi.</div><form class="search" action="{{ route('catalog.index') }}">
 <label for="q">Cari nama jurnal atau ISSN</label><div><input id="q" name="q" value="{{ $q }}" maxlength="120" placeholder="Nama jurnal atau ISSN"></div>
 <div class="filters">
 <label>Bidang pendidikan<select name="subject"><option value="">Semua bidang</option>@foreach($subjects as $subject)<option @selected(($filters['subject'] ?? '') === $subject)>{{ $subject }}</option>@endforeach</select></label>

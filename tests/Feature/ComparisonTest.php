@@ -20,10 +20,10 @@ class ComparisonTest extends TestCase
         $this->journal(1);
         $this->journal(2, ['subject' => 'Pendidikan bahasa']);
         $this->journal(3, ['publisher' => 'Penerbit B']);
-        $this->get('/?subject=Pendidikan+sains&publisher=Penerbit+A')->assertOk()->assertSee('Journal 1')->assertDontSee('Journal 2')->assertDontSee('Journal 3');
-        $this->get('/?subject=Tidak+ada')->assertOk()->assertSee('Belum ada jurnal');
-        $this->get('/?information=invalid&availability=known')->assertSessionHasErrors('information');
-        $this->get('/?information=fee')->assertSessionHasErrors('availability');
+        $this->get('/katalog-terkurasi?subject=Pendidikan+sains&publisher=Penerbit+A')->assertOk()->assertSee('Journal 1')->assertDontSee('Journal 2')->assertDontSee('Journal 3');
+        $this->get('/katalog-terkurasi?subject=Tidak+ada')->assertOk()->assertSee('Belum ada jurnal');
+        $this->get('/katalog-terkurasi?information=invalid&availability=known')->assertSessionHasErrors('information');
+        $this->get('/katalog-terkurasi?information=fee')->assertSessionHasErrors('availability');
     }
 
     public function test_information_availability_never_treats_unknown_as_free(): void
@@ -31,8 +31,8 @@ class ComparisonTest extends TestCase
         $a = $this->journal(1);
         $this->journal(2);
         $a->observations()->create(['kind' => 'fee', 'label' => 'APC', 'value' => 'USD 100', 'source_url' => 'https://example.org/apc', 'checked_at' => '2026-01-01', 'verification' => 'publisher_claim']);
-        $this->get('/?information=fee&availability=known')->assertSee('Journal 1')->assertDontSee('Journal 2');
-        $this->get('/?information=fee&availability=unknown')->assertDontSee('Journal 1')->assertSee('Journal 2');
+        $this->get('/katalog-terkurasi?information=fee&availability=known')->assertSee('Journal 1')->assertDontSee('Journal 2');
+        $this->get('/katalog-terkurasi?information=fee&availability=unknown')->assertDontSee('Journal 1')->assertSee('Journal 2');
         $this->get('/bandingkan?ids[]=1&ids[]=2')->assertOk()->assertSee('USD 100')->assertSee('Belum diketahui')->assertSee('belum diverifikasi independen')->assertSee('https://example.org/apc')->assertSee('01/01/2026');
     }
 
@@ -43,7 +43,7 @@ class ComparisonTest extends TestCase
         }
         $this->get('/bandingkan?ids[]=3&ids[]=1&ids[]=2')->assertOk()->assertSeeInOrder(['Journal 3', 'Journal 1', 'Journal 2']);
         $this->get('/bandingkan?ids[]=1&ids[]=2&ids[]=3&ids[]=4')->assertSessionHasErrors('ids');
-        $this->get('/?ids[]=1&ids[]=2&ids[]=3&ids[]=4')->assertSessionHasErrors('ids');
+        $this->get('/katalog-terkurasi?ids[]=1&ids[]=2&ids[]=3&ids[]=4')->assertSessionHasErrors('ids');
         $this->get('/bandingkan?ids[]=1&ids[]=1')->assertSessionHasErrors('ids.0');
         $this->get('/bandingkan')->assertSessionHasErrors('ids');
         $this->get('/bandingkan?ids=1')->assertSessionHasErrors('ids');
@@ -55,7 +55,7 @@ class ComparisonTest extends TestCase
         $this->journal(2, ['status' => 'archived']);
         foreach ([1, 2, 999] as $id) {
             $this->get('/bandingkan?ids[]='.$id)->assertNotFound();
-            $this->get('/?ids[]='.$id)->assertNotFound();
+            $this->get('/katalog-terkurasi?ids[]='.$id)->assertNotFound();
         }
     }
 
@@ -64,8 +64,8 @@ class ComparisonTest extends TestCase
         foreach (range(1, 14) as $n) {
             $this->journal($n);
         }
-        $this->get('/?ids[]=1&subject=Pendidikan+sains&page=2')->assertOk()->assertSee('1/3 dipilih')->assertSee('name="ids[]" value="1"', false)->assertSee('ids%5B0%5D=1')->assertSee('Hapus')->assertSee('Lihat perbandingan');
-        $this->get('/?ids[]=1&ids[]=2&ids[]=3')->assertSee('Maksimal tiga jurnal')->assertDontSee('Pilih untuk dibandingkan');
+        $this->get('/katalog-terkurasi?ids[]=1&subject=Pendidikan+sains&page=2')->assertOk()->assertSee('1/3 dipilih')->assertSee('name="ids[]" value="1"', false)->assertSee('ids%5B0%5D=1')->assertSee('Hapus')->assertSee('Lihat perbandingan');
+        $this->get('/katalog-terkurasi?ids[]=1&ids[]=2&ids[]=3')->assertSee('Maksimal tiga jurnal')->assertDontSee('Pilih untuk dibandingkan');
     }
 
     public function test_comparison_escapes_catalog_html(): void

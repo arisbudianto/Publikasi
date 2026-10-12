@@ -28,7 +28,8 @@ class SintaDatasetTest extends TestCase
         $this->assertSame(308, JournalSource::where('education', true)->count());
         $this->assertSame(691, JournalSource::where('education', false)->count());
         $this->get('/sumber-jurnal')->assertOk()->assertSee('999 rekaman sesuai pencarian')->assertSee('308 berlabel Pendidikan')->assertSee('691 bidang lainnya')->assertSee('bukan status terkini');
-        $this->get('/')->assertOk()->assertSee('Database terpisah memuat 999 rekaman');
+        $this->get('/')->assertOk()->assertSee('Database memuat 999 rekaman dari semua bidang')->assertSee('999 rekaman sesuai pencarian');
+        $this->get('/katalog-terkurasi')->assertOk()->assertSee('jurnal dengan scope terkurasi');
         $this->get('/sumber-jurnal?q=24423904')->assertSee('Jurnal Pendidikan Sains');
         $this->get('/sumber-jurnal?q=Problem-Based%20Learning')->assertSee('Jurnal Pendidikan Sains');
         $this->get('/sumber-jurnal?q=978')->assertSee('Padjadjaran Journal of Dentistry');

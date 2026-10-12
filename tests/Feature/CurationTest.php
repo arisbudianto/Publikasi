@@ -6,6 +6,7 @@ use App\Models\Journal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class CurationTest extends TestCase
@@ -68,8 +69,8 @@ class CurationTest extends TestCase
         $this->post('/admin/kurasi/'.$j->id.'/observasi/'.$id.'/tarik', ['reason' => 'Biaya telah berubah dan belum diketahui'])->assertRedirect();
         $this->assertDatabaseCount('journal_observations', 1);
         $this->assertSame(0, $j->observations()->count());
-        $this->get('/?information=fee&availability=known')->assertDontSee('Jurnal Kurasi');
-        $this->get('/?information=fee&availability=unknown')->assertSee('Jurnal Kurasi');
+        $this->get('/katalog-terkurasi?information=fee&availability=known')->assertDontSee('Jurnal Kurasi');
+        $this->get('/katalog-terkurasi?information=fee&availability=unknown')->assertSee('Jurnal Kurasi');
         $this->assertSame('observation_retired', DB::table('catalog_audits')->latest('id')->first()->action);
     }
 
@@ -109,13 +110,13 @@ class CurationTest extends TestCase
 
     public function test_crossref_refresh_is_admin_only_scoped_and_audited(): void
     {
-        $j=$this->journal();
-        \Illuminate\Support\Facades\Http::fake(['api.crossref.org/*'=>\Illuminate\Support\Facades\Http::response(['message'=>['items'=>[]]])]);
+        $j = $this->journal();
+        Http::fake(['api.crossref.org/*' => Http::response(['message' => ['items' => []]])]);
         $this->actingAs(User::factory()->create())->post('/admin/kurasi/'.$j->id.'/artikel/refresh')->assertForbidden();
-        \Illuminate\Support\Facades\Http::assertNothingSent();
+        Http::assertNothingSent();
         $this->actingAs($this->admin())->post('/admin/kurasi/'.$j->id.'/artikel/refresh')->assertRedirect();
-        \Illuminate\Support\Facades\Http::assertSentCount(1);
-        $this->assertDatabaseHas('catalog_audits',['action'=>'articles_refreshed','journal_id'=>$j->id]);
-        $this->assertDatabaseCount('journal_observations',0);
+        Http::assertSentCount(1);
+        $this->assertDatabaseHas('catalog_audits', ['action' => 'articles_refreshed', 'journal_id' => $j->id]);
+        $this->assertDatabaseCount('journal_observations', 0);
     }
 }
