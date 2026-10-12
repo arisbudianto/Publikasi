@@ -1,6 +1,6 @@
 @extends('layout')
 @section('content')
-<section class="hero"><div><p class="eyebrow">KATALOG TERBUKA · PENDIDIKAN</p><h1>Kenali jurnal sebelum<br>menentukan tujuan submit.</h1><p>Lihat scope dan sumber informasinya. Mulai dari nama jurnal atau ISSN yang ingin diperiksa.</p></div><div class="hero-note"><b>{{ $journals->total() }}</b><span>jurnal dalam hasil pencarian</span><small>Katalog awal. Pencocokan abstrak hadir pada modul berikutnya.</small></div></section>
+<section class="hero"><div><p class="eyebrow">KATALOG TERBUKA · PENDIDIKAN</p><h1>Kenali jurnal sebelum<br>menentukan tujuan submit.</h1><p>Lihat scope dan sumber informasinya. Mulai dari nama jurnal atau ISSN yang ingin diperiksa.</p></div><div class="hero-note"><b>{{ $journals->total() }}</b><span>jurnal dalam hasil pencarian</span><small>Gunakan pencocokan dasar untuk mencari scope dari judul dan abstrak.</small></div></section>
 <form class="search" action="{{ route('catalog.index') }}">
 <label for="q">Cari nama jurnal atau ISSN</label><div><input id="q" name="q" value="{{ $q }}" maxlength="120" placeholder="Nama jurnal atau ISSN"></div>
 <div class="filters">

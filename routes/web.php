@@ -4,6 +4,8 @@ use App\Http\Controllers\CatalogController as C;
 use App\Http\Middleware\RequireAdmin;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/cocokkan', [\App\Http\Controllers\MatchController::class, 'form'])->name('match.form');
+Route::post('/cocokkan', [\App\Http\Controllers\MatchController::class, 'match'])->middleware('throttle:20,1')->name('match.run');
 Route::get('/', [C::class, 'index'])->name('catalog.index');
 Route::get('/bandingkan', [C::class, 'compare'])->name('catalog.compare');
 Route::get('/jurnal/{journal}', [C::class, 'show'])->name('catalog.show');
