@@ -48,3 +48,25 @@ Route::middleware(\App\Http\Middleware\RequireAccount::class)->prefix('akun')->n
 
 Route::get('/jurnal/{journal}/checklist', [\App\Http\Controllers\ChecklistController::class,'show'])->name('checklist.show');
 Route::post('/akun/checklist/{journal}', [\App\Http\Controllers\ChecklistController::class,'save'])->middleware([\App\Http\Middleware\RequireAccount::class,'throttle:20,1'])->name('checklist.save');
+
+Route::middleware(\App\Http\Middleware\RequireAccount::class)->prefix('akun/submission')->name('submissions.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\SubmissionController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\SubmissionController::class, 'store'])->middleware('throttle:20,1')->name('store');
+    Route::get('/{submission}', [\App\Http\Controllers\SubmissionController::class, 'show'])->whereNumber('submission')->name('show');
+    Route::put('/{submission}', [\App\Http\Controllers\SubmissionController::class, 'update'])->middleware('throttle:30,1')->name('update');
+    Route::get('/{submission}/matriks.csv', [\App\Http\Controllers\SubmissionController::class, 'export'])->middleware('throttle:10,1')->name('export');
+    Route::post('/{submission}/respons', [\App\Http\Controllers\SubmissionController::class, 'responseStore'])->middleware('throttle:30,1')->name('responses.store');
+    Route::put('/{submission}/respons/{response}', [\App\Http\Controllers\SubmissionController::class, 'responseUpdate'])->middleware('throttle:30,1')->name('responses.update');
+});
+
+Route::get('/layanan', [\App\Http\Controllers\OperationsController::class,'status'])->name('service.status');
+Route::middleware(\App\Http\Middleware\RequireAccount::class)->prefix('akun/pembayaran')->name('payments.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\PaymentController::class,'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\PaymentController::class,'store'])->middleware('throttle:5,1')->name('store');
+    Route::post('/{payment}/batal', [\App\Http\Controllers\PaymentController::class,'cancel'])->middleware('throttle:10,1')->name('cancel');
+});
+Route::middleware(['auth',RequireAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/operasional', [\App\Http\Controllers\OperationsController::class,'index'])->middleware('throttle:10,1')->name('operations');
+    Route::get('/pembayaran', [\App\Http\Controllers\PaymentController::class,'admin'])->name('payments');
+    Route::post('/pembayaran/{payment}/verifikasi', [\App\Http\Controllers\PaymentController::class,'review'])->middleware('throttle:10,1')->name('payments.review');
+});

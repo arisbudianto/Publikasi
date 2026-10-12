@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\OperationalHealth;
 use Illuminate\Support\Facades\Artisan;
 
 Artisan::command('publikasi:admin {email}', function () {
@@ -29,3 +30,15 @@ Artisan::command('publikasi:admin {email}', function () {
     $user->save();
     $this->info('Admin berhasil dibuat.');
 })->purpose('Buat admin melalui terminal aman, tanpa password default');
+
+Artisan::command('publikasi:health {--json}', function (OperationalHealth $health) {
+    $result = $health->inspect();
+    if ($this->option('json')) {
+        $this->line(json_encode($result, JSON_UNESCAPED_SLASHES));
+    } else {
+        $this->table(['Pemeriksaan', 'Status'], collect($result['checks'])->map(fn ($v, $k) => [$k, $v])->values()->all());
+        $this->line('Tidak memverifikasi backup, SMTP, scheduler, atau gateway pembayaran.');
+    }
+
+    return $result['healthy'] ? 0 : 1;
+})->purpose('Pemeriksaan operasional terbatas tanpa menampilkan rahasia');

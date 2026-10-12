@@ -1,0 +1,5 @@
+@extends('layout') @section('title','Layanan dan pembayaran opsional') @section('content')
+<p class="eyebrow">M09 · INFORMASI LAYANAN</p><h1>Layanan Publikasi</h1><p>Katalog jurnal pendidikan dapat diakses terbuka. Akun menyimpan shortlist, checklist, pelacak submission, dan matriks respons reviewer secara pribadi.</p><p>Pencocokan memberi kandidat untuk diperiksa kembali pada sumber resmi. Status submission diisi pengguna. Tidak ada pengiriman artikel otomatis atau jaminan penerimaan jurnal.</p>
+<h2>Pembayaran opsional</h2>@if($paymentsEnabled)<p>Pencatatan dukungan operasional secara manual tersedia bagi pengguna yang login. Tidak ada penagihan otomatis. Pembayaran tidak mengubah urutan rekomendasi atau membuka akses khusus.</p>@else<p>Pembayaran opsional belum diaktifkan. Tidak ada tagihan atau transaksi yang diproses oleh aplikasi.</p>@endif
+<p><a href="{{ route('account.index') }}">Buka akun pribadi</a></p><p>Gunakan alias reviewer dan hindari menyimpan data sensitif yang tidak diperlukan. Sistem belum menyediakan pengiriman email pemulihan password otomatis.</p>
+@endsection
