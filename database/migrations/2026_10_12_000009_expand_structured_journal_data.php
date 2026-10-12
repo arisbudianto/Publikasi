@@ -41,7 +41,7 @@ return new class extends Migration
             $table->string('model', 120);
             $table->char('scope_hash', 64);
             $table->unsignedSmallInteger('dimensions');
-            $table->longBlob('vector');
+            $table->binary('vector');
             $table->timestamps();
             $table->unique(['journal_id', 'model']);
             $table->index(['model', 'scope_hash']);

@@ -27,4 +27,4 @@ Impor dan penautan ulang keputusan SINTA adalah operasi terpisah. Setelah deploy
 
 ## Batas kesiapan
 
-Pengaturan default AI tetap 50 jurnal sampai waktu eksekusi, memori, batas proses, dan respons provider diuji pada cPanel. Database embedding memakai MySQL `LONGBLOB`; verifikasi MariaDB produksi diperlukan saat migrasi. Evaluasi kualitas peringkat tidak termasuk modul ini.
+Pengaturan default AI tetap 50 jurnal sampai waktu eksekusi, memori, batas proses, dan respons provider diuji pada cPanel. Database embedding memakai BLOB biner float32; konfigurasi cPanel tetap perlu diverifikasi saat migrasi. Evaluasi kualitas peringkat tidak termasuk modul ini.
