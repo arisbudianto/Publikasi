@@ -12,13 +12,44 @@ use Illuminate\Validation\ValidationException;
 
 class CatalogController extends Controller
 {
+    private function catalogRules(): array
+    {
+        return ['q' => 'nullable|string|max:120', 'subject' => 'nullable|string|max:255',
+            'publisher' => 'nullable|string|max:255', 'information' => 'nullable|required_with:availability|in:index,fee,time',
+            'availability' => 'nullable|required_with:information|in:known,unknown', 'ids' => 'sometimes|array|max:3',
+            'ids.*' => 'required|integer|min:1|distinct'];
+    }
+
     public function index(Request $r)
     {
-        $r->validate(['q' => 'nullable|string|max:120']);
-        $q = trim($r->query('q', ''));
-        $journals = Journal::query()->where('status', 'published')->when($q !== '', fn ($b) => $b->where(fn ($x) => $x->where('name', 'like', '%'.addcslashes($q, '%_\\').'%')->orWhere('issn', $q)))->orderBy('name')->paginate(12)->withQueryString();
+        $filters = $r->validate($this->catalogRules());
+        $q = trim($filters['q'] ?? '');
+        $selectedIds = array_map('intval', $filters['ids'] ?? []);
+        $selected = Journal::where('status', 'published')->whereIn('id', $selectedIds)->get()->sortBy(fn ($j) => array_search($j->id, $selectedIds))->values();
+        abort_unless($selected->count() === count($selectedIds), 404);
+        $subjects = Journal::where('status', 'published')->distinct()->orderBy('subject')->pluck('subject');
+        $publishers = Journal::where('status', 'published')->distinct()->orderBy('publisher')->pluck('publisher');
+        $query = Journal::where('status', 'published')
+            ->when($q !== '', fn ($b) => $b->where(fn ($x) => $x->where('name', 'like', '%'.addcslashes($q, '%_\\').'%')->orWhere('issn', $q)))
+            ->when($filters['subject'] ?? '', fn ($b, $v) => $b->where('subject', $v))
+            ->when($filters['publisher'] ?? '', fn ($b, $v) => $b->where('publisher', $v));
+        if (! empty($filters['information']) && ! empty($filters['availability'])) {
+            $method = $filters['availability'] === 'known' ? 'whereHas' : 'whereDoesntHave';
+            $query->$method('observations', fn ($b) => $b->where('kind', $filters['information'])->whereNotNull('value')->where('value', '!=', ''));
+        }
+        $journals = $query->orderBy('name')->paginate(12)->withQueryString();
 
-        return view('catalog.index', compact('journals', 'q'));
+        return view('catalog.index', compact('journals', 'q', 'filters', 'subjects', 'publishers', 'selected', 'selectedIds'));
+    }
+
+    public function compare(Request $r)
+    {
+        $data = $r->validate(['ids' => 'required|array|min:1|max:3', 'ids.*' => 'required|integer|min:1|distinct']);
+        $ids = array_map('intval', $data['ids']);
+        $journals = Journal::with('observations')->where('status', 'published')->whereIn('id', $ids)->get()->sortBy(fn ($j) => array_search($j->id, $ids))->values();
+        abort_unless($journals->count() === count($ids), 404);
+
+        return view('catalog.compare', compact('journals', 'ids'));
     }
 
     public function show(Journal $journal)
@@ -117,7 +148,7 @@ class CatalogController extends Controller
             $r->session()->put('catalog_import', ['rows' => $preview['rows'], 'expires' => now()->addMinutes(15)->timestamp]);
         }
 
-return view('admin.import', compact('preview'));
+        return view('admin.import', compact('preview'));
     }
 
     public function commitImport(Request $r, Catalog $catalog)
@@ -134,7 +165,7 @@ return view('admin.import', compact('preview'));
     {
         return response()->streamDownload(function () {
             $h = fopen('php://output', 'w');
-            fputcsv($h,Catalog::FIELDS,',','"','');
+            fputcsv($h, Catalog::FIELDS, ',', '"', '');
             fclose($h);
         }, 'template-jurnal.csv', ['Content-Type' => 'text/csv']);
     }

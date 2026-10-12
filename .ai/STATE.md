@@ -1,8 +1,6 @@
-# State Publikasi
-M01 implementasi katalog pendidikan dan pengelolaan admin.
-Keputusan: Laravel 13; MariaDB cPanel melalui driver mysql; katalog terbuka; sumber resmi.
-Verifikasi lokal PHP 8.3: 10 tests PASS, 44 assertions. Composer dependency lock tersedia.
-Deployment belum diverifikasi. Target /home/speakver/publikasi.speakverse.id/public.
-Tidak ada akun admin default. Database produksi harus terpisah dari database situs lain.
-
-2026-10-12: Commit e7484c3 terpasang pada cPanel, composer --no-dev berhasil, view cache berhasil, HTTPS maintenance 503. Database/admin belum dibuat; menunggu handoff kredensial baru. Backup pre-m01-20261012.tar.gz diverifikasi isinya. Skrip provision hanya dijalankan pengguna di terminal dengan input password tersembunyi.
+# Publikasi state
+M01 aktif di produksi. M02 implementasi filter dan perbandingan satu sampai tiga jurnal.
+Base main: 440bbac7b962f769d9a792a0472b71e9696b803f.
+Stack: Laravel 13, Blade, MariaDB melalui driver mysql. Database/user produksi speakver_publikasi, dikelola pengguna. Jangan jalankan provision-cpanel.php pada deployment ini.
+M02 lokal: 16 tests / 93 assertions PASS. Tidak ada migration/dependency baru. Deployment menunggu sesi login cPanel.
+Target /home/speakver/publikasi.speakverse.id/public; checkout /home/speakver/publikasi_m00_source.

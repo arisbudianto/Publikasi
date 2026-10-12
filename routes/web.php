@@ -5,6 +5,7 @@ use App\Http\Middleware\RequireAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [C::class, 'index'])->name('catalog.index');
+Route::get('/bandingkan', [C::class, 'compare'])->name('catalog.compare');
 Route::get('/jurnal/{journal}', [C::class, 'show'])->name('catalog.show');
 Route::get('/admin/login', [C::class, 'loginForm'])->name('login');
 Route::post('/admin/login', [C::class, 'login'])->middleware('throttle:10,1');
