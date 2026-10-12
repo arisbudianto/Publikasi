@@ -1,6 +1,6 @@
 # Publikasi current state
 
-PROJECT arisbudianto/Publikasi main. Production source-data release `1fec710`; all-disciplines directory release `6e0aa10`. Snapshot dated 2025-03-20. Production app `/home/speakver/publikasi.speakverse.id`; deployment source `/home/speakver/publikasi_m00_source`.
+PROJECT arisbudianto/Publikasi main. Production source-data release `1fec710`; all-disciplines directory release `6e0aa10`; SINTA accreditation decisions release `4dcfa5d1d173653bbe58d58b66ec137606b214af`. Production app `/home/speakver/publikasi.speakverse.id`; deployment source `/home/speakver/publikasi_m00_source`.
 
 ## Verified
 - Local suite after all-disciplines changes: 66 tests / 506 assertions PASS (PHP 8.3, isolated SQLite); Pint, route/view cache and diff checks PASS.
@@ -13,6 +13,8 @@ PROJECT arisbudianto/Publikasi main. Production source-data release `1fec710`; a
 - All-disciplines release fast-forwarded to production source `6e0aa10`; six changed runtime files backed up at `/home/speakver/publikasi_backups/pre-sinta-all-fields-20261012-1710.tar.gz`, SHA-256 `0cb271aa4608a846ba6ec6a6dcdfcb1ceba30aeefda1225380637b638c4df549`. Controller and Blade code deployed; Blade cache rebuilt. No schema/data mutation.
 - Production counts after this release remain sources999 (education308, other691, unnamed75), journals5. Homepage identifies both the five curated catalog journals and the 999-source directory. `/sumber-jurnal` shows 999, all subjects; exact SINTA ID search `?q=15` displays the unnamed record.
 - Import does not modify curated `journals`; data remains historical and outside matchers until editorial verification. No live accreditation or license is asserted.
+- SINTA decision release `4dcfa5d1d173653bbe58d58b66ec137606b214af` deployed. Runtime backup `/home/speakver/publikasi_backups/pre-accreditation-20261012-180457.tar.gz`, SHA-256 `d3206b7cc3c1109c0624f3cedc4a71990e9fa3bf05923a3f55dd0f265168d8df`; owner confirmed database export from phpMyAdmin before migration (file/checksum not recorded). Migration `000008` applied. Production totals: accreditation2697; source links83; curated-journal links0; match statuses matched83, unmatched2592, invalid ISSN18, missing ISSN4; prior source999, curated journals5, users1 unchanged. Public `/akreditasi-sinta` lists 2697 decisions; exact ISSN `23556544` returns Geoplanning linked to source `/sumber-jurnal/932`.
+- Local full suite after accreditation change: 69 tests / 556 assertions PASS; Pint and route/view cache checks PASS. Full details in `docs/data/DEPLOYMENT_EVIDENCE.md`.
 
 ## Not verified / limits
 - `publikasi:health`, private authenticated production writes, database backup/restore, and rollback rehearsal were not run.
