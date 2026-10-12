@@ -74,13 +74,14 @@ class M12JournalIntegrityTest extends TestCase
         $response = $this->post('/periksa/jurnal', ['lookup' => '2088-2866', 'answers' => $this->safeAnswers()]);
         $response->assertOk()->assertHeader('Cache-Control', 'no-store, private')->assertSee('Jurnal katalog yang cocok');
         $this->assertDatabaseCount('journal_integrity_assessments', 0);
-        $this->assertSessionMissing('_old_input');
+        $this->assertNull(session('_old_input'));
     }
 
     public function test_lookup_and_answers_are_not_flashed_when_validation_fails(): void
     {
         $this->post('/periksa/jurnal', ['lookup' => 'RAHASIA UJI'])->assertUnprocessable()
-            ->assertHeader('Cache-Control', 'no-store, private')->assertSessionMissing('_old_input');
+            ->assertHeader('Cache-Control', 'no-store, private');
+        $this->assertNull(session('_old_input'));
     }
 
     public function test_logged_in_user_saves_only_after_opt_in_and_can_delete_only_own_record(): void
@@ -168,7 +169,7 @@ class M12JournalIntegrityTest extends TestCase
         $this->post('/cocokkan', [
             'title' => 'Vocational learning outcomes',
             'abstract' => str_repeat('This study examines vocational learning and digital training outcomes. ', 2),
-        ])->assertOk()->assertSee('Scopus mencatat sumber ini sebagai discontinued')->assertSee('tidak disebut tidak terindeks');
+        ])->assertOk()->assertSee('Scopus mencatat sumber ini sebagai discontinued')->assertSee('tidak menyatakan artikel sebelum akhir cakupan tidak terindeks');
     }
 
     public function test_discontinued_import_rejects_invalid_or_older_source_date(): void
