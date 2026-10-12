@@ -9,3 +9,5 @@
 .shortlist-action{margin-top:16px}.history-item{margin:20px 0}
 
 .audit-snapshot{white-space:pre-wrap;overflow-wrap:anywhere;max-width:600px}
+
+.rank-categories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:20px 0 28px}.rank-card{display:flex;flex-direction:column;gap:4px;padding:20px;background:#fff;border:1px solid var(--line);border-radius:12px}.rank-card:hover{border-color:var(--green);text-decoration:none}.rank-card strong{font-size:30px;line-height:1.2;color:var(--ink)}.rank-card>span:last-child{font-size:13px;color:var(--muted)}@media(max-width:720px){.rank-categories{grid-template-columns:repeat(2,minmax(0,1fr))}}

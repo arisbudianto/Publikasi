@@ -101,6 +101,14 @@ class SintaAccreditationTest extends TestCase
 
         $this->get('/akreditasi-sinta?q=23556544')
             ->assertOk()->assertSee('Hasil akreditasi SINTA')->assertSee('Geoplanning: Journal of Geomatics and Planning')->assertSee('Peringkat SINTA 1');
+        $this->get('/akreditasi-sinta')
+            ->assertOk()
+            ->assertSee('Kategori jurnal SINTA 1–4')
+            ->assertSee('SINTA 1, 28 keputusan', false)
+            ->assertSee('SINTA 2, 192 keputusan', false)
+            ->assertSee('SINTA 3, 658 keputusan', false)
+            ->assertSee('Filter peringkat SINTA 4, 1130 keputusan', false)
+            ->assertSee('Peringkat SINTA 5 dan 6 tetap tersedia');
         $this->get('/akreditasi-sinta?rank=6')
             ->assertOk()->assertSee('Peringkat SINTA 6')->assertDontSee('Peringkat SINTA 1');
         $this->get('/sumber-jurnal/'.$source->id)

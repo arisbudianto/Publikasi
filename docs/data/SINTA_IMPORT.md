@@ -24,7 +24,7 @@ Data impor belum masuk BasicMatcher/SemanticMatcher sampai scope benar-benar dik
 
 ## Verifikasi dan rollback
 
-64 tes/481 assertions PASS lokal PHP8.3/SQLite, termasuk dataset asli999/308/75, replay, checksum parts dan formatISSN, fingerprint conflict, escapedXSS, public eligibility, permission admin, draft-only dan duplicateISSN. Tests tidak dijalankan pada database produksi. Live import/runtime dicatat dalam DEPLOYMENT_EVIDENCE.md setelah selesai.
+69 tes/563 assertions PASS lokal PHP8.3/SQLite, termasuk dataset asli999/308/75, replay, checksum parts dan formatISSN, fingerprint conflict, escapedXSS, public eligibility, permission admin, draft-only dan duplicateISSN. Tests tidak dijalankan pada database produksi. Live import/runtime dicatat dalam DEPLOYMENT_EVIDENCE.md setelah selesai.
 
 Rollback kode memulihkan routes/console/index views dan mempertahankan tabel serta999 record. Tidak menjalankan drop atau migrate:rollback untuk rollback kode rutin. Scope data baru append-only import; tidak ada backfill ke data terkurasi existing.
 
@@ -37,3 +37,5 @@ Dataset berisi 2.697 keputusan: peringkat 1=28, 2=192, 3=658, 4=1.130, 5=610, da
 Migration `000008` membuat tabel tambahan `journal_accreditations`. `php artisan publikasi:import-sinta-accreditation` hanya dry-run; `--apply` menambahkan baris berdasar nomor item SK, serta menautkan ke `journal_sources` atau `journals` hanya jika e-ISSN cocok persis dan checksum valid. Pada fixture 999 sumber, 83 keputusan ditautkan ke sumber lama. Nama, label SINTA historis, dan jurnal terkurasi lama tidak ditimpa. Baris tanpa e-ISSN/checksum valid disimpan untuk pencarian tetapi tidak ditautkan otomatis. Direktori publik `/akreditasi-sinta` memisahkan hasil keputusan ini dari snapshot 20 Maret 2025.
 
 Uji lokal mencakup hitungan seluruh 2.697 baris, replay idempotent, preservasi 999 sumber dan 5 jurnal terkurasi, pencocokan tepat 83 sumber, serta pencarian publik. Data keputusan menyatakan masa berlaku menurut volume dan nomor terbitan; daftar ini tidak membuktikan bahwa data SINTA daring telah dimutakhirkan atau status berlaku saat ini.
+
+Direktori keputusan menampilkan pintasan kategori SINTA 1–4 dengan jumlah keputusan yang dihitung dari tabel, masing-masing 28, 192, 658, dan 1.130 pada rilis dataset ini. Kategori membuka filter peringkat yang sama; SINTA 5 dan 6 tetap dapat dicari melalui filter lengkap. Angka menunjukkan rekaman keputusan dalam dokumen, bukan klaim jumlah jurnal unik yang telah diverifikasi.

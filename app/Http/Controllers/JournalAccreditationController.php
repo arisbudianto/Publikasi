@@ -21,11 +21,18 @@ class JournalAccreditationController extends Controller
             }))
             ->when($data['rank'] ?? null, fn ($query, $rank) => $query->where('rank', $rank))
             ->orderBy('rank')->orderBy('journal_name')->paginate(25)->withQueryString();
+        $rankCounts = JournalAccreditation::query()
+            ->selectRaw('rank, COUNT(*) as total')
+            ->whereBetween('rank', [1, 4])
+            ->groupBy('rank')
+            ->pluck('total', 'rank')
+            ->all();
 
         return view('accreditations.index', [
             'accreditations' => $accreditations,
             'q' => $q,
             'rank' => $data['rank'] ?? '',
+            'rankCounts' => $rankCounts,
             'totalAccreditations' => JournalAccreditation::count(),
             'matchedAccreditations' => JournalAccreditation::whereIn('match_status', ['matched'])->count(),
         ]);
