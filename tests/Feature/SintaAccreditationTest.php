@@ -103,6 +103,7 @@ class SintaAccreditationTest extends TestCase
             ->assertOk()->assertSee('Hasil akreditasi SINTA')->assertSee('Geoplanning: Journal of Geomatics and Planning')->assertSee('Peringkat SINTA 1');
         $this->get('/akreditasi-sinta')
             ->assertOk()
+            ->assertSee('catalog.css?v=', false)
             ->assertSee('Kategori jurnal SINTA 1–4')
             ->assertSee('SINTA 1, 28 keputusan', false)
             ->assertSee('SINTA 2, 192 keputusan', false)
