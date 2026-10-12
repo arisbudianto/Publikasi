@@ -26,7 +26,7 @@ class StructuredObservation
             'metric_scheme' => ['nullable', 'string', 'max:80', 'required_with:rank_value', 'prohibited_unless:kind,index'],
             'rank_value' => ['nullable', 'integer', 'min:1', 'max:100', 'required_with:metric_scheme', 'prohibited_unless:kind,index'],
             'amount_minor' => 'nullable|integer|min:0|max:999999999999999'.$feeRequired.'|required_with:currency,fee_route|prohibited_unless:kind,fee',
-            'currency' => ['nullable', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'.($requireStructured ? '|required_if:kind,fee' : ''), 'required_with:amount_minor,fee_route', 'prohibited_unless:kind,fee'],
+            'currency' => array_merge(['nullable', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'], $requireStructured ? ['required_if:kind,fee'] : [], ['required_with:amount_minor,fee_route', 'prohibited_unless:kind,fee']),
             'fee_route' => array_merge(['nullable', Rule::in(['apc_oa', 'subscription', 'submission_fee', 'other']), 'required_with:amount_minor,currency'], $requireStructured ? ['required_if:kind,fee'] : [], ['prohibited_unless:kind,fee']),
             'waiver_available' => 'nullable|boolean|prohibited_unless:kind,fee',
             'language' => 'nullable|string|max:100|required_if:kind,language|prohibited_unless:kind,language',
