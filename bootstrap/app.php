@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', \Illuminate\Session\Middleware\AuthenticateSession::class);
-        \Illuminate\Session\Middleware\AuthenticateSession::redirectUsing(fn (Request $request) => $request->is('admin/*') ? route('login') : route('account.login')); 
+        \Illuminate\Session\Middleware\AuthenticateSession::redirectUsing(fn (Request $request) => $request->is('admin/*') ? route('login') : route('account.login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
