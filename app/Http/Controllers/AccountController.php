@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Journal;
 use App\Models\MatchHistory;
 use App\Models\PersonalShortlist;
+use App\Models\SubmissionChecklist;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,10 @@ class AccountController extends Controller
 {
     private function page(string $view, array $data = [], int $status = 200)
     {
+        if ($view === 'account.index') {
+            $data['checklists'] = SubmissionChecklist::with('journal')->where('user_id', auth()->id())->latest()->paginate(10, ['*'], 'checklist_page');
+        }
+
         return response()->view($view, $data, $status)->header('Cache-Control', 'no-store, private');
     }
 

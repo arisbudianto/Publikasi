@@ -45,3 +45,6 @@ Route::middleware(\App\Http\Middleware\RequireAccount::class)->prefix('akun')->n
     Route::put('/profil',[\App\Http\Controllers\AccountController::class,'profile'])->name('profile');
     Route::put('/password',[\App\Http\Controllers\AccountController::class,'password'])->middleware('throttle:5,1')->name('password');
 });
+
+Route::get('/jurnal/{journal}/checklist', [\App\Http\Controllers\ChecklistController::class,'show'])->name('checklist.show');
+Route::post('/akun/checklist/{journal}', [\App\Http\Controllers\ChecklistController::class,'save'])->middleware([\App\Http\Middleware\RequireAccount::class,'throttle:20,1'])->name('checklist.save');
