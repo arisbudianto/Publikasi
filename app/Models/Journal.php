@@ -15,6 +15,16 @@ class Journal extends Model
 
     public function observations()
     {
+        return $this->hasMany(JournalObservation::class)->whereNull('retired_at');
+    }
+
+    public function allObservations()
+    {
         return $this->hasMany(JournalObservation::class);
+    }
+
+    public function needsReview(): bool
+    {
+        return $this->checked_at->lt(today()->subDays(180));
     }
 }

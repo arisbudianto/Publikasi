@@ -15,6 +15,11 @@ Route::get('/admin/login', [C::class, 'loginForm'])->name('login');
 Route::post('/admin/login', [C::class, 'login'])->middleware('throttle:10,1');
 Route::middleware(['auth', RequireAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [C::class, 'admin'])->name('index');
+    Route::get('/kurasi', [\App\Http\Controllers\CurationController::class, 'index'])->name('curation');
+    Route::post('/kurasi/{journal}/artikel/refresh', [\App\Http\Controllers\CurationController::class, 'refreshArticles'])->middleware('throttle:5,1')->name('articles.refresh');
+    Route::get('/kurasi/{journal}', [\App\Http\Controllers\CurationController::class, 'show'])->name('review');
+    Route::post('/kurasi/{journal}/observasi', [\App\Http\Controllers\CurationController::class, 'publish'])->name('observation.publish');
+    Route::post('/kurasi/{journal}/observasi/{observation}/tarik', [\App\Http\Controllers\CurationController::class, 'retire'])->name('observation.retire');
     Route::post('/logout', [C::class, 'logout'])->name('logout');
     Route::get('/jurnal/create', [C::class, 'create'])->name('create');
     Route::post('/jurnal', [C::class, 'store'])->name('store');
