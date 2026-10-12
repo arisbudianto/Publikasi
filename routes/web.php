@@ -70,3 +70,10 @@ Route::middleware(['auth',RequireAdmin::class])->prefix('admin')->name('admin.')
     Route::get('/pembayaran', [\App\Http\Controllers\PaymentController::class,'admin'])->name('payments');
     Route::post('/pembayaran/{payment}/verifikasi', [\App\Http\Controllers\PaymentController::class,'review'])->middleware('throttle:10,1')->name('payments.review');
 });
+
+Route::get('/sumber-jurnal', [\App\Http\Controllers\JournalSourceController::class,'index'])->name('sources.index');
+Route::get('/sumber-jurnal/{source}', [\App\Http\Controllers\JournalSourceController::class,'show'])->name('sources.show');
+Route::middleware(['auth',RequireAdmin::class])->prefix('admin/sumber-jurnal')->name('admin.sources.')->group(function(){
+    Route::get('/{source}', [\App\Http\Controllers\JournalSourceController::class,'prepare'])->name('prepare');
+    Route::post('/{source}/draft', [\App\Http\Controllers\JournalSourceController::class,'promote'])->middleware('throttle:10,1')->name('promote');
+});

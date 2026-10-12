@@ -1,0 +1,217 @@
+{
+  "source": "owner-uploaded archive.zip / all_sinta_journals.json",
+  "raw_sha256": "b1c79730dd707e393ccecf6c4a6940ce7ad5d99ec6a236e3d975f5a009ca83eb",
+  "captured_at": "2025-03-20",
+  "timezone": "not specified by dataset",
+  "total": 999,
+  "education": 308,
+  "unnamed": 75,
+  "errors": [
+    {
+      "journal_id": 664,
+      "error": "Failed to fetch page content"
+    }
+  ],
+  "parts": [
+    {
+      "file": "part-001.json",
+      "sha256": "6e967220e8de90e0923705e716c03b70cdca9d49b19c05359a7eac3fa6e886b9",
+      "count": 25
+    },
+    {
+      "file": "part-002.json",
+      "sha256": "b17473dab1c6dd21d9fa2403ca95dd1d7b9a79aee5082592a631002e047a4aee",
+      "count": 25
+    },
+    {
+      "file": "part-003.json",
+      "sha256": "193dc7d224ba9a8c935fcd151cf1c8d704668f2c65db738dd02a195b50dab6be",
+      "count": 25
+    },
+    {
+      "file": "part-004.json",
+      "sha256": "9672f9b3352844d2b236bffbfd1e88d17968e7be7a80be230b12f7b44907ac18",
+      "count": 25
+    },
+    {
+      "file": "part-005.json",
+      "sha256": "d876d2d59faf16af587ded92e914423be1d8dd3b650668f8e0f6bc9ce46e7085",
+      "count": 25
+    },
+    {
+      "file": "part-006.json",
+      "sha256": "a191bac89011ccb057702892ec53d6a0b24cff46e4037c138a28379a88e939b4",
+      "count": 25
+    },
+    {
+      "file": "part-007.json",
+      "sha256": "7dc11698b3e947354e4bb82e79c63c738ed13326981a07388be50c6332cd3bc7",
+      "count": 25
+    },
+    {
+      "file": "part-008.json",
+      "sha256": "1a91d59017ff3131faee46527b0d652aba99113b9dc6213a6625cf3ac7e19344",
+      "count": 25
+    },
+    {
+      "file": "part-009.json",
+      "sha256": "8ef49bb752053984c05c77db6d8df7820c0e17231e82d431e7b69ae95c2f71c7",
+      "count": 25
+    },
+    {
+      "file": "part-010.json",
+      "sha256": "118e15a8ecae6f6e0376fd64f6a29e379bbe4c5fe6e9da250b4ccc537b52b3b7",
+      "count": 25
+    },
+    {
+      "file": "part-011.json",
+      "sha256": "1859ff22c28a84295e2d11d7813682e41c5be3fb510e7c33d444624765072385",
+      "count": 25
+    },
+    {
+      "file": "part-012.json",
+      "sha256": "acea8e40b89eac4676a3a05e6adc685cffafe30177786b9d106d12e701b19a26",
+      "count": 25
+    },
+    {
+      "file": "part-013.json",
+      "sha256": "446822a2678b58c9de0fc42d366c4022e09345e7bce1054d741b4a029d64c7f0",
+      "count": 25
+    },
+    {
+      "file": "part-014.json",
+      "sha256": "f19669c44dacc5f4f67ec75dbc00fa6fda46c81ae5a332270451a256beb31472",
+      "count": 25
+    },
+    {
+      "file": "part-015.json",
+      "sha256": "b64b874d2ed2d9f625ae5c914c99546d2d9c59755c8a8cefe18136fedc292a64",
+      "count": 25
+    },
+    {
+      "file": "part-016.json",
+      "sha256": "92df3480fde2ae967542b250b8c8fc65488016249cbad2465cacac05c35dbfcc",
+      "count": 25
+    },
+    {
+      "file": "part-017.json",
+      "sha256": "e7c65aae30437d9b46e68c1801ef5014f61677dfb180aa04390131f15debcefe",
+      "count": 25
+    },
+    {
+      "file": "part-018.json",
+      "sha256": "b8b6a8bd9beb0265c9831c29cf00e0248bb88a3c640ef990fee743dad5a4bf2d",
+      "count": 25
+    },
+    {
+      "file": "part-019.json",
+      "sha256": "a05a2d8ad2d1aff05d9cff3a88502e99064b48feec1e251dbb5dfa22d8463e2b",
+      "count": 25
+    },
+    {
+      "file": "part-020.json",
+      "sha256": "5ee051d002cdc20246678b759118065ca6e7a6f454f73f3111bda11b3d0a76c9",
+      "count": 25
+    },
+    {
+      "file": "part-021.json",
+      "sha256": "86847427a7c183eb7473a94c5031b236127b711945336d236457a0ca33d09057",
+      "count": 25
+    },
+    {
+      "file": "part-022.json",
+      "sha256": "730ed86ff88418747111ed6022a0d2b50e1b92fbe590055b5a4f835f2797638b",
+      "count": 25
+    },
+    {
+      "file": "part-023.json",
+      "sha256": "82fe1a20007314b4b98a668c15f5b9b4059c6f5245cf73ac5ab1a220c61ad345",
+      "count": 25
+    },
+    {
+      "file": "part-024.json",
+      "sha256": "7cde724b5fb7170a95319110b79652c80c1909bb17d32c31ae9935ddeb82d8a5",
+      "count": 25
+    },
+    {
+      "file": "part-025.json",
+      "sha256": "82f1e28e4b2287f71c84cd7eea476e313d0391eb9080d7d5dc319636da15376c",
+      "count": 25
+    },
+    {
+      "file": "part-026.json",
+      "sha256": "ef3b77d6bdd157f92d18deb40c9f236502f245f224e2dc804b8b56e5be836ec4",
+      "count": 25
+    },
+    {
+      "file": "part-027.json",
+      "sha256": "6f16ff509a059e0a520f901fc7bf3252d111930a61124e93a71d668db2581bce",
+      "count": 25
+    },
+    {
+      "file": "part-028.json",
+      "sha256": "9cffaf34d1c88914126513254ac441c842cfe2535fdced2d57981d628f8b2d07",
+      "count": 25
+    },
+    {
+      "file": "part-029.json",
+      "sha256": "e2c72e1b76290442a41d3920f31321b6baa4648dda750fcd02cbba75286d2b82",
+      "count": 25
+    },
+    {
+      "file": "part-030.json",
+      "sha256": "3c84424fedab2ae3d27cb142329a26c2c5784e4c71b7661b1ecd3e7e52854590",
+      "count": 25
+    },
+    {
+      "file": "part-031.json",
+      "sha256": "74fc7d5233c2135be87e84b2b0a09831b752caa26121c1c884534994d309d0a2",
+      "count": 25
+    },
+    {
+      "file": "part-032.json",
+      "sha256": "f60aa1edceba3a900c01b1b0e961faec1666f7dcb567a7af94d017fe892e521b",
+      "count": 25
+    },
+    {
+      "file": "part-033.json",
+      "sha256": "84f9f8fa42918d038ae849c7293f3f1ff0b597b1c4d5e109915b58c86fd8c668",
+      "count": 25
+    },
+    {
+      "file": "part-034.json",
+      "sha256": "e1c69bafbe78d2f233ca96d45b2e407fe2e00573d362c41419bbc7caeeff2906",
+      "count": 25
+    },
+    {
+      "file": "part-035.json",
+      "sha256": "18b0fde1bbb3a8a26ba26b17f32f1395de1ba22827c026aa5aae34ab74b1826a",
+      "count": 25
+    },
+    {
+      "file": "part-036.json",
+      "sha256": "e688791434a162a950d56a65dbf9d12d76844223dcade1c9c15a14a1baf54399",
+      "count": 25
+    },
+    {
+      "file": "part-037.json",
+      "sha256": "5ab3a3a744edd75f63c0c6e5115e76b8a3858904a45c38537f8048cc6a40fc3b",
+      "count": 25
+    },
+    {
+      "file": "part-038.json",
+      "sha256": "15cb883f136b85403188cd2f7a372732d5b9d6821f86c6a022b8b3bb022c654e",
+      "count": 25
+    },
+    {
+      "file": "part-039.json",
+      "sha256": "2238d319cdbe25f79aca0b1214918222dd67472efb326041aeabfba9a930cd2a",
+      "count": 25
+    },
+    {
+      "file": "part-040.json",
+      "sha256": "87e23185c976b8991db502f65f4f7774800318611558abe5bc5fe2cb2c755559",
+      "count": 24
+    }
+  ]
+}

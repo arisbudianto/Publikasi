@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Services\OperationalHealth;
+use App\Services\SintaDataset;
 use Illuminate\Support\Facades\Artisan;
 
 Artisan::command('publikasi:admin {email}', function () {
@@ -42,3 +43,13 @@ Artisan::command('publikasi:health {--json}', function (OperationalHealth $healt
 
     return $result['healthy'] ? 0 : 1;
 })->purpose('Pemeriksaan operasional terbatas tanpa menampilkan rahasia');
+
+Artisan::command('publikasi:import-sinta {--apply}', function (SintaDataset $dataset) {
+    $p = $dataset->preview();
+    $this->line(json_encode(['total' => count($p['rows']), 'education' => $p['manifest']['education'], 'unnamed' => $p['manifest']['unnamed'], 'new' => $p['new'], 'existing' => $p['existing'], 'captured_at' => $p['manifest']['captured_at'], 'sha256' => $p['manifest']['raw_sha256']]));
+    if ($this->option('apply')) {
+        $this->line(json_encode($dataset->import()));
+    } else {
+        $this->line('DRY RUN: tidak ada penulisan. Gunakan --apply untuk impor additive.');
+    }
+})->purpose('Impor snapshot SINTA pemilik, idempotent tanpa menimpa katalog');
