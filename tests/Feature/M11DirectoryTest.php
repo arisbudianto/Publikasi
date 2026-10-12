@@ -69,7 +69,7 @@ class M11DirectoryTest extends TestCase
     public function test_filters_persist_when_returning_from_comparison(): void
     {
         $this->journal(1);
-        $this->get('/bandingkan?ids[]=1&subject=Pendidikan&sort=name')->assertOk()->assertSee('catalog.index')->assertSee('subject=Pendidikan');
+        $this->get('/bandingkan?ids[]=1&subject=Pendidikan&sort=name')->assertOk()->assertSee('/katalog-terkurasi?subject=Pendidikan', false)->assertSee('ids%5B0%5D=1');
     }
 
     public function test_frequency_range_is_validated_and_catalog_pages_are_public(): void
