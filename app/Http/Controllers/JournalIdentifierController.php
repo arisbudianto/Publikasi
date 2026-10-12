@@ -15,7 +15,7 @@ class JournalIdentifierController extends Controller
         $request->merge(['value' => strtoupper(trim((string) $request->input('value')))]);
         $data = $request->validate([
             'type' => ['required', Rule::in(['print_issn', 'electronic_issn', 'issn_l'])],
-            'value' => ['required', 'string', new ValidIssn, Rule::unique('journal_identifiers', 'value'), Rule::unique('journals', 'issn')->ignore($journal->id)],
+            'value' => ['required', 'string', new ValidIssn, Rule::unique('journal_identifiers', 'value'), Rule::unique('journals', 'issn')->ignore($journal->id), Rule::notIn([$journal->issn])],
             'source_url' => 'required|url:https|max:1000',
             'checked_at' => 'required|date_format:Y-m-d|before_or_equal:today',
         ]);

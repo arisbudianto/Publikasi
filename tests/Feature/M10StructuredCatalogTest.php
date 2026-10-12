@@ -30,7 +30,8 @@ class M10StructuredCatalogTest extends TestCase
     private function admin(): User
     {
         $user = User::factory()->create();
-        $user->update(['is_admin' => true]);
+        $user->is_admin = true;
+        $user->save();
 
         return $user;
     }
@@ -135,7 +136,7 @@ class M10StructuredCatalogTest extends TestCase
         $scopeCalls = 0;
         Http::fake([
             'ai.dinoiki.com/*' => function ($request) use (&$scopeCalls) {
-                if (in_array("Vokasi\nPelatihan kejuruan", $request['input'], true)) {
+                if (array_filter($request['input'], fn ($text) => str_contains($text, 'Pelatihan kejuruan') || str_contains($text, 'Metode pembelajaran praktik industri'))) {
                     $scopeCalls++;
                 }
 
