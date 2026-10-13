@@ -190,7 +190,7 @@ class CrossrefReferenceChecker
 
         $authors = [];
         foreach (array_slice(is_array($metadata['author'] ?? null) ? $metadata['author'] : [], 0, 10) as $author) {
-            $name = trim(implode(' ', array_filter([$author['given'] ?? null, $author['family'] ?? null], 'is_string')));
+            $name = $this->plainText(implode(' ', array_filter([$author['given'] ?? null, $author['family'] ?? null], 'is_string')));
             if ($name !== '') {
                 $authors[] = $name;
             }
@@ -204,11 +204,11 @@ class CrossrefReferenceChecker
         return [
             'doi' => $doi,
             'doi_url' => 'https://doi.org/'.str_replace('%2F', '/', rawurlencode($doi)),
-            'title' => mb_substr(strip_tags($title), 0, 1000),
+            'title' => mb_substr($this->plainText($title), 0, 1000),
             'authors' => $authors,
             'first_author' => $metadata['author'][0]['family'] ?? null,
             'year' => is_numeric($year) ? (int) $year : null,
-            'journal' => mb_substr(strip_tags((string) ($metadata['container-title'][0] ?? '')), 0, 300),
+            'journal' => mb_substr($this->plainText((string) ($metadata['container-title'][0] ?? '')), 0, 300),
         ];
     }
 
@@ -225,7 +225,7 @@ class CrossrefReferenceChecker
             }
             $updates[] = [
                 'type' => $type,
-                'label' => $label !== '' ? mb_substr(strip_tags($label), 0, 120) : $type,
+                'label' => $label !== '' ? mb_substr($this->plainText($label), 0, 120) : $type,
                 'source' => in_array($update['source'] ?? null, ['publisher', 'retraction-watch'], true) ? $update['source'] : 'crossref',
                 'notice_doi' => $noticeDoi,
                 'notice_url' => 'https://doi.org/'.str_replace('%2F', '/', rawurlencode($noticeDoi)),
@@ -267,6 +267,11 @@ class CrossrefReferenceChecker
     private function normalize(string $value): string
     {
         return trim(preg_replace('/[^\p{L}\p{N}]+/u', ' ', mb_strtolower(strip_tags($value))) ?? '');
+    }
+
+    private function plainText(string $value): string
+    {
+        return trim(preg_replace('/\s+/u', ' ', strip_tags($value)) ?? strip_tags($value));
     }
 
     private function sameAuthor(string $referenceAuthor, string $metadataAuthor): bool
