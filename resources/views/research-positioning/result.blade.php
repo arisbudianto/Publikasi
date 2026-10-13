@@ -4,7 +4,7 @@
 
 @section('content')
 <section class="page-heading m15-page m15-results" id="m15-results">
-    <p class="eyebrow">HASIL PILOT · {{ $result['mode'] === 'semantic' ? 'PEMERINGKATAN SEMANTIK' : 'MODE CADANGAN' }}</p>
+    <p class="eyebrow">HASIL PILOT · {{ $result['mode'] === 'empty' ? 'TANPA KANDIDAT' : ($result['mode'] === 'semantic' ? 'PEMERINGKATAN SEMANTIK' : 'MODE CADANGAN') }}</p>
     <h1>Posisi riset: {{ $result['title'] ?? '' }}</h1>
     <div class="m15-summary">
         <p>{{ $result['candidate_count'] }} kandidat dari OpenAlex, dianalisis {{ $result['searched_at'] ?? now()->utc()->toIso8601String() }}.</p>

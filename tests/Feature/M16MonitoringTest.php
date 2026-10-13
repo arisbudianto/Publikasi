@@ -52,6 +52,9 @@ class M16MonitoringTest extends TestCase
         $workId = 'W100';
         $this->fakeWorks($workId);
         $this->actingAs($user)->post('/akun/pantauan', $this->input())->assertRedirect();
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'api.openalex.org/works')
+            && str_contains(urldecode($request->url()), ' OR ')
+            && ! str_contains(urldecode($request->url()), 'outcomes for online safety'));
         $topic = M16Topic::firstOrFail();
         $this->assertNotSame(self::TITLE, \DB::table('m16_versions')->value('title_cipher'));
         $this->assertDatabaseCount('m16_findings', 0);

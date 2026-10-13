@@ -24,6 +24,8 @@ class ResearchPositioning
                 'mode' => 'empty',
                 'candidate_count' => 0,
                 'note' => 'OpenAlex tidak menemukan kandidat dengan filter ini. Hasil kosong bukan bukti bahwa ide riset baru.',
+                'title' => $title,
+                'searched_at' => now()->utc()->toIso8601String(),
             ];
         }
 

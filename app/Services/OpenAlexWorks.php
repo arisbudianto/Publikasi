@@ -10,7 +10,7 @@ class OpenAlexWorks
     public function search(string $query, ?int $yearFrom = null, ?int $yearTo = null): array
     {
         $params = [
-            'search' => mb_substr(trim($query), 0, 6500),
+            'search' => $this->searchTerms($query),
             'per_page' => (int) config('m15.candidate_limit', 50),
             'select' => 'id,doi,title,display_name,publication_year,primary_location,abstract_inverted_index',
         ];
@@ -105,5 +105,27 @@ class OpenAlexWorks
         $doi = preg_replace('~^https?://(?:dx\.)?doi\.org/~i', '', trim($value)) ?? '';
 
         return preg_match('~^10\.\d{4,9}/[^\s<>"]+$~i', $doi) ? mb_substr($doi, 0, 250) : null;
+    }
+
+    private function searchTerms(string $query): string
+    {
+        $text = mb_substr(trim($query), 0, 300);
+        $tokens = preg_split('/[^\pL\pN]+/u', mb_strtolower($text)) ?: [];
+        $stop = ['title', 'abstract', 'study', 'research', 'effect', 'effects', 'impact', 'analysis',
+            'the', 'and', 'for', 'with', 'from', 'using', 'into', 'this', 'that', 'in', 'of', 'on',
+            'dan', 'yang', 'untuk', 'dengan', 'dalam', 'pada', 'terhadap', 'studi', 'penelitian'];
+        $words = array_slice(array_values(array_unique(array_filter($tokens,
+            fn ($word) => mb_strlen($word) >= 4 && ! in_array($word, $stop, true),
+        ))), 0, 6);
+        if ($words === []) {
+            $words = array_slice(array_values(array_unique(array_filter($tokens, fn ($word) => mb_strlen($word) >= 3))), 0, 2);
+        }
+        if (count($words) <= 2) {
+            return implode(' ', $words);
+        }
+        $first = array_slice($words, 0, count($words) > 3 ? 2 : 1);
+        $second = array_slice($words, count($first));
+
+        return '('.implode(' OR ', $first).') AND ('.implode(' OR ', $second).')';
     }
 }
