@@ -146,10 +146,11 @@ Pendekatan:
 - Pisahkan entri per baris atau nomor; ambil DOI bila ada.
 - Entri dengan DOI: ambil metadata Crossref, bandingkan judul, tahun, dan penulis pertama.
 - Entri tanpa DOI: pencarian bibliografis Crossref, ambil kandidat teratas, tampilkan sebagai kemungkinan cocok dengan tingkat kemiripan judul, bukan kepastian.
-- Status retraksi, koreksi, dan expression of concern dari metadata pembaruan Crossref, termasuk data Retraction Watch yang tersedia melalui Crossref. Cakupan dan ketentuan pakainya diverifikasi di D13 sebelum implementasi.
+- Status retraksi, koreksi, dan expression of concern dari metadata pembaruan Crossref, termasuk data Retraction Watch yang tersedia melalui Crossref.
+- Persetujuan eksplisit sebelum referensi dikirim satu per satu ke Crossref. Teks sitasi dan kueri tidak disimpan; cache hanya metadata publik tanpa abstrak.
 Desain layar:
 - Satu kolom teks besar, tombol periksa. Hasil berupa tabel: nomor entri, teks asli dipotong, status, metadata yang ditemukan dengan tautan DOI, catatan perbedaan.
-- Status: cocok, cocok dengan perbedaan (sebut field yang beda), kemungkinan cocok, tidak ditemukan, ditarik, dikoreksi, gagal diperiksa (sumber tidak merespons).
+- Status: cocok, cocok dengan perbedaan (sebut field yang beda), kemungkinan cocok, tidak ditemukan, gagal diperiksa. Pemberitahuan retraksi, koreksi, atau expression of concern ditampilkan terpisah dengan tautan DOI.
 - Ringkasan di atas tabel: jumlah per status. Ekspor CSV dan RIS untuk entri yang cocok.
 Kriteria selesai:
 - "Tidak ditemukan" tidak disebut palsu; teksnya menjelaskan bahwa tidak semua publikasi terdaftar di Crossref (buku, prosiding lokal, jurnal tanpa DOI).
@@ -157,6 +158,7 @@ Kriteria selesai:
 - Daftar pustaka tidak disimpan ke database atau log; cache hanya metadata DOI publik.
 - Kegagalan atau timeout Crossref per entri tidak menggagalkan seluruh hasil.
 - Throttle per pengguna dan batas harian global, mengikuti pola M04.
+- Tidak ada migrasi database. Detail implementasi dan sumber: `docs/m13/README.md`.
 Di luar modul: memeriksa kesesuaian isi sitasi dengan klaim di naskah.
 
 ### M14 Penentu authorship
@@ -174,6 +176,8 @@ Kriteria selesai:
 - Orang dengan peran pendanaan atau supervisi saja tidak otomatis menjadi penulis.
 - Tidak ada data tersimpan untuk tamu; tidak memakai AI.
 - Teks hasil menyatakan bahwa keputusan akhir mengikuti kebijakan jurnal dan institusi.
+
+Realisasi M14: halaman `/periksa/authorship` menerapkan versi aturan `2026-10-v1`, memproses maksimal 30 kontributor tanpa penyimpanan, memberi usulan urutan sementara berdasarkan jumlah peran CRediT tanpa pembobotan, serta membuat draf pernyataan kontribusi yang bisa disalin. Sumber aturan ICMJE dan CRediT serta batasan implementasi tercatat di `docs/m14/README.md`.
 
 ### M15 Posisi riset
 Tujuan: menunjukkan publikasi terdekat dan letak pembeda ide riset, dengan setiap pembanding dapat dibuka.
