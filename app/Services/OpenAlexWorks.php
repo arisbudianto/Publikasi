@@ -17,9 +17,9 @@ class OpenAlexWorks
         if ($yearFrom && $yearTo) {
             $params['filter'] = 'publication_year:'.$yearFrom.'-'.$yearTo;
         } elseif ($yearFrom) {
-            $params['filter'] = 'publication_year:>='.$yearFrom;
+            $params['filter'] = 'publication_year:>'.($yearFrom - 1);
         } elseif ($yearTo) {
-            $params['filter'] = 'publication_year:<='.$yearTo;
+            $params['filter'] = 'publication_year:<'.($yearTo + 1);
         }
         if (filled(config('services.openalex.mailto'))) {
             $params['mailto'] = config('services.openalex.mailto');
