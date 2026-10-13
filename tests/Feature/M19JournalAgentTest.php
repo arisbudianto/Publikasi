@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Models\Journal;
 use App\Models\User;
 use App\Services\JournalEvidenceExtractor;
+use App\Services\JournalAiExtractor;
 use App\Services\JournalMonitoringAgent;
 use App\Services\JournalPageFetcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class M19JournalAgentTest extends TestCase
@@ -95,5 +97,75 @@ class M19JournalAgentTest extends TestCase
         $quotes = (new JournalEvidenceExtractor)->extract($html, 'scope');
         $this->assertCount(1, $quotes);
         $this->assertStringContainsString('empirical research', $quotes[0]);
+    }
+
+    public function test_ai_only_keeps_exact_evidence_and_uses_shared_budget(): void
+    {
+        config(['m19.ai_enabled' => true, 'semantic.enabled' => true, 'semantic.key' => 'test-key',
+            'm15.enabled' => true, 'm19.ai_monthly_limit' => 2]);
+        $html = '<html><body><nav><p>Publication fee is 999 USD per article.</p></nav>'
+            .'<main><p>Publication fee is 500 USD per article.</p>'
+            .'<p>Review duration is 4 weeks after submission.</p></main></body></html>';
+        Http::fake(['*' => Http::response(['choices' => [['message' => ['content' => json_encode(['quotes' => [
+            'Publication fee is 500 USD per article.',
+            'Publication fee is 999 USD per article.',
+            'The journal is free of charge.',
+            'Review duration is 4 weeks after submission.',
+        ]])]]], 'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 40]], 200)]);
+        $quotes = app(JournalAiExtractor::class)->extract($html, 'fee');
+        $this->assertSame(['Publication fee is 500 USD per article.'], $quotes);
+        $this->assertSame(1, DB::table('m15_ai_usage')->sum('request_count'));
+        DB::table('m19_runs')->insert(['source_id' => DB::table('m19_sources')->insertGetId([
+            'journal_id' => $this->journal()->id, 'url' => 'https://journal.example.org/about',
+            'field' => 'fee', 'enabled' => true, 'created_at' => now(), 'updated_at' => now(),
+        ]), 'status' => 'changed', 'ai_status' => 'completed', 'created_at' => now()]);
+        DB::table('m19_runs')->insert(['source_id' => DB::table('m19_sources')->value('id'),
+            'status' => 'changed', 'ai_status' => 'failed', 'created_at' => now()]);
+        $this->assertFalse(app(JournalAiExtractor::class)->ready());
+        Http::assertSentCount(1);
+    }
+
+    public function test_ai_failure_preserves_rule_based_candidate(): void
+    {
+        config(['m19.enabled' => true, 'm19.ai_enabled' => true, 'semantic.enabled' => true,
+            'semantic.key' => 'test-key', 'm15.enabled' => true]);
+        $journal = $this->journal();
+        DB::table('m19_sources')->insert(['journal_id' => $journal->id,
+            'url' => 'https://journal.example.org/about', 'field' => 'fee', 'enabled' => true,
+            'created_at' => now(), 'updated_at' => now()]);
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                return ['status' => 200, 'body' => '<html><body><p>Publication fee is 500 USD per article, payable only after acceptance.</p></body></html>'];
+            }
+        });
+        Http::fake(['*' => Http::response(['error' => 'unavailable'], 503)]);
+        $this->assertSame(1, app(JournalMonitoringAgent::class)->tick()['changed']);
+        $this->assertDatabaseHas('m19_runs', ['ai_status' => 'failed']);
+        $this->assertDatabaseHas('m19_candidates', ['quote' => 'Publication fee is 500 USD per article, payable only after acceptance.']);
+        $this->assertDatabaseCount('journal_observations', 0);
+    }
+
+    public function test_ai_adds_verified_quote_when_rule_extractor_misses_it(): void
+    {
+        config(['m19.enabled' => true, 'm19.ai_enabled' => true, 'semantic.enabled' => true,
+            'semantic.key' => 'test-key', 'm15.enabled' => true]);
+        $journal = $this->journal();
+        DB::table('m19_sources')->insert(['journal_id' => $journal->id,
+            'url' => 'https://journal.example.org/about', 'field' => 'fee', 'enabled' => true,
+            'created_at' => now(), 'updated_at' => now()]);
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                return ['status' => 200, 'body' => '<html><body><main><p>The article processing charge is waived for every author after acceptance.</p></main></body></html>'];
+            }
+        });
+        Http::fake(['*' => Http::response(['choices' => [['message' => ['content' =>
+            '{"quotes":["The article processing charge is waived for every author after acceptance."]}']]],
+        ], 200)]);
+        $this->assertSame(1, app(JournalMonitoringAgent::class)->tick()['changed']);
+        $this->assertDatabaseHas('m19_candidates', ['quote' => 'The article processing charge is waived for every author after acceptance.', 'status' => 'pending']);
+        $this->assertDatabaseHas('m19_runs', ['ai_status' => 'completed']);
+        $this->assertDatabaseCount('journal_observations', 0);
     }
 }

@@ -7,7 +7,7 @@ use Throwable;
 
 class JournalMonitoringAgent
 {
-    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor) {}
+    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor, private JournalAiExtractor $ai) {}
 
     public function tick(): array
     {
@@ -31,12 +31,23 @@ class JournalMonitoringAgent
                 $page = $this->fetcher->fetch($source->url);
                 $hash = hash('sha256', $page['body']);
                 $changed = $source->last_hash !== $hash;
-                DB::transaction(function () use ($source, $page, $hash, $changed) {
+                $quotes = $changed ? $this->extractor->extract($page['body'], $source->field) : [];
+                $aiStatus = null;
+                if ($changed && config('m19.ai_enabled') && $this->ai->ready()) {
+                    try {
+                        $quotes = array_unique(array_merge($quotes, $this->ai->extract($page['body'], $source->field)));
+                        $aiStatus = 'completed';
+                    } catch (Throwable) {
+                        // The rule extractor remains available if the model or its budget fails.
+                        $aiStatus = 'failed';
+                    }
+                }
+                DB::transaction(function () use ($source, $page, $hash, $changed, $quotes, $aiStatus) {
                     $run = DB::table('m19_runs')->insertGetId(['source_id' => $source->id,
                         'status' => $changed ? 'changed' : 'unchanged', 'http_status' => $page['status'],
-                        'content_hash' => $hash, 'created_at' => now()]);
+                        'content_hash' => $hash, 'ai_status' => $aiStatus, 'created_at' => now()]);
                     if ($changed) {
-                        foreach ($this->extractor->extract($page['body'], $source->field) as $quote) {
+                        foreach (array_slice($quotes, 0, 3) as $quote) {
                             $exists = DB::table('m19_candidates')->where('source_id', $source->id)
                                 ->where('status', 'pending')->where('quote', $quote)->exists();
                             if (! $exists) {
