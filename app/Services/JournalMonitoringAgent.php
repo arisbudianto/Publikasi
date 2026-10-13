@@ -16,7 +16,7 @@ class JournalMonitoringAgent
         }
         $sources = DB::table('m19_sources')->where('enabled', true)
             ->where(fn ($q) => $q->whereNull('next_check_at')->orWhere('next_check_at', '<=', now()))
-            ->orderBy('next_check_at')->limit((int) config('m19.weekly_limit'))->get();
+            ->orderBy('next_check_at')->limit((int) config('m19.batch_limit'))->get();
         $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0];
         foreach ($sources as $source) {
             // A due source is claimed before network I/O. Repeated scheduler runs cannot fetch it again this week.
