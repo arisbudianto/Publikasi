@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AuthorshipController;
 use App\Http\Controllers\CatalogController as C;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\CurationController;
@@ -23,6 +24,8 @@ Route::get('/cocokkan-ai', [SemanticController::class, 'form'])->name('semantic.
 Route::post('/cocokkan-ai', [SemanticController::class, 'match'])->middleware('throttle:5,1')->name('semantic.run');
 Route::get('/cek-referensi', [ReferenceCheckController::class, 'index'])->name('references.form');
 Route::post('/cek-referensi/periksa-satu', [ReferenceCheckController::class, 'lookup'])->middleware('throttle:120,1')->name('references.lookup');
+Route::get('/periksa/authorship', [AuthorshipController::class, 'index'])->name('authorship.form');
+Route::post('/periksa/authorship', [AuthorshipController::class, 'analyze'])->middleware('throttle:20,1')->name('authorship.analyze');
 Route::get('/cocokkan', [MatchController::class, 'form'])->name('match.form');
 Route::post('/cocokkan', [MatchController::class, 'match'])->middleware('throttle:20,1')->name('match.run');
 Route::get('/', [JournalSourceController::class, 'index'])->name('sources.home');
