@@ -1,6 +1,6 @@
 # M19: agen pemantauan halaman jurnal
 
-M19 membaca URL HTTPS yang didaftarkan admin pada domain yang sama persis dengan situs resmi jurnal terkurasi. Sumber baru dijeda. Admin mengaktifkannya satu per satu. `M19_ENABLED=false` adalah pengaman global. Satu jadwal Laravel mingguan memakai cron `schedule:run` yang sudah ada, tanpa cron tambahan. Maksimal lima sumber jatuh tempo diproses per eksekusi; sumber yang selesai maupun gagal dijadwalkan ulang seminggu kemudian.
+M19 membaca URL HTTPS yang didaftarkan admin pada domain yang sama persis dengan situs resmi jurnal terkurasi. Sumber baru dijeda. Admin mengaktifkannya satu per satu. `M19_ENABLED=false` adalah pengaman global. Satu jadwal Laravel harian pukul 03.00 UTC (10.00 WIB) memakai cron `schedule:run` yang sudah ada, tanpa cron tambahan. Maksimal lima sumber jatuh tempo diproses per eksekusi; sumber yang selesai maupun gagal dijadwalkan ulang seminggu kemudian. Karena pemeriksaan jatuh tempo dilakukan harian, satu sumber diperiksa sekitar sekali seminggu.
 
 ## Alur
 

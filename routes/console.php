@@ -21,7 +21,7 @@ Artisan::command('m19:tick', function (JournalMonitoringAgent $agent) {
     $this->line(json_encode($agent->tick()));
 })->purpose('Periksa halaman jurnal yang disetujui dan catat kandidat perubahan');
 
-Schedule::command('m19:tick')->weekly()->withoutOverlapping(30);
+Schedule::command('m19:tick')->dailyAt('03:00')->withoutOverlapping(30);
 
 Artisan::command('publikasi:admin {email}', function () {
     $email = $this->argument('email');
