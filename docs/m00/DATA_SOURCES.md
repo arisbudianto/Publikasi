@@ -27,6 +27,9 @@ Identitas jurnal dicocokkan melalui ISSN, penerbit dan URL resmi; jangan hanya n
 - OpenAlex: https://help.openalex.org/
   Dokumentasi membedakan data, API, serta access/pricing. Harga, key, kuota dan ketentuan bulk belum diperiksa; jangan menjanjikan integrasi gratis tanpa batas.
 
+## M13 pemeriksaan referensi
+M13 menggunakan Crossref REST API untuk mencari metadata bibliografi dan relasi pembaruan artikel. Referensi tanpa DOI hanya menghasilkan kandidat, bukan verifikasi kepastian. API dapat diakses tanpa kunci; referensi dikirim ke layanan Crossref setelah persetujuan eksplisit. Teks sitasi dan kueri tidak disimpan aplikasi. Cache hanya memuat metadata DOI publik yang diperlukan dan tidak memuat abstrak. Detail implementasi dan batasan: `docs/m13/README.md`.
+
 ## Target verifikasi lanjutan
 - https://www.scopus.com/sources
 - https://mjl.clarivate.com/
