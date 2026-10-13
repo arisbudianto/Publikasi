@@ -22,6 +22,7 @@
             <a class="sidebar-link {{ request()->routeIs('catalog.no-apc') ? 'is-active' : '' }}" href="{{ route('catalog.no-apc') }}" @if(request()->routeIs('catalog.no-apc')) aria-current="page" @endif>Jurnal tanpa APC</a>
 
             <a class="sidebar-link {{ request()->routeIs('guides.*') ? 'is-active' : '' }}" href="{{ route('guides.index') }}">Panduan publikasi</a>
+            <a class="sidebar-link {{ request()->routeIs('assistant.*') ? 'is-active' : '' }}" href="{{ route('assistant.index') }}">Tanya publikasi</a>
             <p class="nav-section">ALAT BANTU</p>
             <a class="sidebar-link {{ request()->routeIs('integrity.*') ? 'is-active' : '' }}" href="{{ route('integrity.form') }}" @if(request()->routeIs('integrity.*')) aria-current="page" @endif>Periksa jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('references.*') ? 'is-active' : '' }}" href="{{ route('references.form') }}" @if(request()->routeIs('references.*')) aria-current="page" @endif>Periksa referensi</a>
