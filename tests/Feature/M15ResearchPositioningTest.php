@@ -76,7 +76,9 @@ class M15ResearchPositioningTest extends TestCase
 
         Http::assertSent(fn ($request) => str_contains($request->url(), 'api.openalex.org/works')
             && ! str_contains($request->url(), 'test-openalex-key')
-            && $request->hasHeader('Authorization', 'Bearer test-openalex-key'));
+            && $request->hasHeader('Authorization', 'Bearer test-openalex-key')
+            && str_contains(urldecode($request->url()), ' OR ')
+            && ! str_contains(urldecode($request->url()), 'Pretest'));
         $this->assertDatabaseHas('m15_ai_usage', ['analysis_count' => 1, 'openalex_requests' => 1, 'request_count' => 2]);
         $this->assertDatabaseCount('match_histories', 0);
     }
@@ -126,7 +128,9 @@ class M15ResearchPositioningTest extends TestCase
             'translated_query' => 'Edited English query with corrected terms and methods.',
             'consent' => '1',
         ])->assertOk()->assertSee('Related English publication');
-        Http::assertSent(fn ($request) => str_contains(urldecode($request->url()), 'Edited English query with corrected terms and methods'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'api.openalex.org/works')
+            && str_contains(urldecode($request->url()), 'edited OR english')
+            && ! str_contains(urldecode($request->url()), 'corrected terms and methods'));
         $this->assertDatabaseHas('m15_ai_usage', ['analysis_count' => 1, 'request_count' => 3]);
         $this->assertNull(session('_old_input'));
     }
@@ -143,6 +147,20 @@ class M15ResearchPositioningTest extends TestCase
             ->assertSee('variabel atau metode');
 
         Http::assertNotSent(fn ($request) => str_contains($request->url(), '/chat/completions'));
+    }
+
+    public function test_empty_search_preserves_title_and_timestamp_without_claiming_fallback_analysis(): void
+    {
+        Http::fake(['https://api.openalex.org/works*' => Http::response(['meta' => ['cost_usd' => 0.001], 'results' => []])]);
+
+        $this->actingAs(User::factory()->create())
+            ->post('/posisi-riset/siapkan', $this->input())
+            ->assertOk()
+            ->assertSee('Posisi riset: Digital scaffolding for vocational reading')
+            ->assertSee('TANPA KANDIDAT')
+            ->assertSee('0 kandidat dari OpenAlex, dianalisis 20');
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'ai.dinoiki.com'));
     }
 
     public function test_opt_in_history_saves_result_metadata_but_never_the_abstract(): void
