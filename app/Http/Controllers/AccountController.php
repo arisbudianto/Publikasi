@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Journal;
 use App\Models\JournalIntegrityAssessment;
 use App\Models\MatchHistory;
+use App\Models\M16Finding;
+use App\Models\M16Topic;
 use App\Models\PersonalShortlist;
 use App\Models\SubmissionChecklist;
 use App\Models\User;
@@ -19,6 +21,7 @@ class AccountController extends Controller
     private function page(string $view, array $data = [], int $status = 200)
     {
         if ($view === 'account.index') {
+            $data['monitorUnread'] = M16Finding::whereIn('topic_id', M16Topic::where('user_id', auth()->id())->select('id'))->whereNull('read_at')->count();
             $data['checklists'] = SubmissionChecklist::with('journal')->where('user_id', auth()->id())->latest()->paginate(10, ['*'], 'checklist_page');
             $data['integrityAssessments'] ??= JournalIntegrityAssessment::with('journal')->where('user_id', auth()->id())->latest()->paginate(10, ['*'], 'integrity_page');
         }

@@ -6,7 +6,15 @@ use App\Services\OperationalHealth;
 use App\Services\ScopusDiscontinuedDataset;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
+use App\Services\TopicMonitoring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+
+Artisan::command('m16:tick', function (TopicMonitoring $monitor) {
+    $this->line(json_encode($monitor->tick()));
+})->purpose('Catat heartbeat cron dan periksa topik yang jatuh tempo dengan kuota');
+
+Schedule::command('m16:tick')->everyFifteenMinutes()->withoutOverlapping(10);
 
 Artisan::command('publikasi:admin {email}', function () {
     $email = $this->argument('email');
