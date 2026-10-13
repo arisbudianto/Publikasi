@@ -51,4 +51,26 @@ class M17PublicationAssistantTest extends TestCase
         $this->post('/asisten', ['question' => 'Pertanyaan tentang topik yang tak tersedia'])->assertOk()
             ->assertSee('Belum ada data katalog');
     }
+
+    public function test_explicit_issn_answers_scope_and_unknown_fee_without_unrelated_journals_or_ai(): void
+    {
+        Journal::create(['name' => 'Indonesian Journal of Applied Linguistics', 'publisher' => 'Universitas Pendidikan Indonesia',
+            'issn' => '2301-9468', 'subject' => 'Pendidikan bahasa',
+            'scope_summary' => 'Kajian linguistik terapan dan pembelajaran bahasa.',
+            'scope_source_url' => 'https://example.org/scope', 'official_url' => 'https://example.org',
+            'checked_at' => today(), 'status' => 'published']);
+        Journal::create(['name' => 'Jurnal Pendidikan Lain', 'publisher' => 'Penerbit Uji',
+            'issn' => '2088-2866', 'subject' => 'Pendidikan umum', 'scope_summary' => 'Penelitian pendidikan.',
+            'scope_source_url' => 'https://example.org/other', 'official_url' => 'https://example.org',
+            'checked_at' => today(), 'status' => 'published']);
+        $mock = Mockery::mock(DinoikiResearchAi::class);
+        $mock->shouldNotReceive('ready');
+        $mock->shouldNotReceive('answerCatalogQuestion');
+        $this->app->instance(DinoikiResearchAi::class, $mock);
+
+        $this->post('/asisten', ['question' => 'Apa cakupan jurnal ISSN 2301-9468 dan apakah biaya publikasinya diketahui?'])
+            ->assertOk()->assertSee('Kajian linguistik terapan dan pembelajaran bahasa.')
+            ->assertSee('belum tercatat dalam observasi katalog yang berlaku')
+            ->assertDontSee('Jurnal Pendidikan Lain')->assertDontSee('Jawaban belum dapat diverifikasi');
+    }
 }
