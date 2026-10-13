@@ -1,26 +1,22 @@
 # Publikasi current state
 
-PROJECT `arisbudianto/Publikasi`; default branch `main`; Laravel 13; production app `https://publikasi.speakverse.id`; cPanel source `/home/speakver/publikasi_m00_source`; app path `/home/speakver/publikasi.speakverse.id`.
+PROJECT `arisbudianto/Publikasi`; default branch `main`; Laravel 13; production `https://publikasi.speakverse.id`; source `/home/speakver/publikasi_m00_source`; runtime `/home/speakver/publikasi.speakverse.id`.
 
-## Verified production baseline
-- M14 deployed at commit `c109a944b2f9dc31464d541f7912816f6c1e941f`; current GitHub `main` matches this commit.
-- M14 backup `/home/speakver/publikasi_backups/pre-m14-20261013-075614.tar.gz`, SHA-256 `82e0bd7bcc8aed9851f7ff96f7b5860b9e612016b70d3b478e01a4aefb950a3c`.
-- `/periksa/authorship`, `authorship.js`, and both GET/POST routes were verified. POST returned HTTP 200 and the expected ICMJE result marker.
-- Existing production catalog counts remain 999 source records, 2,697 SINTA accreditation decisions, 5 curated journals, and 1 account. M14 made no database change.
+## Verified current state
+- M15 PR #10 merged as `2aed3f5d4483ea32bb113f04e4bd5696fae12b41`; runtime files compared with source PASS; config, route, and Blade caches rebuilt; application live.
+- M15 additive migration Ran [11]. `m15_ai_usage` verified: 12 columns, InnoDB, unique period index.
+- Guest `/posisi-riset` HTTP 302; `/m15.css` and `/m15-export.js` HTTP 200. M15 readiness true; limits US$5/month, 20 analyses/month, 2/account/day, 4/global/day.
+- Code backup `/home/speakver/publikasi_backups/pre-m15-code-20261013-082831.tar.gz`; SHA-256 `d4ce13871fb5af1ca9bdc7180a8cc89ba6eeb88ac8cecb42453ffc615f9bc295`.
+- DB backup `/home/speakver/publikasi_backups/pre-m15-db-20261013-083149.sql.gz`; gzip and dump checks PASS (26 tables, migrations present); SHA-256 `e85897fa824b17a67c0fef770d505675acdbfc2c5a50b68d0a49efe9214b5e90`. Restore not tested in this deployment.
+- Previous catalog counts: 999 sources, 2697 accreditation decisions, 5 curated journals, 1 account; not recounted after M15.
 
-## Current objective: M15 pilot
-- Build `/posisi-riset` for authenticated accounts: OpenAlex metadata search, optional editable Indonesian-to-English translation, semantic ranking, evidence-bound analysis, RIS/BibTeX and print-to-PDF export, opt-in account history.
-- Dinoiki pilot ceiling US$5/month and maximum 20 analyses/month; 2 per account/day and 4 global/day. Existing `DINOIKI_API_KEY` remains in production `.env`; never print or request it in chat.
-- M15 adds one aggregate usage table only. Saved history excludes the abstract. Search input is sent externally only after consent; provider retention is not audited.
-- PR #10 is open from `codex/m15-research-positioning`, based on M14 commit above; head `4cf29139f66a69454ee5460260e7ae13d20d8d3b`.
-
-## Verification
-- Source snapshot tree matches GitHub M14 tree `fc2fab76ff0fb8e604759654ee9bd518b48a2e8d`.
-- M15 focused tests: 6 tests / 42 assertions PASS. Full local suite: 109 tests / 794 assertions PASS.
-- PHP syntax, JS syntax, Pint, route cache, and Blade cache checks PASS.
-- Production M15 migration, external provider behavior, 20-case human relevance review, and cost review are not yet verified.
+## Verification and current issue
+- M15 local suite PASS: 109 tests / 794 assertions; focused tests 6 / 42; PHP/JS syntax, Pint, route/view caches PASS. GitHub Actions run 60 PHP 8.3 and 8.4 PASS.
+- Owner screenshot shows consent checkbox expanding because shared input CSS applies width 100%. Branch `codex/m15-consent-layout` explicitly sets checkbox width auto and constrains consent text.
+- CSS fix not yet deployed. Local automated browser layout check could not run because browser executable is unavailable.
+- Authenticated external OpenAlex/Dinoiki analysis, exports, optional history, human relevance review, and cost review NOT VERIFIED in production.
 
 ## Constraints and next action
-- Preserve production `.env`, catalog data, and secrets. Never run production PHPUnit or `RefreshDatabase`.
-- Before M15 deployment, create and verify a database backup. Apply the additive usage-table migration once, then deploy exact merged code, rebuild route/view caches, and smoke test authenticated M15 steps.
-- M15 is not yet merged or deployed. GitHub Actions run 59 is in progress; after it passes, merge PR #10 and continue with the bounded cPanel backup/deployment batch.
+- Preserve production .env, catalog data, and credentials. Never run production PHPUnit, RefreshDatabase, or destructive migration rollback.
+- Use subshells for operator batches so set -e failures do not close the terminal. Match migration status by basename, not full path.
+- After CSS PR checks pass, merge and deploy only CSS plus state documentation. Verify consent layout in browser, then run one synthetic English analysis using existing account and explicit consent. Do not repeat completed migration or baseline tests without relevant changes.
