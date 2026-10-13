@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Services\CrossrefReferenceChecker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 
@@ -36,15 +35,14 @@ class ReferenceCheckController extends Controller
         $userLimit = max(1, (int) config('references.user_daily_limit', 200));
         $globalLimit = max(1, (int) config('references.global_daily_limit', 1000));
 
-        $globalCount = (int) Cache::get($globalKey, 0);
         if (RateLimiter::tooManyAttempts($userKey, $userLimit)
-            || $globalCount >= $globalLimit) {
+            || RateLimiter::tooManyAttempts($globalKey, $globalLimit)) {
             return response()->json(['message' => 'Batas pemeriksaan sementara tercapai. Coba lagi nanti.'], 429)
                 ->header('Cache-Control', 'no-store, private');
         }
 
         RateLimiter::hit($userKey, now()->endOfDay()->diffInSeconds(now()));
-        Cache::put($globalKey, $globalCount + 1, now()->endOfDay());
+        RateLimiter::hit($globalKey, now()->endOfDay()->diffInSeconds(now()));
 
         $result = $checker->check($validator->validated()['reference']);
 
