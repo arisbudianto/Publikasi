@@ -17,6 +17,7 @@ use App\Http\Controllers\ResearchPositioningController;
 use App\Http\Controllers\SemanticController;
 use App\Http\Controllers\StructuredObservationImportController;
 use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\TopicMonitoringController;
 use App\Http\Middleware\RequireAccount;
 use App\Http\Middleware\RequireAdmin;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,15 @@ Route::middleware(RequireAccount::class)->prefix('posisi-riset')->name('research
     Route::get('/', [ResearchPositioningController::class, 'index'])->name('form');
     Route::post('/siapkan', [ResearchPositioningController::class, 'prepare'])->middleware('throttle:4,1')->name('prepare');
     Route::post('/analisis', [ResearchPositioningController::class, 'analyze'])->middleware('throttle:4,1')->name('analyze');
+});
+Route::middleware(RequireAccount::class)->prefix('akun/pantauan')->name('monitor.')->group(function () {
+    Route::get('/', [TopicMonitoringController::class, 'index'])->name('index');
+    Route::post('/', [TopicMonitoringController::class, 'store'])->middleware('throttle:3,1')->name('store');
+    Route::get('/{topic}', [TopicMonitoringController::class, 'show'])->whereNumber('topic')->name('show');
+    Route::get('/{topic}/versi', [TopicMonitoringController::class, 'edit'])->whereNumber('topic')->name('edit');
+    Route::post('/{topic}/versi', [TopicMonitoringController::class, 'revise'])->middleware('throttle:3,1')->whereNumber('topic')->name('revise');
+    Route::post('/{topic}/temuan/{finding}/baca', [TopicMonitoringController::class, 'read'])->whereNumber('topic')->whereNumber('finding')->name('read');
+    Route::delete('/{topic}', [TopicMonitoringController::class, 'destroy'])->whereNumber('topic')->name('destroy');
 });
 Route::get('/cocokkan', [MatchController::class, 'form'])->name('match.form');
 Route::post('/cocokkan', [MatchController::class, 'match'])->middleware('throttle:20,1')->name('match.run');

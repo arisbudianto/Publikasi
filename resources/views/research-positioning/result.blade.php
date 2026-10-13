@@ -70,6 +70,7 @@
 
     <div class="m15-note m15-limitations"><strong>Batas cakupan</strong><p>Pencarian ini hanya mencakup metadata yang tersedia di OpenAlex. Abstrak mungkin tidak ada atau tidak lengkap. Kandidat bukan seluruh literatur dan bukan bukti bahwa penelitian lain tidak ada. Buka sumber asli sebelum menyimpulkan.</p></div>
     <p class="m15-next"><a class="button" href="{{ route('research-positioning.form') }}">Periksa ide lain</a></p>
+    <p><a href="{{ route('monitor.index') }}">Pantau publikasi baru untuk topik ini</a>. Pantauan memerlukan persetujuan terpisah dan ringkasan ide yang Anda isi ulang.</p>
     @if(!empty($inputAbstract))
         <form class="m15-forward" method="post" action="{{ route('semantic.run') }}">
             @csrf

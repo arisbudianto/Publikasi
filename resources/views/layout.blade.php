@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title','Publikasi') · Katalog jurnal pendidikan</title>
     <link rel="stylesheet" href="{{ asset('catalog.css') }}?v={{ filemtime(public_path('catalog.css')) }}">
-    @if(request()->routeIs('research-positioning.*'))<link rel="stylesheet" href="{{ asset('m15.css') }}?v={{ filemtime(public_path('m15.css')) }}">@endif
+    @if(request()->routeIs('research-positioning.*') || request()->routeIs('monitor.*'))<link rel="stylesheet" href="{{ asset('m15.css') }}?v={{ filemtime(public_path('m15.css')) }}">@endif
 </head>
 <body>
 <div class="app-shell">
