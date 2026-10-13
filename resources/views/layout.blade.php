@@ -21,6 +21,7 @@
             <a class="sidebar-link {{ request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare') ? 'is-active' : '' }}" href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare')) aria-current="page" @endif>Katalog terkurasi</a>
             <a class="sidebar-link {{ request()->routeIs('catalog.no-apc') ? 'is-active' : '' }}" href="{{ route('catalog.no-apc') }}" @if(request()->routeIs('catalog.no-apc')) aria-current="page" @endif>Jurnal tanpa APC</a>
 
+            <a class="sidebar-link {{ request()->routeIs('guides.*') ? 'is-active' : '' }}" href="{{ route('guides.index') }}">Panduan publikasi</a>
             <p class="nav-section">ALAT BANTU</p>
             <a class="sidebar-link {{ request()->routeIs('integrity.*') ? 'is-active' : '' }}" href="{{ route('integrity.form') }}" @if(request()->routeIs('integrity.*')) aria-current="page" @endif>Periksa jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('references.*') ? 'is-active' : '' }}" href="{{ route('references.form') }}" @if(request()->routeIs('references.*')) aria-current="page" @endif>Periksa referensi</a>
@@ -31,6 +32,7 @@
             <p class="nav-section">AKUN</p>
             @auth
                 <a class="sidebar-link {{ request()->routeIs('account.index') ? 'is-active' : '' }}" href="{{ route('account.index') }}" @if(request()->routeIs('account.index')) aria-current="page" @endif>Akun saya</a>
+                <a class="sidebar-link {{ request()->routeIs('proposals.*') ? 'is-active' : '' }}" href="{{ route('proposals.mine') }}">Usulan saya</a>
                 @if(auth()->user()->is_admin)
                     <a class="sidebar-link {{ request()->routeIs('admin.*') ? 'is-active' : '' }}" href="{{ route('admin.index') }}" @if(request()->routeIs('admin.*')) aria-current="page" @endif>Kelola katalog</a>
                     <form method="post" action="{{ route('admin.logout') }}">@csrf<button class="sidebar-link sidebar-action" type="submit">Keluar</button></form>

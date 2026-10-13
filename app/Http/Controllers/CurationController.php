@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Journal;
+use App\Models\M18Proposal;
 use App\Services\ObservationReview;
 use App\Services\StructuredObservation;
 use Illuminate\Http\Request;
@@ -26,12 +27,18 @@ class CurationController extends Controller
         return response()->view('admin.curation', ['journals' => $journals, 'filter' => $filter])->header('Cache-Control', 'no-store, private');
     }
 
-    public function show(Journal $journal)
+    public function show(Request $request, Journal $journal)
     {
         $observations = $journal->allObservations()->orderByDesc('id')->paginate(20)->withQueryString();
         $audits = DB::table('catalog_audits')->where('journal_id', $journal->id)->orderByDesc('id')->limit(30)->get();
+        $proposal = null;
+        if ($request->query('proposal_id')) {
+            $proposal = M18Proposal::whereKey($request->integer('proposal_id'))
+                ->where('journal_id', $journal->id)->where('status', 'reviewed')->firstOrFail();
+            abort_unless(in_array($proposal->field, ProposalController::OBSERVATION_FIELDS, true), 404);
+        }
 
-        return response()->view('admin.review', compact('journal', 'audits', 'observations'))->header('Cache-Control', 'no-store, private');
+        return response()->view('admin.review', compact('journal', 'audits', 'observations', 'proposal'))->header('Cache-Control', 'no-store, private');
     }
 
     public function publish(Request $r, Journal $journal, ObservationReview $service)
@@ -39,7 +46,22 @@ class CurationController extends Controller
         $data = validator(StructuredObservation::normalize($r->all()), StructuredObservation::rules())->validate();
         unset($data['confirmed']);
         $data['label'] = trim($data['label']);
-        $service->publish($journal, $data, $r->user()->id);
+        $proposalId = $r->validate(['proposal_id' => 'nullable|integer|exists:m18_proposals,id'])['proposal_id'] ?? null;
+        DB::transaction(function () use ($journal, $data, $r, $service, $proposalId) {
+            $proposal = $proposalId ? M18Proposal::whereKey($proposalId)->lockForUpdate()->firstOrFail() : null;
+            if ($proposal) {
+                abort_unless($proposal->journal_id === $journal->id && $proposal->status === 'reviewed'
+                    && $proposal->field === $data['kind'], 422);
+            }
+            $observation = $service->publish($journal, $data, $r->user()->id);
+            if ($proposal) {
+                $proposal->update(['status' => 'applied', 'reviewed_by' => $r->user()->id,
+                    'applied_observation_id' => $observation->id]);
+                $proposal->events()->create(['actor_id' => $r->user()->id, 'from_status' => 'reviewed',
+                    'to_status' => 'applied', 'note' => 'Observasi '.$observation->id.' diterbitkan setelah pemeriksaan admin.',
+                    'created_at' => now()]);
+            }
+        });
 
         return back()->with('success', 'Observasi baru diterbitkan. Versi sebelumnya tetap tersimpan.');
     }
