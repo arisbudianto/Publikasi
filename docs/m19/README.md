@@ -19,6 +19,12 @@ Kandidat tidak berarti klaim sudah terverifikasi. Angka penerimaan adalah klaim 
 - Periksa `m19_runs` berkala: `error_code` berisi kode ringkas, bukan isi respons. Nonaktifkan sumber lewat UI atau set `M19_ENABLED=false` untuk berhenti. Jangan tambah cron kedua.
 - Rollback kode dengan release sebelumnya; tabel dan bukti yang sudah terkumpul boleh tetap ada. Jangan rollback migrasi pada database produksi jika data M19 sudah terisi.
 
+## Ekstraksi AI (opsional)
+
+Migrasi `2026_10_13_000006_add_m19_ai_status.php` menambah penanda hasil AI pada setiap pemeriksaan. Setelah migrasi, `M19_AI_ENABLED=true` mengaktifkan AI untuk halaman yang berubah jika kunci penyedia M15 tersedia. Model dan harga mengikuti konfigurasi M15; setiap panggilan harus melewati anggaran bersama `M15Budget` (batas keseluruhan tetap `M15_MONTHLY_BUDGET_USD`). `M19_AI_MONTHLY_LIMIT=10` membatasi pemeriksaan AI per bulan, dan batas ini dapat diturunkan dalam `.env`. Jangan aktifkan AI jika anggaran M15 dibutuhkan sepenuhnya untuk analisis posisi riset.
+
+AI menerima paling banyak 12.000 karakter teks paragraf halaman resmi yang sudah diambil lewat pemfetch aman M19. Hanya kutipan yang benar-benar terdapat dalam paragraf yang dikirim dan memenuhi syarat bidang yang disimpan, maksimal tiga kandidat per pemeriksaan bersama hasil aturan biasa. Jawaban kosong atau kegagalan AI tidak menghalangi pemeriksaan berdasarkan aturan. Semua kandidat tetap berstatus menunggu dan tidak mengubah katalog. `ai_status` pada `m19_runs` berisi `completed`, `failed`, atau `NULL` jika AI tidak dicoba. Matikan AI seketika dengan `M19_AI_ENABLED=false` lalu `php artisan config:cache`; tidak diperlukan cron baru.
+
 ## Batasan tahap pertama
 
 HTML saja, tanpa PDF/JavaScript/OAI. Pemeriksaan `robots.txt` konservatif dan permintaan jaringan memakai cURL dengan IP publik yang dipastikan saat koneksi, HTTPS dan sertifikat TLS bawaan, tanpa pengalihan, maksimal 256 KiB/halaman, timeout 15 detik. Tidak ada penyimpanan HTML penuh; hash dan kutipan singkat tersimpan sebagai bukti yang perlu diverifikasi kembali oleh admin. Parser berbasis aturan sengaja hanya menghasilkan kandidat yang jelas; beberapa pernyataan tidak akan ditemukan. Pelacakan ETag, snapshot halaman, adaptor OJS, dan ekstraksi AI berbatas biaya merupakan tahap berikutnya setelah mutu pilot diukur.
