@@ -36,41 +36,50 @@ class JournalAiExtractor
             ['role' => 'user', 'content' => json_encode(['field' => $field, 'page_text' => $text], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)],
         ];
         $inputEstimate = (int) ceil(mb_strlen(json_encode($messages) ?: '') / 3.5);
-        $maxTokens = (int) config('m19.ai_max_completion_tokens', 500);
+        $maxTokens = (int) config('m19.ai_max_completion_tokens', 2000);
         $inputPrice = (float) config('m15.input_price_per_million');
         $outputPrice = (float) config('m15.output_price_per_million');
-        $reservation = $this->budget->reserve(max(0.01, (($inputEstimate * $inputPrice + $maxTokens * $outputPrice) / 1000000) * 4));
-        try {
-            $response = Http::withToken(config('semantic.key'))->acceptJson()->connectTimeout(5)->timeout(30)
-                ->withOptions(['allow_redirects' => false])->post(config('m15.chat_endpoint'), [
-                    'model' => config('m15.chat_model'), 'messages' => $messages,
-                    'max_completion_tokens' => $maxTokens, 'response_format' => ['type' => 'json_object'],
-                    'store' => false,
-                ]);
-            $payload = $response->json();
-            $usage = is_array($payload['usage'] ?? null) ? $payload['usage'] : [];
-            $hasUsage = is_numeric($usage['prompt_tokens'] ?? null) && is_numeric($usage['completion_tokens'] ?? null);
-            if ($response->successful()) {
-                $actual = $hasUsage ? (((int) $usage['prompt_tokens'] * $inputPrice + (int) $usage['completion_tokens'] * $outputPrice) / 1000000) : $reservation;
-                $this->budget->settle($reservation, (int) ($usage['prompt_tokens'] ?? $inputEstimate),
-                    (int) ($usage['completion_tokens'] ?? 0), $actual);
-                $reservation = 0;
-            }
-            $content = $payload['choices'][0]['message']['content'] ?? null;
-            if (! $response->successful() || ! is_string($content)) {
-                throw new RuntimeException('ai_response_unavailable');
-            }
-            $decoded = json_decode($content, true);
-            if (! is_array($decoded) || ! is_array($decoded['quotes'] ?? null)) {
-                throw new RuntimeException('ai_response_invalid');
-            }
-
-            return $this->verifiedQuotes($decoded['quotes'], $lines, $text, $field);
-        } finally {
-            if ($reservation > 0) {
-                $this->budget->release($reservation);
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $reservation = $this->budget->reserve(max(0.01, (($inputEstimate * $inputPrice + $maxTokens * $outputPrice) / 1000000) * 4));
+            try {
+                $requestMessages = $messages;
+                if ($attempt === 1) {
+                    $requestMessages[0]['content'] .= ' The complete response must be a JSON object with a quotes array; use {"quotes":[]} if there is no evidence.';
+                }
+                $response = Http::withToken(config('semantic.key'))->acceptJson()->connectTimeout(5)->timeout(30)
+                    ->withOptions(['allow_redirects' => false])->post(config('m15.chat_endpoint'), [
+                        'model' => config('m15.chat_model'), 'messages' => $requestMessages,
+                        'max_completion_tokens' => $maxTokens, 'response_format' => ['type' => 'json_object'],
+                        'store' => false,
+                    ]);
+                $payload = $response->json();
+                $usage = is_array($payload['usage'] ?? null) ? $payload['usage'] : [];
+                $hasUsage = is_numeric($usage['prompt_tokens'] ?? null) && is_numeric($usage['completion_tokens'] ?? null);
+                if ($response->successful()) {
+                    $actual = $hasUsage ? (((int) $usage['prompt_tokens'] * $inputPrice + (int) $usage['completion_tokens'] * $outputPrice) / 1000000) : $reservation;
+                    $this->budget->settle($reservation, (int) ($usage['prompt_tokens'] ?? $inputEstimate),
+                        (int) ($usage['completion_tokens'] ?? 0), $actual);
+                    $reservation = 0;
+                }
+                if (! $response->successful()) {
+                    throw new RuntimeException('ai_response_unavailable');
+                }
+                $content = $payload['choices'][0]['message']['content'] ?? null;
+                $decoded = is_string($content) ? json_decode($content, true) : null;
+                if (is_array($decoded) && is_array($decoded['quotes'] ?? null)) {
+                    return $this->verifiedQuotes($decoded['quotes'], $lines, $text, $field);
+                }
+                if ($attempt === 1) {
+                    throw new RuntimeException('ai_response_invalid');
+                }
+            } finally {
+                if ($reservation > 0) {
+                    $this->budget->release($reservation);
+                }
             }
         }
+
+        return [];
     }
 
     private function pageLines(string $html): array
@@ -112,7 +121,8 @@ class JournalAiExtractor
             }
             $valid = match ($field) {
                 'scope' => (bool) preg_match('/\b(?:journal|jurnal|research|penelitian|publishes|menerbitkan|scope|cakupan)\b/iu', $quote),
-                'fee' => (bool) preg_match('/\b(?:fee|charge|apc|biaya|gratis|free of charge)\b/iu', $quote),
+                'fee' => (bool) (preg_match('/\b(?:fee|charge|apc|biaya|gratis|free of charge)\b/iu', $quote)
+                    && preg_match('/\b(?:free|gratis|waived|no (?:publication |submission )?fee|tanpa biaya|\d[\d.,]*\s*(?:idr|usd|eur)|(?:rp|idr|usd|eur)\s*\d[\d.,]*)\b/iu', $quote)),
                 'time' => (bool) (preg_match('/\b(?:review|decision|peninjauan|terbit|publish)\b/iu', $quote) && preg_match('/\b\d+\s*(?:days?|weeks?|months?|hari|minggu|bulan)\b/iu', $quote)),
                 'acceptance' => (bool) (preg_match('/\b(?:acceptance|rejection|penerimaan|penolakan)\b/iu', $quote) && preg_match('/\d+(?:[.,]\d+)?\s*%/', $quote)),
             };

@@ -69,6 +69,8 @@ class M19JournalAgentTest extends TestCase
         $this->assertSame(1, app(JournalMonitoringAgent::class)->tick()['changed']);
         $this->assertDatabaseCount('m19_candidates', 1);
         $this->assertDatabaseCount('journal_observations', 0);
+        $this->assertSame(now()->startOfMonth()->addMonth()->setTime(3, 0)->toDateTimeString(),
+            DB::table('m19_sources')->where('id', $source)->value('next_check_at'));
         $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['checked']);
         DB::table('m19_sources')->where('id', $source)->update(['next_check_at' => now()->subMinute()]);
         $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['changed']);
@@ -123,6 +125,23 @@ class M19JournalAgentTest extends TestCase
             'status' => 'changed', 'ai_status' => 'failed', 'created_at' => now()]);
         $this->assertFalse(app(JournalAiExtractor::class)->ready());
         Http::assertSentCount(1);
+    }
+
+    public function test_ai_retries_one_invalid_response_and_bills_both_requests(): void
+    {
+        config(['m19.ai_enabled' => true, 'semantic.enabled' => true, 'semantic.key' => 'test-key',
+            'm15.enabled' => true, 'm19.ai_max_completion_tokens' => 2000]);
+        Http::fake(['*' => Http::sequence()
+            ->push(['choices' => [['message' => ['content' => '{"unexpected":true}']]],
+                'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 20]], 200)
+            ->push(['choices' => [['message' => ['content' => '{"quotes":["Publication fee is 500 USD per article, payable after acceptance."]}']]],
+                'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 40]], 200)]);
+
+        $quotes = app(JournalAiExtractor::class)->extract('<html><body><p>Publication fee is 500 USD per article, payable after acceptance.</p></body></html>', 'fee');
+
+        $this->assertSame(['Publication fee is 500 USD per article, payable after acceptance.'], $quotes);
+        Http::assertSentCount(2);
+        $this->assertSame(2, DB::table('m15_ai_usage')->sum('request_count'));
     }
 
     public function test_ai_failure_preserves_rule_based_candidate(): void
