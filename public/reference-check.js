@@ -63,6 +63,7 @@
         tr.append(metadataCell);
         const differenceCell = document.createElement('td');
         (item.result.differences || []).forEach((text) => differenceCell.append(el('p', text)));
+        if (item.result.failure_reason) differenceCell.append(el('p', item.result.failure_reason));
         (item.result.updates || []).forEach((update) => {
             const link = el('a', `${update.label} (${update.source})`); link.href = update.notice_url; link.target = '_blank'; link.rel = 'noopener noreferrer'; differenceCell.append(link);
         });
@@ -114,9 +115,12 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
                     body: JSON.stringify({ reference: references[i], consent: true }),
                 });
-                result = response.ok ? await response.json() : { match_status: 'unavailable', metadata: null, differences: [], updates: [], update_status: null };
+                result = response.ok ? await response.json() : {
+                    match_status: 'unavailable', metadata: null, differences: [], updates: [], update_status: null,
+                    failure_reason: response.status === 429 ? 'Batas pemeriksaan tercapai. Tunggu sebelum mencoba lagi.' : 'Crossref atau layanan pemeriksaan tidak merespons.',
+                };
             } catch (_) {
-                result = { match_status: 'unavailable', metadata: null, differences: [], updates: [], update_status: null };
+                result = { match_status: 'unavailable', metadata: null, differences: [], updates: [], update_status: null, failure_reason: 'Crossref atau layanan pemeriksaan tidak merespons.' };
             }
             const item = { reference: references[i], result }; checked.push(item); rows.append(renderRow(item, i)); succeeded += result.match_status === 'unavailable' ? 0 : 1;
             summary.textContent = `${succeeded} dari ${references.length} berhasil diperiksa; ${references.length - succeeded} gagal dihubungi.`;
