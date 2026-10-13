@@ -39,4 +39,9 @@ return [
         'mailto' => env('CROSSREF_MAILTO', env('MAIL_FROM_ADDRESS', '')),
     ],
 
+    'openalex' => [
+        'key' => env('OPENALEX_API_KEY'),
+        'mailto' => env('OPENALEX_MAILTO', env('MAIL_FROM_ADDRESS', '')),
+    ],
+
 ];
