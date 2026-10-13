@@ -12,7 +12,7 @@ PROJECT `arisbudianto/Publikasi`; default branch `main`; Laravel 13; production 
 - Build `/posisi-riset` for authenticated accounts: OpenAlex metadata search, optional editable Indonesian-to-English translation, semantic ranking, evidence-bound analysis, RIS/BibTeX and print-to-PDF export, opt-in account history.
 - Dinoiki pilot ceiling US$5/month and maximum 20 analyses/month; 2 per account/day and 4 global/day. Existing `DINOIKI_API_KEY` remains in production `.env`; never print or request it in chat.
 - M15 adds one aggregate usage table only. Saved history excludes the abstract. Search input is sent externally only after consent; provider retention is not audited.
-- Working branch planned: `codex/m15-research-positioning`, based on M14 commit above.
+- PR #10 is open from `codex/m15-research-positioning`, based on M14 commit above; head `4cf29139f66a69454ee5460260e7ae13d20d8d3b`.
 
 ## Verification
 - Source snapshot tree matches GitHub M14 tree `fc2fab76ff0fb8e604759654ee9bd518b48a2e8d`.
@@ -23,4 +23,4 @@ PROJECT `arisbudianto/Publikasi`; default branch `main`; Laravel 13; production 
 ## Constraints and next action
 - Preserve production `.env`, catalog data, and secrets. Never run production PHPUnit or `RefreshDatabase`.
 - Before M15 deployment, create and verify a database backup. Apply the additive usage-table migration once, then deploy exact merged code, rebuild route/view caches, and smoke test authenticated M15 steps.
-- M15 is not yet merged or deployed. After the PR check passes, merge it and continue with the bounded cPanel backup/deployment batch.
+- M15 is not yet merged or deployed. GitHub Actions run 59 is in progress; after it passes, merge PR #10 and continue with the bounded cPanel backup/deployment batch.
