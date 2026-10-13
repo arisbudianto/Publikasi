@@ -156,7 +156,6 @@ class DinoikiResearchAi
                 'model' => config('m15.chat_model'),
                 'messages' => $messages,
                 'max_completion_tokens' => $maxTokens,
-                'temperature' => 0,
                 'store' => false,
             ];
             if ($json) {

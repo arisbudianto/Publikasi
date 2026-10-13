@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MatchHistory;
 use App\Models\User;
+use App\Services\DinoikiResearchAi;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -157,6 +158,42 @@ class M15ResearchPositioningTest extends TestCase
         $saved = json_encode(MatchHistory::where('user_id', $user->id)->first()->candidates, JSON_UNESCAPED_UNICODE);
         $this->assertStringNotContainsString($abstract, $saved);
         $this->actingAs($user)->get('/akun')->assertOk()->assertSee('Posisi riset M15');
+    }
+
+    public function test_chat_omits_temperature_rejected_by_the_provider(): void
+    {
+        Http::fake([
+            'https://ai.dinoiki.com/v1/chat/completions' => function ($request) {
+                if (array_key_exists('temperature', $request->data())) {
+                    return Http::response(['error' => ['code' => 'unsupported_value', 'param' => 'temperature']], 400);
+                }
+
+                return Http::response([
+                    'choices' => [['message' => ['content' => 'Translated academic research idea.']]],
+                    'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 8],
+                ]);
+            },
+        ]);
+
+        $this->assertSame('Translated academic research idea.', app(DinoikiResearchAi::class)->translate('Ide riset untuk diterjemahkan.'));
+        Http::assertSent(fn ($request) => ! array_key_exists('temperature', $request->data()) && $request['store'] === false);
+        $this->assertDatabaseHas('m15_ai_usage', ['request_count' => 1, 'reserved_usd' => 0]);
+    }
+
+    public function test_provider_failure_keeps_active_pilot_form_available(): void
+    {
+        Http::fake(['https://ai.dinoiki.com/v1/chat/completions' => Http::response(['error' => ['code' => 'unavailable']], 503)]);
+
+        $this->actingAs(User::factory()->create())
+            ->post('/posisi-riset/siapkan', $this->input(['language' => 'id']))
+            ->assertStatus(503)
+            ->assertSee('Layanan analisis sedang tidak tersedia.')
+            ->assertSee('Judul ide riset')
+            ->assertSee('Digital scaffolding for vocational reading')
+            ->assertDontSee('Pilot belum aktif.');
+
+        $this->assertNull(session('_old_input'));
+        $this->assertDatabaseHas('m15_ai_usage', ['reserved_usd' => 0]);
     }
 
     private function input(array $overrides = []): array
