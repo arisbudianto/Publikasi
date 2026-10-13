@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'crossref' => [
+        'mailto' => env('CROSSREF_MAILTO', env('MAIL_FROM_ADDRESS', '')),
+    ],
+
 ];

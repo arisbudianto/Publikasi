@@ -11,6 +11,7 @@ use App\Http\Controllers\JournalSourceController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReferenceCheckController;
 use App\Http\Controllers\SemanticController;
 use App\Http\Controllers\StructuredObservationImportController;
 use App\Http\Controllers\SubmissionController;
@@ -20,6 +21,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/cocokkan-ai', [SemanticController::class, 'form'])->name('semantic.form');
 Route::post('/cocokkan-ai', [SemanticController::class, 'match'])->middleware('throttle:5,1')->name('semantic.run');
+Route::get('/cek-referensi', [ReferenceCheckController::class, 'index'])->name('references.form');
+Route::post('/cek-referensi/periksa-satu', [ReferenceCheckController::class, 'lookup'])->middleware('throttle:120,1')->name('references.lookup');
 Route::get('/cocokkan', [MatchController::class, 'form'])->name('match.form');
 Route::post('/cocokkan', [MatchController::class, 'match'])->middleware('throttle:20,1')->name('match.run');
 Route::get('/', [JournalSourceController::class, 'index'])->name('sources.home');

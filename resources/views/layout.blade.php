@@ -22,6 +22,7 @@
 
             <p class="nav-section">ALAT BANTU</p>
             <a class="sidebar-link {{ request()->routeIs('integrity.*') ? 'is-active' : '' }}" href="{{ route('integrity.form') }}" @if(request()->routeIs('integrity.*')) aria-current="page" @endif>Periksa jurnal</a>
+            <a class="sidebar-link {{ request()->routeIs('references.*') ? 'is-active' : '' }}" href="{{ route('references.form') }}" @if(request()->routeIs('references.*')) aria-current="page" @endif>Periksa referensi</a>
             <a class="sidebar-link {{ request()->routeIs('semantic.*') ? 'is-active' : '' }}" href="{{ route('semantic.form') }}" @if(request()->routeIs('semantic.*')) aria-current="page" @endif>Pencocokan AI</a>
 
             <p class="nav-section">AKUN</p>
