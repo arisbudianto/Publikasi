@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\M16Topic;
 use App\Models\User;
+use App\Services\OpenAlexWorks;
 use App\Services\TopicMonitoring;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -54,6 +55,7 @@ class M16MonitoringTest extends TestCase
         $this->actingAs($user)->post('/akun/pantauan', $this->input())->assertRedirect();
         Http::assertSent(fn ($request) => str_contains($request->url(), 'api.openalex.org/works')
             && str_contains(urldecode($request->url()), ' OR ')
+            && str_contains(urldecode($request->url()), 'publication_year:>'.(now()->year - 2))
             && ! str_contains(urldecode($request->url()), 'outcomes for online safety'));
         $topic = M16Topic::firstOrFail();
         $this->assertNotSame(self::TITLE, \DB::table('m16_versions')->value('title_cipher'));
@@ -101,6 +103,22 @@ class M16MonitoringTest extends TestCase
         Http::fake();
         $this->post('/akun/pantauan', $this->input())->assertStatus(503)->assertSee('Batas pemeriksaan bulanan');
         Http::assertNothingSent();
+    }
+
+    public function test_openalex_inclusive_year_bounds_use_supported_inequality_syntax(): void
+    {
+        Http::fake(['https://api.openalex.org/works*' => Http::response(['meta' => ['cost_usd' => 0], 'results' => []])]);
+
+        $client = app(OpenAlexWorks::class);
+        $client->search('digital literacy', 2025);
+        $client->search('digital literacy', null, 2026);
+        $client->search('digital literacy', 2025, 2026);
+
+        Http::assertSentCount(3);
+        $requests = Http::recorded()->map(fn ($pair) => urldecode($pair[0]->url()))->values();
+        $this->assertStringContainsString('publication_year:>2024', $requests[0]);
+        $this->assertStringContainsString('publication_year:<2027', $requests[1]);
+        $this->assertStringContainsString('publication_year:2025-2026', $requests[2]);
     }
 
     private function input(): array
