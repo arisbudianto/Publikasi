@@ -15,6 +15,7 @@ use App\Http\Controllers\MatchController;
 use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\PublicationAssistantController;
 use App\Http\Controllers\ReferenceCheckController;
 use App\Http\Controllers\ResearchPositioningController;
 use App\Http\Controllers\SemanticController;
@@ -55,6 +56,8 @@ Route::post('/periksa/jurnal', [JournalIntegrityController::class, 'check'])->mi
 Route::get('/periksa/discontinued', [JournalIntegrityController::class, 'discontinued'])->name('integrity.discontinued');
 Route::get('/bandingkan', [C::class, 'compare'])->name('catalog.compare');
 Route::get('/panduan', [GuideController::class, 'index'])->name('guides.index');
+Route::get('/asisten', [PublicationAssistantController::class, 'index'])->name('assistant.index');
+Route::post('/asisten', [PublicationAssistantController::class, 'answer'])->middleware('throttle:4,1')->name('assistant.answer');
 Route::get('/panduan/{slug}', [GuideController::class, 'show'])->name('guides.show');
 Route::get('/jurnal/{journal}', [C::class, 'show'])->name('catalog.show');
 Route::middleware(RequireAccount::class)->prefix('akun/usulan')->name('proposals.')->group(function () {
