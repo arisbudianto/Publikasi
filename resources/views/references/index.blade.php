@@ -7,6 +7,7 @@
     <p class="eyebrow">ALAT BANTU</p>
     <h1>Periksa daftar referensi</h1>
     <p>Bandingkan sitasi dengan metadata publik Crossref. Hasil pencarian tanpa DOI adalah kemungkinan kecocokan dan perlu diperiksa kembali.</p>
+    <p class="reference-disclosure">Tidak ditemukan di Crossref bukan berarti referensi palsu. Buku, prosiding, atau publikasi tanpa metadata Crossref mungkin tidak muncul.</p>
 
     <form id="reference-form" class="reference-form">
         @csrf
