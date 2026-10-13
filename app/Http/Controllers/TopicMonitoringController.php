@@ -36,10 +36,22 @@ class TopicMonitoringController extends Controller
         $this->owned($request, $topic);
         $versions = $topic->versions()->orderBy('number')->get();
         $current = $versions->last();
-        $previous = $versions->count() > 1 ? $versions->get($versions->count() - 2) : null;
+        $compareOlder = $versions->count() > 1 ? $versions->get($versions->count() - 2) : null;
+        $compareNewer = $compareOlder ? $current : null;
+        if ($request->hasAny(['older', 'newer'])) {
+            $olderNumber = $request->query('older');
+            $newerNumber = $request->query('newer');
+            abort_unless(is_string($olderNumber) && ctype_digit($olderNumber)
+                && is_string($newerNumber) && ctype_digit($newerNumber)
+                && (int) $olderNumber < (int) $newerNumber, 404);
+            $compareOlder = $versions->firstWhere('number', (int) $olderNumber);
+            $compareNewer = $versions->firstWhere('number', (int) $newerNumber);
+            abort_unless($compareOlder && $compareNewer, 404);
+        }
 
         return $this->page(['topic' => $topic, 'versions' => $versions, 'current' => $current,
-            'previous' => $previous, 'comparison' => $previous ? $monitor->compare($previous, $current) : null,
+            'compareOlder' => $compareOlder, 'compareNewer' => $compareNewer,
+            'comparison' => $compareOlder ? $monitor->compare($compareOlder, $compareNewer) : null,
             'findings' => $topic->findings()->latest('seen_at')->get(), 'ready' => $monitor->ready()], 200, 'monitor.show');
     }
 

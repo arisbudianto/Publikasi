@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\M16Topic;
 use App\Models\User;
-use App\Services\OpenAlexWorks;
 use App\Services\TopicMonitoring;
+use App\Services\OpenAlexWorks;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -86,6 +86,10 @@ class M16MonitoringTest extends TestCase
         $workId = 'W200';
         $this->post(route('monitor.revise', $topic), $this->input())->assertRedirect(route('monitor.show', $topic));
         $this->get(route('monitor.show', $topic))->assertOk()->assertSee('Bertambah (1)')->assertSee('Tidak muncul pada versi baru (1)');
+        $this->get(route('monitor.show', $topic).'?older=1&newer=2')->assertOk()
+            ->assertSee('Versi 1 dibanding Versi 2')->assertSee('WIB');
+        $this->get(route('monitor.show', $topic).'?older=2&newer=1')->assertNotFound();
+        $this->get(route('monitor.show', $topic).'?older=1&newer=3')->assertNotFound();
         $this->delete(route('monitor.destroy', $topic))->assertRedirect(route('monitor.index'));
         $this->assertDatabaseCount('m16_topics', 0);
         $this->assertDatabaseCount('m16_versions', 0);

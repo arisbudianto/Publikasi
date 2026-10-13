@@ -11,7 +11,7 @@
     @forelse($topics as $topic)
         @php($current = $topic->versions->firstWhere('number', $topic->current_version))
         <article class="panel"><h3><a href="{{ route('monitor.show', $topic) }}">{{ $current?->title_cipher }}</a></h3>
-            <p>Versi {{ $topic->current_version }} · Terakhir diperiksa {{ $topic->last_checked_at?->format('d/m/Y H:i') ?? 'Belum' }} · {{ $topic->findings->whereNull('read_at')->count() }} temuan belum dibaca</p>
+            <p>Versi {{ $topic->current_version }} · Terakhir diperiksa {{ $topic->last_checked_at?->timezone('Asia/Jakarta')->format('d/m/Y H:i') ?? 'Belum' }} WIB · {{ $topic->findings->whereNull('read_at')->count() }} temuan belum dibaca</p>
             <a href="{{ route('monitor.show', $topic) }}">Lihat pantauan dan perubahan versi</a>
         </article>
     @empty<p>Belum ada topik pantauan.</p>@endforelse
