@@ -141,6 +141,8 @@ class ResearchPositioningController extends Controller
 
     private function page(array $data = [], int $status = 200, string $view = 'research-positioning.index')
     {
+        $data += ['ready' => app(DinoikiResearchAi::class)->ready()];
+
         return response()->view($view, $data, $status)->header('Cache-Control', 'no-store, private')
             ->header('X-Robots-Tag', 'noindex, noarchive');
     }
