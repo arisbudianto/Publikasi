@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Journal;
 use App\Models\User;
+use App\Services\JournalEvidenceExtractor;
 use App\Services\JournalMonitoringAgent;
 use App\Services\JournalPageFetcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -85,5 +86,14 @@ class M19JournalAgentTest extends TestCase
         }
         $this->assertFalse($fetcher->allowed("User-agent: *\nDisallow: /about\n", '/about/submissions'));
         $this->assertTrue($fetcher->allowed("User-agent: *\nDisallow: /about\nAllow: /about/public\n", '/about/public'));
+    }
+
+    public function test_scope_extractor_ignores_ojs_navigation_paragraph(): void
+    {
+        $html = '<html><body><p>Editorial Team Publication Ethics Focus &amp; Scope Author Guidelines Peer-Review Process Indexing Contact</p>'
+            .'<main><h2>Focus and Scope</h2><p>This journal publishes empirical research on vocational education and technology in classrooms.</p></main></body></html>';
+        $quotes = (new JournalEvidenceExtractor)->extract($html, 'scope');
+        $this->assertCount(1, $quotes);
+        $this->assertStringContainsString('empirical research', $quotes[0]);
     }
 }

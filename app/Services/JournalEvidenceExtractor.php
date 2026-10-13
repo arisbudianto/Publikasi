@@ -42,6 +42,13 @@ class JournalEvidenceExtractor
             if (mb_strlen($line) < 20 || mb_strlen($line) > 600 || ! preg_match($pattern, $context)) {
                 continue;
             }
+            // OJS sometimes wraps a whole menu in a paragraph outside <nav>.
+            if (preg_match_all('/\b(?:Editorial Team|Publication Ethics|Author Guidelines|Peer.Review Process|Indexing|Contact|Archives|Current Issue|Announcements)\b/iu', $line) >= 3) {
+                continue;
+            }
+            if ($field === 'scope' && ! preg_match('/[.!?;:]/u', $line)) {
+                continue;
+            }
             if ($field === 'fee' && ! preg_match('/\b(?:free|gratis|no (?:publication |submission )?fee|tanpa biaya|\d[\d.,]*\s*(?:idr|usd|eur)|(?:rp|idr|usd|eur)\s*\d[\d.,]*)\b/iu', $line)) {
                 continue;
             }
