@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Services\JournalAccreditationLinker;
+use App\Services\JournalMonitoringAgent;
 use App\Services\OperationalHealth;
 use App\Services\ScopusDiscontinuedDataset;
 use App\Services\SintaAccreditationDataset;
@@ -15,6 +16,12 @@ Artisan::command('m16:tick', function (TopicMonitoring $monitor) {
 })->purpose('Catat heartbeat cron dan periksa topik yang jatuh tempo dengan kuota');
 
 Schedule::command('m16:tick')->everyFifteenMinutes()->withoutOverlapping(10);
+
+Artisan::command('m19:tick', function (JournalMonitoringAgent $agent) {
+    $this->line(json_encode($agent->tick()));
+})->purpose('Periksa halaman jurnal yang disetujui dan catat kandidat perubahan');
+
+Schedule::command('m19:tick')->weekly()->withoutOverlapping(30);
 
 Artisan::command('publikasi:admin {email}', function () {
     $email = $this->argument('email');

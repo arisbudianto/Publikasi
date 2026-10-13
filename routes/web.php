@@ -7,6 +7,7 @@ use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\CurationController;
 use App\Http\Controllers\GuideController;
 use App\Http\Controllers\JournalAccreditationController;
+use App\Http\Controllers\JournalAgentController;
 use App\Http\Controllers\JournalIdentifierController;
 use App\Http\Controllers\JournalIntegrityController;
 use App\Http\Controllers\JournalSourceController;
@@ -65,6 +66,10 @@ Route::get('/admin/login', [C::class, 'loginForm'])->name('login');
 Route::post('/admin/login', [C::class, 'login'])->middleware('throttle:10,1');
 Route::middleware(['auth', RequireAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [C::class, 'admin'])->name('index');
+    Route::get('/agen-jurnal', [JournalAgentController::class, 'index'])->name('agent.index');
+    Route::post('/agen-jurnal/sumber', [JournalAgentController::class, 'store'])->name('agent.store');
+    Route::post('/agen-jurnal/sumber/{source}', [JournalAgentController::class, 'toggle'])->whereNumber('source')->name('agent.toggle');
+    Route::post('/agen-jurnal/kandidat/{candidate}', [JournalAgentController::class, 'review'])->whereNumber('candidate')->name('agent.review');
     Route::get('/kurasi', [CurationController::class, 'index'])->name('curation');
     Route::get('/panduan', [GuideController::class, 'admin'])->name('guides.index');
     Route::get('/panduan/baru', [GuideController::class, 'create'])->name('guides.create');
