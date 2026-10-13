@@ -13,6 +13,7 @@ use App\Http\Controllers\MatchController;
 use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReferenceCheckController;
+use App\Http\Controllers\ResearchPositioningController;
 use App\Http\Controllers\SemanticController;
 use App\Http\Controllers\StructuredObservationImportController;
 use App\Http\Controllers\SubmissionController;
@@ -26,6 +27,11 @@ Route::get('/cek-referensi', [ReferenceCheckController::class, 'index'])->name('
 Route::post('/cek-referensi/periksa-satu', [ReferenceCheckController::class, 'lookup'])->middleware('throttle:120,1')->name('references.lookup');
 Route::get('/periksa/authorship', [AuthorshipController::class, 'index'])->name('authorship.form');
 Route::post('/periksa/authorship', [AuthorshipController::class, 'analyze'])->middleware('throttle:20,1')->name('authorship.analyze');
+Route::middleware(RequireAccount::class)->prefix('posisi-riset')->name('research-positioning.')->group(function () {
+    Route::get('/', [ResearchPositioningController::class, 'index'])->name('form');
+    Route::post('/siapkan', [ResearchPositioningController::class, 'prepare'])->middleware('throttle:4,1')->name('prepare');
+    Route::post('/analisis', [ResearchPositioningController::class, 'analyze'])->middleware('throttle:4,1')->name('analyze');
+});
 Route::get('/cocokkan', [MatchController::class, 'form'])->name('match.form');
 Route::post('/cocokkan', [MatchController::class, 'match'])->middleware('throttle:20,1')->name('match.run');
 Route::get('/', [JournalSourceController::class, 'index'])->name('sources.home');

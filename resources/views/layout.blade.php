@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title','Publikasi') · Katalog jurnal pendidikan</title>
     <link rel="stylesheet" href="{{ asset('catalog.css') }}?v={{ filemtime(public_path('catalog.css')) }}">
+    @if(request()->routeIs('research-positioning.*'))<link rel="stylesheet" href="{{ asset('m15.css') }}?v={{ filemtime(public_path('m15.css')) }}">@endif
 </head>
 <body>
 <div class="app-shell">
@@ -24,6 +25,7 @@
             <a class="sidebar-link {{ request()->routeIs('integrity.*') ? 'is-active' : '' }}" href="{{ route('integrity.form') }}" @if(request()->routeIs('integrity.*')) aria-current="page" @endif>Periksa jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('references.*') ? 'is-active' : '' }}" href="{{ route('references.form') }}" @if(request()->routeIs('references.*')) aria-current="page" @endif>Periksa referensi</a>
             <a class="sidebar-link {{ request()->routeIs('authorship.*') ? 'is-active' : '' }}" href="{{ route('authorship.form') }}" @if(request()->routeIs('authorship.*')) aria-current="page" @endif>Periksa authorship</a>
+            <a class="sidebar-link {{ request()->routeIs('research-positioning.*') ? 'is-active' : '' }}" href="{{ route('research-positioning.form') }}" @if(request()->routeIs('research-positioning.*')) aria-current="page" @endif>Posisi riset</a>
             <a class="sidebar-link {{ request()->routeIs('semantic.*') ? 'is-active' : '' }}" href="{{ route('semantic.form') }}" @if(request()->routeIs('semantic.*')) aria-current="page" @endif>Pencocokan AI</a>
 
             <p class="nav-section">AKUN</p>

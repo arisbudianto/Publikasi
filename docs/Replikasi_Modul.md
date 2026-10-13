@@ -38,12 +38,12 @@ Observasi referensi yang dipakai rancangan ini (diperiksa 12 Oktober 2026):
 | Alat penentu authorship | CekJurnal | Belum | M14 |
 | Chatbot tanya jurnal | CekJurnal | Belum | M17 |
 | Pusat literasi dan urun daya koreksi | CekJurnal | Belum. Antrean kurasi admin sudah ada (M06) | M18 |
-| Publikasi terdekat dari ide riset | Novelty Lab | Belum. M04 hanya mencocokkan ke scope jurnal | M15 |
-| Overlap empat dimensi, pembeda, risiko, arah penguatan | Novelty Lab | Belum | M15 |
-| Draf klaim kebaruan | Novelty Lab | Belum | M15 |
-| Terjemahan abstrak Indonesia ke Inggris | Novelty Lab | Belum. M03 punya padanan bilingual terbatas | M15 |
-| Ekspor RIS, BibTeX, PDF | Novelty Lab | Belum. M08 punya ekspor CSV matriks | M15 |
-| Riwayat hasil di akun | Novelty Lab | Ada untuk pencocokan (M05, opt-in tanpa abstrak) | M15 |
+| Publikasi terdekat dari ide riset | Novelty Lab | Pilot M15 memakai OpenAlex | M15 |
+| Overlap empat dimensi, pembeda, risiko, arah penguatan | Novelty Lab | Pilot M15 memakai kandidat berabstrak dan validasi ID sumber | M15 |
+| Draf klaim kebaruan | Novelty Lab | Pilot M15, tetap harus ditinjau penulis | M15 |
+| Terjemahan abstrak Indonesia ke Inggris | Novelty Lab | Pilot M15 dengan persetujuan dan suntingan sebelum pencarian | M15 |
+| Ekspor RIS, BibTeX, PDF | Novelty Lab | Pilot M15: RIS/BibTeX lokal, PDF melalui cetak browser | M15 |
+| Riwayat hasil di akun | Novelty Lab | Pilot M15 opt-in, abstrak tidak disimpan | M15 |
 | Pemantauan publikasi baru dan perbandingan versi ide | Novelty Lab | Belum | M16 |
 | Checklist submission, pelacak, matriks reviewer | Tidak ada di keduanya | Ada (M07, M08) | Tetap |
 
@@ -209,7 +209,7 @@ Kriteria selesai:
 - Abstrak tidak disimpan kecuali pengguna memilih menyimpan; log tidak memuat input.
 - Biaya per analisis diukur pada 20 kasus pilot dan dicatat sebelum fitur dibuka publik; batas harian dan throttle diterapkan.
 - Evaluasi manusia pada kasus pilot: peninjau menilai apakah publikasi terdekat relevan dan apakah klaim pembeda didukung rujukannya. Ambang kelulusan dikunci sebelum build.
-Dependensi: penyedia model bahasa (D12), akses OpenAlex (D13), Semantic Scholar opsional (D14). Paket "siap tulis" (research gap, contribution statement) tidak dipisah sebagai add-on; cukup draf klaim di blok f, sampai ada bukti kebutuhan.
+Dependensi: Dinoiki chat completions dan embeddings (D12), akses OpenAlex (D13), Semantic Scholar opsional ditunda (D14). Paket "siap tulis" tidak dipisah sebagai add-on. Implementasi pilot dan batasannya dicatat di `docs/m15/README.md`.
 
 ### M16 Pemantauan topik dan versi ide
 Tujuan: memberi tahu pengguna bila muncul publikasi baru yang dekat dengan ide tersimpan.
@@ -273,10 +273,10 @@ Setelah R7, periksa apakah pengguna memakai alat periksa sebelum submit. Setelah
 |---|---|---|---|
 | D10 | Cakupan katalog: tetap pendidikan atau semua bidang SINTA | Tetap pendidikan sampai sumber dan hak pakai data SINTA jelas; perluas setelah M10 | Menentukan target data dan beban kurasi; blocking R6 |
 | D11 | Menerbitkan daftar jurnal/penerbit predator | Tidak menerbitkan daftar berlabel; pakai alat evaluasi dan status discontinued bersumber. Bila tetap diinginkan, hanya dari sumber resmi Kemdiktisaintek dengan tanggal dan rujukan dokumen | Risiko hukum dan akurasi (Beall's List sudah tidak dipelihara pembuatnya); blocking bagian daftar M12 |
-| D12 | Penyedia model bahasa untuk M15 dan M17 | Periksa apakah Dinoiki menyediakan chat completion; bila ya, satu penyedia; tetapkan anggaran per bulan | Blocking M15 langkah 4 dan 5 |
-| D13 | Akses dan ketentuan OpenAlex serta data retraksi Crossref | Verifikasi kebutuhan API key, kuota, dan lisensi sebelum build | Blocking M13 status retraksi dan M15 |
+| D12 | Penyedia model bahasa untuk M15 dan M17 | Dinoiki mendukung endpoint OpenAI-compatible; pilot M15 memakai GPT-5 mini dengan batas US$5/bulan | Menentukan provider dan batas penggunaan M15 |
+| D13 | Akses dan ketentuan OpenAlex serta data retraksi Crossref | OpenAlex metadata CC0; API menyediakan kuota gratis harian dan kunci opsional; biaya dicatat sebelum pilot | OpenAlex dipakai M15; status retraksi M13 tetap perlu sumber terpisah |
 | D14 | Semantic Scholar | Opsional; tunda sampai OpenAlex terbukti kurang | Tidak blocking |
-| D15 | Model akses M15 | Gratis untuk pengguna login dengan batas harian selama pilot; keputusan berbayar setelah biaya per analisis diukur | Menentukan apakah M09 ledger diaktifkan |
+| D15 | Model akses M15 | Pilot akun terdaftar, maksimal 20 analisis global per bulan, 2 per akun per hari; biaya Dinoiki dibatasi US$5/bulan | Evaluasi sebelum akses publik atau berbayar |
 | D16 | Cron dan batas waktu proses di cPanel | Uji cron dan batas eksekusi PHP sebelum M16 dan sebelum menaikkan batas katalog AI | Blocking M16; memengaruhi M10 |
 
 ## 9. Prioritas berikutnya
