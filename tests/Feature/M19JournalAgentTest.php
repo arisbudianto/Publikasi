@@ -134,12 +134,12 @@ class M19JournalAgentTest extends TestCase
         Http::fake(['*' => Http::sequence()
             ->push(['choices' => [['message' => ['content' => '{"unexpected":true}']]],
                 'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 20]], 200)
-            ->push(['choices' => [['message' => ['content' => '{"quotes":["Publication fee is 500 USD per article."]}']]],
+            ->push(['choices' => [['message' => ['content' => '{"quotes":["Publication fee is 500 USD per article, payable after acceptance."]}']]],
                 'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 40]], 200)]);
 
-        $quotes = app(JournalAiExtractor::class)->extract('<html><body><p>Publication fee is 500 USD per article.</p></body></html>', 'fee');
+        $quotes = app(JournalAiExtractor::class)->extract('<html><body><p>Publication fee is 500 USD per article, payable after acceptance.</p></body></html>', 'fee');
 
-        $this->assertSame(['Publication fee is 500 USD per article.'], $quotes);
+        $this->assertSame(['Publication fee is 500 USD per article, payable after acceptance.'], $quotes);
         Http::assertSentCount(2);
         $this->assertSame(2, DB::table('m15_ai_usage')->sum('request_count'));
     }
