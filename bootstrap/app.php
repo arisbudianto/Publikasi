@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin/*') ? route('login') : route('account.login'));
         $middleware->appendToGroup('web', \Illuminate\Session\Middleware\AuthenticateSession::class);
         \Illuminate\Session\Middleware\AuthenticateSession::redirectUsing(fn (Request $request) => $request->is('admin/*') ? route('login') : route('account.login'));
     })

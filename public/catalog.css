@@ -49,6 +49,7 @@
     .page-column>main{padding:28px 20px 48px}
 }
 @media(prefers-reduced-motion:reduce){.sidebar{transition:none}}
+.account-divider{text-align:center;margin:18px 0 12px;color:var(--muted);font-size:13px}.account-google{display:block;text-align:center;width:100%;margin:0 0 20px}.login form+form{margin-top:16px}
 /* Public pages use top navigation. The workspace sidebar begins after sign in. */
 .public-shell{display:block;background:#f7f8f4}.public-header{position:sticky;top:0;z-index:15;width:100%;padding:16px max(24px,calc((100vw - 1200px)/2));background:rgba(255,255,255,.97);border-bottom:1px solid var(--line)}
 .public-header nav{display:flex;align-items:center;gap:26px}.public-header nav a{white-space:nowrap}.public-header nav .button{padding:9px 17px;color:#fff}.public-shell .page-column>main{max-width:1200px}.public-shell .page-column>footer{background:#f7f8f4}.landing-shell .page-column>main{max-width:none;padding:0}.landing-hero,.landing-metrics,.landing-section,.landing-band,.landing-bottom{max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px}
