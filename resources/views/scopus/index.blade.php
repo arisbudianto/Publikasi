@@ -1,28 +1,39 @@
 @extends('layout')
-@section('title','Daftar sumber Scopus')
+@section('title','Jelajahi jurnal terindeks Scopus')
 @section('content')
-<p class="eyebrow">SUMBER SCOPUS · SNAPSHOT {{ $snapshot ?: 'BELUM TERSEDIA' }}</p>
-<h1>Daftar sumber Scopus</h1>
-<p>Telusuri daftar sumber yang diunggah dari Scopus Source Title List edisi {{ $snapshot ?: 'belum diimpor' }}. Status Active atau Inactive dan cakupan merupakan isi snapshot, bukan jaminan indeksasi artikel atau status hari ini. “Inactive” tidak selalu berarti “Discontinued by Scopus”. Periksa kembali di <a href="https://www.elsevier.com/products/scopus/content" rel="noopener noreferrer">sumber Elsevier</a> sebelum mengirim naskah.</p>
-<form class="search" method="get">
-    <label>Nama sumber, penerbit, ISSN, atau Source Record ID<input name="q" maxlength="120" value="{{ $q }}" placeholder="Nama jurnal atau ISSN"></label>
-    <label>Jenis sumber<select name="type"><option value="Journal" @selected($type === 'Journal')>Journal</option><option value="Book Series" @selected($type === 'Book Series')>Book Series</option><option value="Trade Journal" @selected($type === 'Trade Journal')>Trade Journal</option></select></label>
-    <label>Status snapshot<select name="status"><option value="">Semua</option><option value="Active" @selected($status === 'Active')>Active</option><option value="Inactive" @selected($status === 'Inactive')>Inactive</option></select></label>
-    <label><input type="checkbox" name="discontinued" value="1" @checked($discontinued)> Hanya yang ditandai discontinued</label>
-    <button>Cari sumber Scopus</button>
-</form>
-<p>{{ number_format($sources->total(), 0, ',', '.') }} hasil. <a href="{{ route('sources.index') }}">Lihat sumber SINTA</a> · <a href="{{ route('scopus.index', ['discontinued' => 1]) }}">Lihat yang ditandai discontinued</a></p>
-<div class="cards">
-@forelse($sources as $source)
-    <article class="card">
-        <p class="tag">{{ $source->source_type }} · {{ $source->status }} @if($source->discontinued) · Ditandai discontinued @endif</p>
-        <h2>{{ $source->source_title }}</h2>
-        <p>{{ $source->publisher ?: 'Penerbit tidak tercatat' }}</p>
-        <p>ISSN {{ $source->issn ?: 'tidak tercatat' }} · EISSN {{ $source->eissn ?: 'tidak tercatat' }} · ID {{ $source->source_record_id }}</p>
-        <p>Cakupan dalam snapshot: {{ $source->coverage ?: 'tidak tercatat' }}</p>
-        <p>ASJC: {{ $source->asjc_codes ?: 'tidak tercatat' }} · snapshot {{ $source->snapshot_month }}</p>
-    </article>
-@empty <p>Belum ada hasil untuk filter ini.</p> @endforelse
+<div class="indexed-page">
+    <p class="eyebrow">KATALOG TERINDEKS · SNAPSHOT {{ $snapshot ?: 'BELUM TERSEDIA' }}</p>
+    <h1>Jelajahi jurnal terindeks</h1>
+    <p class="muted">Cari jurnal berdasarkan nama, penerbit, atau ISSN. Data Scopus berasal dari Source Title List September 2026. Status snapshot perlu diperiksa kembali sebelum submit.</p>
+    <nav class="indexed-tabs" aria-label="Jenis katalog">
+        <a href="{{ route('sources.index') }}">SINTA</a>
+        <a href="{{ route('scopus.index') }}" aria-current="page">Scopus</a>
+        <a href="{{ route('catalog.no-apc') }}">Tanpa APC yang terverifikasi</a>
+    </nav>
+    <form class="indexed-filters" method="get" action="{{ route('scopus.index') }}">
+        <label for="indexed-q">Cari jurnal atau ISSN<input id="indexed-q" name="q" maxlength="120" value="{{ $q }}" placeholder="Nama jurnal, penerbit, atau ISSN"></label>
+        <label for="indexed-status">Status snapshot<select id="indexed-status" name="status"><option value="">Semua status</option><option value="Active" @selected($status === 'Active')>Active</option><option value="Inactive" @selected($status === 'Inactive')>Inactive</option></select></label>
+        <label for="indexed-type">Jenis sumber<select id="indexed-type" name="type"><option value="Journal" @selected($type === 'Journal')>Jurnal</option><option value="Book Series" @selected($type === 'Book Series')>Book Series</option><option value="Trade Journal" @selected($type === 'Trade Journal')>Trade Journal</option></select></label>
+        <label class="indexed-check"><input type="checkbox" name="discontinued" value="1" @checked($discontinued)> Hanya discontinued</label>
+        <button type="submit">Terapkan filter</button>
+    </form>
+    <div class="indexed-summary"><strong>{{ number_format($sources->total(), 0, ',', '.') }}</strong> sumber sesuai filter <span>·</span> Status indeks dan kecocokan scope harus diperiksa pada sumber resmi.</div>
+    <div class="table-wrap indexed-table"><table>
+        <thead><tr><th scope="col">Jurnal</th><th scope="col">ISSN</th><th scope="col">Scopus</th><th scope="col">Cakupan snapshot</th><th scope="col">Biaya publikasi</th><th scope="col">Estimasi review</th></tr></thead>
+        <tbody>
+        @forelse($sources as $source)
+            <tr>
+                <td><strong>{{ $source->source_title }}</strong><small>{{ $source->publisher ?: 'Penerbit tidak tercatat' }} · {{ $source->source_type }}</small>@if($source->discontinued)<span class="indexed-warning">Ditandai discontinued</span>@endif</td>
+                <td>{{ $source->issn ?: $source->eissn ?: 'Tidak tercatat' }}@if($source->issn && $source->eissn && $source->issn !== $source->eissn)<small>eISSN {{ $source->eissn }}</small>@endif</td>
+                <td><span class="indexed-badge {{ $source->status === 'Active' && ! $source->discontinued ? 'indexed-active' : 'indexed-inactive' }}">{{ $source->status }}@if($source->discontinued) · discontinued @endif</span></td>
+                <td>{{ $source->coverage ?: 'Tidak tercatat' }}</td>
+                <td class="indexed-unavailable">Belum tersedia</td>
+                <td class="indexed-unavailable">Belum tersedia</td>
+            </tr>
+        @empty<tr><td colspan="6">Belum ada hasil untuk filter ini.</td></tr>@endforelse
+        </tbody>
+    </table></div>
+    <p class="indexed-footnote">Status “Inactive” tidak selalu berarti “Discontinued by Scopus”. Data quartile, peluang diterima, biaya, dan waktu review belum tersedia. <a href="https://www.elsevier.com/products/scopus/content" target="_blank" rel="noopener noreferrer">Periksa sumber Elsevier ↗</a></p>
+    {{ $sources->links('pagination') }}
 </div>
-{{ $sources->links('pagination') }}
 @endsection
