@@ -1,5 +1,7 @@
 # Daftar sumber Scopus
 
+Formulir `/cocokkan` memakai tabel sumber SINTA dan Scopus untuk kandidat jurnal terindeks. Scopus dibatasi pada jenis `Journal`, status `Active`, dan tanpa penanda discontinued. SINTA dibatasi pada keputusan akreditasi resmi yang terhubung melalui ISSN valid dengan tahun akhir yang belum lewat. Irisan kata pada nama, subjek, atau judul artikel merupakan petunjuk awal; scope lengkap, status indeks saat submit, biaya, dan masa review tetap harus diperiksa.
+
 Halaman `/sumber-scopus` membaca snapshot *Scopus Source Title List* September 2026 yang diberikan operator. Data tersimpan terpisah dari sumber SINTA dan katalog kurasi. `Active`, `Inactive`, `Coverage`, dan `Discontinued by Scopus` mengikuti kolom sumber; status snapshot tidak membuktikan indeksasi terkini atau artikel tertentu. Daftar accepted titles bukan bagian dari daftar sumber yang sudah tercatat.
 
 Workbook asli tetap disimpan secara privat. Ekstrak sheet `Scopus Sources Sep. 2026` ke CSV UTF-8 dengan header berikut, sesuai urutan:

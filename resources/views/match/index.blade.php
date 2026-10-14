@@ -9,8 +9,14 @@
 <label for="title">Judul penelitian<input id="title" name="title" minlength="10" maxlength="300" required placeholder="10–300 karakter"></label>
 <label for="abstract">Abstrak<textarea id="abstract" name="abstract" minlength="80" maxlength="10000" rows="8" required placeholder="80–10.000 karakter; uraikan tujuan, metode, dan temuan"></textarea></label>
 <label for="context">Konteks penelitian (opsional)<textarea id="context" name="context" maxlength="1500" rows="3" placeholder="Contoh: jenjang pendidikan, populasi, metode, atau jenis artikel"></textarea></label>
+<label for="index">Indeks jurnal<select id="index" name="index"><option value="all">SINTA atau Scopus</option><option value="sinta">SINTA</option><option value="scopus">Scopus</option></select></label>
 @auth<label class="consent"><input type="checkbox" name="save_history" value="1"> Simpan judul dan daftar kandidat ke riwayat pribadi. Abstrak dan konteks tidak disimpan.</label>@endauth<button>Jalankan pencocokan</button></form>
 @if(isset($results))
+<section class="match-results"><h2>Jurnal terindeks yang mungkin relevan · {{ count($indexedCandidates) }} kandidat</h2>
+<p>Hasil dari data jurnal dalam sistem: keputusan akreditasi SINTA yang terhubung melalui ISSN dan daftar sumber Scopus berstatus Active tanpa penanda discontinued pada snapshot. Irisan istilah pada subjek, judul artikel, atau nama jurnal adalah petunjuk awal, belum membuktikan scope, mutu naskah, atau kelayakan submit. Periksa status indeks terbaru, panduan penulis, biaya, dan ketentuan artikel di situs resmi sebelum mengirim.</p>
+@if($indexedCandidates)<div class="table-wrap"><table><thead><tr><th>Jurnal</th><th>ISSN</th><th>SINTA</th><th>Scopus</th><th>Dasar kecocokan</th></tr></thead><tbody>
+@foreach($indexedCandidates as $candidate)<tr><td><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a><br><small>{{ $candidate['publisher'] }}</small></td><td>{{ $candidate['issn'] ?: '—' }}</td><td>@if($candidate['sinta'])S{{ $candidate['sinta']->rank }} · SK {{ $candidate['sinta']->decree_date?->format('d/m/Y') }}@else—@endif</td><td>@if($candidate['scopus'])Active · {{ $candidate['scopus']->snapshot_month }}@else—@endif</td><td>{{ implode(', ', $candidate['matches']) }}<br><small>{{ $candidate['evidence'] }}</small></td></tr>@endforeach
+</tbody></table></div>@else<p>Belum ada kandidat terindeks yang beririsan dengan topik. Coba istilah bidang yang lebih spesifik.</p>@endif</section>
 <section class="match-results"><h2>Hasil pencocokan · {{ count($results) }} kandidat</h2>
 <p>Urutan mengikuti irisan istilah unik: judul berbobot 3, abstrak 1, konteks 1. Hanya kandidat dengan irisan judul atau abstrak ditampilkan, maksimal 10. Aturan {{ \App\Services\BasicMatcher::VERSION }}.</p>
 @forelse($results as $rank=>$result) @php($journal=$result['journal'])
