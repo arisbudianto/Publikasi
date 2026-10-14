@@ -5,6 +5,7 @@ use App\Services\JournalAccreditationLinker;
 use App\Services\JournalMonitoringAgent;
 use App\Services\OperationalHealth;
 use App\Services\ScopusDiscontinuedDataset;
+use App\Services\ScopusSourceDataset;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use App\Services\TopicMonitoring;
@@ -122,3 +123,14 @@ Artisan::command('publikasi:import-scopus-discontinued {file} {--source-as-of=} 
     }
     $this->line(json_encode($dataset->import($preview['rows'], $sourceAsOf)));
 })->purpose('Pratinjau atau impor snapshot CSV official Scopus discontinued berdasarkan ISSN');
+
+Artisan::command('publikasi:import-scopus-sources {file} {--snapshot-month=} {--apply}', function (ScopusSourceDataset $dataset) {
+    $preview = $dataset->preview($this->argument('file'), (string) $this->option('snapshot-month'));
+    $this->line(json_encode(['valid' => count($preview['rows']), 'error_count' => $preview['error_count'], 'errors' => $preview['errors'], 'sha256' => $preview['sha256'], 'snapshot_month' => $preview['snapshot_month']]));
+    if ($preview['error_count']) return 1;
+    if (! $this->option('apply')) {
+        $this->line('DRY RUN: tidak ada penulisan.');
+        return 0;
+    }
+    $this->line(json_encode($dataset->import($preview['rows'], $preview['snapshot_month'])));
+})->purpose('Pratinjau atau impor daftar sumber Scopus dari CSV snapshot resmi');
