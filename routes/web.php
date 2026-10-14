@@ -25,6 +25,8 @@ use App\Http\Controllers\TopicMonitoringController;
 use App\Http\Middleware\RequireAccount;
 use App\Http\Middleware\RequireAdmin;
 use Illuminate\Support\Facades\Route;
+use App\Models\Journal;
+use App\Models\JournalSource;
 
 Route::get('/cocokkan-ai', [SemanticController::class, 'form'])->name('semantic.form');
 Route::post('/cocokkan-ai', [SemanticController::class, 'match'])->middleware('throttle:5,1')->name('semantic.run');
@@ -48,7 +50,16 @@ Route::middleware(RequireAccount::class)->prefix('akun/pantauan')->name('monitor
 });
 Route::get('/cocokkan', [MatchController::class, 'form'])->name('match.form');
 Route::post('/cocokkan', [MatchController::class, 'match'])->middleware('throttle:20,1')->name('match.run');
-Route::get('/', [JournalSourceController::class, 'index'])->name('sources.home');
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('account.index');
+    }
+
+    return view('home', [
+        'sourceCount' => JournalSource::count(),
+        'curatedCount' => Journal::where('status', 'published')->count(),
+    ]);
+})->name('home');
 Route::get('/katalog-terkurasi', [C::class, 'index'])->name('catalog.index');
 Route::get('/tanpa-apc', [C::class, 'noApc'])->name('catalog.no-apc');
 Route::get('/periksa/jurnal', [JournalIntegrityController::class, 'index'])->name('integrity.form');
