@@ -8,15 +8,19 @@
     @if(request()->routeIs('research-positioning.*') || request()->routeIs('monitor.*'))<link rel="stylesheet" href="{{ asset('m15.css') }}?v={{ filemtime(public_path('m15.css')) }}">@endif
 </head>
 <body>
-<div class="app-shell">
+<div class="app-shell @guest public-shell @endguest @if(request()->routeIs('home')) landing-shell @endif">
+    @guest
+    <header class="public-header"><a class="brand" href="{{ route('home') }}">Publikasi<span>Periksa sebelum submit</span></a><nav aria-label="Navigasi publik"><a href="{{ route('home') }}#fitur">Fitur</a><a href="{{ route('sources.index') }}">Database jurnal</a><a href="{{ route('guides.index') }}">Panduan</a><a class="button" href="{{ route('account.login') }}">Masuk</a></nav></header>
+    @endguest
+    @auth
     <aside class="sidebar" id="site-sidebar" aria-label="Navigasi utama">
         <div class="sidebar-brand">
-            <a class="brand" href="{{ route('sources.home') }}">Publikasi<span>Database jurnal</span></a>
+            <a class="brand" href="{{ route('home') }}">Publikasi<span>Database jurnal</span></a>
         </div>
 
         <nav class="sidebar-nav">
             <p class="nav-section">TEMUKAN JURNAL</p>
-            <a class="sidebar-link {{ request()->routeIs('sources.home') ? 'is-active' : '' }}" href="{{ route('sources.home') }}" @if(request()->routeIs('sources.home')) aria-current="page" @endif>Semua jurnal</a>
+            <a class="sidebar-link {{ request()->routeIs('sources.index') ? 'is-active' : '' }}" href="{{ route('sources.index') }}" @if(request()->routeIs('sources.index')) aria-current="page" @endif>Semua jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('accreditations.*') ? 'is-active' : '' }}" href="{{ route('accreditations.index') }}" @if(request()->routeIs('accreditations.*')) aria-current="page" @endif>Akreditasi SINTA</a>
             <a class="sidebar-link {{ request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare') ? 'is-active' : '' }}" href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare')) aria-current="page" @endif>Katalog terkurasi</a>
             <a class="sidebar-link {{ request()->routeIs('catalog.no-apc') ? 'is-active' : '' }}" href="{{ route('catalog.no-apc') }}" @if(request()->routeIs('catalog.no-apc')) aria-current="page" @endif>Jurnal tanpa APC</a>
@@ -50,12 +54,13 @@
     </aside>
 
     <button class="sidebar-backdrop" type="button" data-sidebar-close aria-label="Tutup menu"></button>
+    @endauth
 
     <div class="page-column">
-        <div class="mobile-topbar">
+        @auth<div class="mobile-topbar">
             <button class="menu-toggle" type="button" aria-controls="site-sidebar" aria-expanded="false" data-sidebar-toggle>Menu</button>
-            <a class="brand" href="{{ route('sources.home') }}">Publikasi<span>Database jurnal</span></a>
-        </div>
+            <a class="brand" href="{{ route('home') }}">Publikasi<span>Database jurnal</span></a>
+        </div>@endauth
 
         <main>
             @if(session('success'))<div class="notice">{{ session('success') }}</div>@endif
