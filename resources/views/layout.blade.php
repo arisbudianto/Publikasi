@@ -22,7 +22,7 @@
             <p class="nav-section">TEMUKAN JURNAL</p>
             <a class="sidebar-link {{ request()->routeIs('sources.index') ? 'is-active' : '' }}" href="{{ route('sources.index') }}" @if(request()->routeIs('sources.index')) aria-current="page" @endif>Semua jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('accreditations.*') ? 'is-active' : '' }}" href="{{ route('accreditations.index') }}" @if(request()->routeIs('accreditations.*')) aria-current="page" @endif>Akreditasi SINTA</a>
-            <a class="sidebar-link {{ request()->routeIs('scopus.*') ? 'is-active' : '' }}" href="{{ route('scopus.index') }}" @if(request()->routeIs('scopus.*')) aria-current="page" @endif>Sumber Scopus</a>
+            <a class="sidebar-link {{ request()->routeIs('scopus.*') ? 'is-active' : '' }}" href="{{ route('scopus.index') }}" @if(request()->routeIs('scopus.*')) aria-current="page" @endif>Jelajahi jurnal terindeks</a>
             <a class="sidebar-link {{ request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare') ? 'is-active' : '' }}" href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare')) aria-current="page" @endif>Katalog terkurasi</a>
             <a class="sidebar-link {{ request()->routeIs('catalog.no-apc') ? 'is-active' : '' }}" href="{{ route('catalog.no-apc') }}" @if(request()->routeIs('catalog.no-apc')) aria-current="page" @endif>Jurnal tanpa APC</a>
 
