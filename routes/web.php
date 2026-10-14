@@ -64,6 +64,7 @@ Route::middleware(RequireAccount::class)->prefix('akun/usulan')->name('proposals
     Route::get('/', [ProposalController::class, 'mine'])->name('mine');
     Route::get('/baru', [ProposalController::class, 'create'])->name('create');
     Route::post('/', [ProposalController::class, 'store'])->middleware('throttle:3,60')->name('store');
+    Route::post('/asisten', [ProposalController::class, 'assistantFeedback'])->middleware('throttle:3,60')->name('assistant-feedback');
 });
 Route::get('/admin/login', [C::class, 'loginForm'])->name('login');
 Route::post('/admin/login', [C::class, 'login'])->middleware('throttle:10,1');

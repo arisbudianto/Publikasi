@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Journal;
 use App\Models\M18Guide;
+use App\Models\M18Proposal;
 use App\Models\User;
 use App\Services\DinoikiResearchAi;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,5 +73,43 @@ class M17PublicationAssistantTest extends TestCase
             ->assertOk()->assertSee('Kajian linguistik terapan dan pembelajaran bahasa.')
             ->assertSee('belum tercatat dalam observasi katalog yang berlaku')
             ->assertDontSee('Jurnal Pendidikan Lain')->assertDontSee('Jawaban belum dapat diverifikasi');
+    }
+
+    public function test_journal_context_and_guide_page_offer_the_assistant(): void
+    {
+        $journal = Journal::create(['name' => 'Jurnal Pendidikan Vokasi', 'publisher' => 'Penerbit Uji',
+            'issn' => '2088-2866', 'subject' => 'Vokasi', 'scope_summary' => 'Pembelajaran vokasi',
+            'scope_source_url' => 'https://example.org/scope', 'official_url' => 'https://example.org',
+            'checked_at' => today(), 'status' => 'published']);
+
+        $this->get(route('catalog.show', $journal))->assertOk()->assertSee('Tanya tentang jurnal ini');
+        $this->get(route('assistant.index', ['journal' => $journal->id]))->assertOk()
+            ->assertSee('ISSN 2088-2866');
+        $this->get(route('guides.index'))->assertOk()->assertSee('Tanya tentang jurnal dan publikasi')
+            ->assertSee('Cari jawaban');
+    }
+
+    public function test_feedback_requires_login_and_enters_curation_without_storing_conversation(): void
+    {
+        $input = ['feedback' => 'Biaya pada sumber resmi perlu diperiksa kembali.'];
+        $this->post(route('proposals.assistant-feedback'), $input)->assertRedirect(route('account.login'));
+        $user = User::factory()->create();
+        $this->actingAs($user)->post(route('proposals.assistant-feedback'), ['feedback' => 'pendek'])
+            ->assertSessionHasErrors('feedback');
+        $this->post(route('proposals.assistant-feedback'), $input)->assertRedirect(route('proposals.mine'));
+
+        $proposal = M18Proposal::firstOrFail();
+        $this->assertSame('assistant_feedback', $proposal->field);
+        $this->assertSame(route('assistant.index'), $proposal->source_url);
+        $this->assertSame($input['feedback'], $proposal->proposed_value);
+        $this->assertDatabaseCount('m18_proposal_events', 1);
+        $this->assertDatabaseCount('journal_observations', 0);
+        $admin = User::factory()->create(['is_admin' => true]);
+        $this->actingAs($admin)->get(route('admin.proposals.show', $proposal))->assertOk()
+            ->assertSee('Laporan telah ditinjau');
+        $this->post(route('admin.proposals.review', $proposal), [
+            'decision' => 'reviewed', 'decision_note' => 'Kami akan memeriksa kembali bukti yang dilaporkan.',
+        ])->assertRedirect();
+        $this->get(route('admin.proposals.show', $proposal))->assertDontSee('Catat sebagai diterapkan');
     }
 }

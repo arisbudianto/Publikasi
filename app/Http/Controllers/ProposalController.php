@@ -48,6 +48,29 @@ class ProposalController extends Controller
         return redirect()->route('proposals.mine')->with('success', 'Usulan masuk antrean kurasi. Data katalog belum berubah.');
     }
 
+    public function assistantFeedback(Request $request)
+    {
+        $data = $request->validate([
+            'feedback' => 'required|string|min:10|max:1000',
+            'journal_id' => ['nullable', Rule::exists('journals', 'id')->where('status', 'published')],
+        ]);
+        $journal = isset($data['journal_id']) ? Journal::findOrFail($data['journal_id']) : null;
+
+        DB::transaction(function () use ($request, $data, $journal) {
+            $proposal = M18Proposal::create([
+                'user_id' => $request->user()->id, 'journal_id' => $journal?->id,
+                'journal_name' => $journal?->name ?? 'Jawaban asisten publikasi',
+                'field' => 'assistant_feedback', 'proposed_value' => $data['feedback'],
+                'source_url' => route('assistant.index'),
+                'note' => 'Laporan jawaban asisten; teks pertanyaan dan jawaban tidak disimpan.',
+            ]);
+            $proposal->events()->create(['actor_id' => $request->user()->id,
+                'to_status' => 'new', 'created_at' => now()]);
+        });
+
+        return redirect()->route('proposals.mine')->with('success', 'Laporan masuk antrean tinjau.');
+    }
+
     public function mine(Request $request)
     {
         return response()->view('proposals.mine', ['proposals' => M18Proposal::where('user_id', $request->user()->id)
@@ -95,7 +118,8 @@ class ProposalController extends Controller
         ]);
         DB::transaction(function () use ($proposal, $data, $request) {
             $locked = M18Proposal::whereKey($proposal->id)->lockForUpdate()->firstOrFail();
-            abort_unless($locked->status === 'reviewed' && ! in_array($locked->field, self::OBSERVATION_FIELDS, true), 409);
+            abort_unless($locked->status === 'reviewed' && $locked->field !== 'assistant_feedback'
+                && ! in_array($locked->field, self::OBSERVATION_FIELDS, true), 409);
             if ($locked->journal_id) {
                 abort_unless($locked->journal_id === (int) $data['journal_id'], 422);
             }
