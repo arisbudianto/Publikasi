@@ -20,6 +20,7 @@ use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\PublicationAssistantController;
 use App\Http\Controllers\ReferenceCheckController;
 use App\Http\Controllers\ResearchPositioningController;
+use App\Http\Controllers\ScopusSourceController;
 use App\Http\Controllers\SemanticController;
 use App\Http\Controllers\StructuredObservationImportController;
 use App\Http\Controllers\SubmissionController;
@@ -171,6 +172,7 @@ Route::middleware(['auth', RequireAdmin::class])->prefix('admin')->name('admin.'
 });
 
 Route::get('/sumber-jurnal', [JournalSourceController::class, 'index'])->name('sources.index');
+Route::get('/sumber-scopus', [ScopusSourceController::class, 'index'])->name('scopus.index');
 Route::get('/sumber-jurnal/{source}', [JournalSourceController::class, 'show'])->name('sources.show');
 Route::get('/akreditasi-sinta', [JournalAccreditationController::class, 'index'])->name('accreditations.index');
 Route::middleware(['auth', RequireAdmin::class])->prefix('admin/sumber-jurnal')->name('admin.sources.')->group(function () {

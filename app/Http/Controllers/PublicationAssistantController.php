@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Journal;
 use App\Models\M18Guide;
+use App\Models\ScopusSource;
 use App\Services\DinoikiResearchAi;
 use App\Services\JournalDirectory;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ class PublicationAssistantController extends Controller
             fn ($word) => mb_strlen($word) >= 4 && ! in_array($word, $common, true) && ! ctype_digit($word)))), 0, 8);
         $sources = [];
         $matchedJournal = null;
+        $matchedScopus = null;
         if ($issn !== '' || $words !== []) {
             $journalQuery = Journal::query()->where('status', 'published');
             if ($issn !== '') {
@@ -62,6 +64,20 @@ class PublicationAssistantController extends Controller
                         ...$observations->map(fn ($item) => $item->label.': '.$item->value.' ('.$item->verification.'; diperiksa '.($item->checked_at?->toDateString() ?? 'tidak tercatat').'; sumber '.$item->source_url.')')->all(),
                     ])), 0, 2000),
                 ];
+            }
+            if ($issn !== '') {
+                $scopus = ScopusSource::where('is_current', true)
+                    ->where('source_type', 'Journal')
+                    ->where(fn ($query) => $query->where('issn', str_replace('-', '', $issn))->orWhere('eissn', str_replace('-', '', $issn)))
+                    ->limit(6)->get();
+                if ($scopus->count() === 1) $matchedScopus = $scopus->first();
+                foreach ($scopus as $source) {
+                    $sources[] = [
+                        'id' => 'scopus:'.$source->id, 'title' => $source->source_title.' (Scopus '.$source->snapshot_month.')',
+                        'url' => route('scopus.index', ['q' => $issn]),
+                        'excerpt' => 'Source Record ID: '.$source->source_record_id.'; status snapshot: '.$source->status.'; cakupan: '.($source->coverage ?: 'tidak tercatat').'; ditandai discontinued: '.($source->discontinued ? 'ya' : 'tidak').'. Data snapshot, bukan jaminan status hari ini.',
+                    ];
+                }
             }
             $guides = M18Guide::query()->whereNotNull('published_at')->where('published_at', '<=', now())
                 ->when($issn !== '', fn ($query) => $query->whereRaw('1 = 0'))
@@ -97,6 +113,11 @@ class PublicationAssistantController extends Controller
             if ($sentences === []) {
                 $notice = 'Jurnal ditemukan. Pertanyaan ini belum dapat dijawab langsung dari data terstruktur; periksa sumber terkait.';
             }
+        } elseif ($matchedScopus !== null && preg_match('/scopus|indeks|index|discontinued|aktif|active|coverage|cakupan/i', $question)) {
+            $sentences[] = [
+                'text' => 'Pada daftar sumber Scopus '.$matchedScopus->snapshot_month.', '.$matchedScopus->source_title.' tercatat '.$matchedScopus->status.($matchedScopus->discontinued ? ' dan ditandai discontinued' : '').' dengan cakupan '.($matchedScopus->coverage ?: 'tidak tercatat').'. Periksa status terbaru di sumber resmi sebelum submit.',
+                'source_ids' => ['scopus:'.$matchedScopus->id],
+            ];
         } elseif (! $ai->ready()) {
             $notice = 'Asisten AI sedang tidak tersedia. Sumber terkait tetap dapat diperiksa di bawah.';
         } else {
