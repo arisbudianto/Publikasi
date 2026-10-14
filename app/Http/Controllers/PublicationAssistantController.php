@@ -11,9 +11,14 @@ use RuntimeException;
 
 class PublicationAssistantController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('assistant.index');
+        $journal = $request->integer('journal')
+            ? Journal::where('status', 'published')->findOrFail($request->integer('journal')) : null;
+
+        return view('assistant.index', ['question' => $journal
+            ? 'Apa cakupan '.$journal->name.' ISSN '.$journal->issn.' dan apakah biaya publikasinya diketahui?'
+            : '', 'contextJournal' => $journal]);
     }
 
     public function answer(Request $request, DinoikiResearchAi $ai, JournalDirectory $directory)
@@ -102,7 +107,8 @@ class PublicationAssistantController extends Controller
             }
         }
 
-        return response()->view('assistant.index', compact('question', 'sources', 'sentences', 'notice'))
+        return response()->view('assistant.index', ['question' => $question, 'sources' => $sources,
+            'sentences' => $sentences, 'notice' => $notice, 'contextJournal' => $matchedJournal])
             ->header('Cache-Control', 'no-store, private');
     }
 }

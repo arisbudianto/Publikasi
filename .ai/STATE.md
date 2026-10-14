@@ -1,22 +1,28 @@
 # Publikasi current state
 
-PROJECT `arisbudianto/Publikasi`; default branch `main`; Laravel 13; production `https://publikasi.speakverse.id`; source `/home/speakver/publikasi_m00_source`; runtime `/home/speakver/publikasi.speakverse.id`.
+PROJECT: `arisbudianto/Publikasi` (Laravel 13), branch `main` canonical.
+PRODUCTION: `https://publikasi.speakverse.id`; source `/home/speakver/publikasi_m00_source`; runtime `/home/speakver/publikasi.speakverse.id`.
 
-## Verified current state
-- M15 PR #10 merged as `2aed3f5d4483ea32bb113f04e4bd5696fae12b41`; runtime files compared with source PASS; config, route, and Blade caches rebuilt; application live.
-- M15 additive migration Ran [11]. `m15_ai_usage` verified: 12 columns, InnoDB, unique period index.
-- Guest `/posisi-riset` HTTP 302; `/m15.css` and `/m15-export.js` HTTP 200. M15 readiness true; limits US$5/month, 20 analyses/month, 2/account/day, 4/global/day.
-- Code backup `/home/speakver/publikasi_backups/pre-m15-code-20261013-082831.tar.gz`; SHA-256 `d4ce13871fb5af1ca9bdc7180a8cc89ba6eeb88ac8cecb42453ffc615f9bc295`.
-- DB backup `/home/speakver/publikasi_backups/pre-m15-db-20261013-083149.sql.gz`; gzip and dump checks PASS (26 tables, migrations present); SHA-256 `e85897fa824b17a67c0fef770d505675acdbfc2c5a50b68d0a49efe9214b5e90`. Restore not tested in this deployment.
-- Previous catalog counts: 999 sources, 2697 accreditation decisions, 5 curated journals, 1 account; not recounted after M15.
+## Verified baseline
+- `main` at `4a8ddd5586027ce407b0e9e4c148d6d87fd3d8b7` before the audit completion branch. M17 repair files were installed and compared in runtime on 14 October 2026; PHP syntax, Blade cache and assistant routes passed. Owner PDF showed deterministic scope and unknown fee answer for Jurnal Pendidikan Vokasi.
+- Public pages on 14 October: curated catalog 5 journals, 999 imported sources; zero verified no-APC journals; zero published guides; no Scopus discontinued snapshot imported.
+- M15 code and additive migration were previously installed. Earlier backup archives were checked for contents/checksum, but an isolated database restore was not tested.
+- The previous state file described only M15 and was obsolete. M16–M19 code is present in `main`; production flags, cron heartbeats, source review and migrations have not been audited read-only here.
 
-## Verification and current issue
-- M15 local suite PASS: 109 tests / 794 assertions; focused tests 6 / 42; PHP/JS syntax, Pint, route/view caches PASS. GitHub Actions run 60 PHP 8.3 and 8.4 PASS.
-- Owner screenshot shows consent checkbox expanding because shared input CSS applies width 100%. Branch `codex/m15-consent-layout` explicitly sets checkbox width auto and constrains consent text.
-- CSS fix not yet deployed. Local automated browser layout check could not run because browser executable is unavailable.
-- Authenticated external OpenAlex/Dinoiki analysis, exports, optional history, human relevance review, and cost review NOT VERIFIED in production.
+## Current objective
+Close audit gaps without inventing journal facts. Add M17 contextual entry and feedback into M18 queue; prepare sourced editorial guide drafts. Keep data ingestion and activation behind their evidence gates.
 
-## Constraints and next action
-- Preserve production .env, catalog data, and credentials. Never run production PHPUnit, RefreshDatabase, or destructive migration rollback.
-- Use subshells for operator batches so set -e failures do not close the terminal. Match migration status by basename, not full path.
-- After CSS PR checks pass, merge and deploy only CSS plus state documentation. Verify consent layout in browser, then run one synthetic English analysis using existing account and explicit consent. Do not repeat completed migration or baseline tests without relevant changes.
+## Verification
+- M17 focused tests / full suite / CI: NOT VERIFIED for this branch until executed.
+- Production deployment and changed-flow smoke for this branch: NOT VERIFIED until installed.
+- M15 human relevance and 20-case cost pilot, M16 two automatic cron runs, M19 enabled source/candidate review, 500-journal M10 capacity test, authenticated M05–M09 flows, isolated restore: NOT VERIFIED.
+
+## Open items
+- Admin reviews and publishes `docs/m18/EDITORIAL_DRAFTS.md` through the guide UI. Drafts are not production facts.
+- Obtain and preview current official Scopus discontinued snapshot, backup database, then import only with verified date and checksum.
+- Curate source-backed APC and additional journal scopes; unknown must remain unknown until checked.
+- Inspect cPanel migration/flag/cron status, then conduct bounded M15/M16/M19 pilot with account and admin access; do not claim activation from code alone.
+
+## Do not redo
+- Do not rerun migrations or historical baseline tests merely to update documentation. Never run `RefreshDatabase` tests against production.
+- Preserve production `.env`, catalog and private data. No synthetic published journal or unreviewed guide.

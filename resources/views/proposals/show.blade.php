@@ -8,9 +8,9 @@
 @if($proposal->journal)<p><a href="{{ route('admin.review', $proposal->journal) }}">Tinjau jurnal dalam katalog</a></p>@endif</div>
 @if($proposal->status === 'new')
 <form method="post" action="{{ route('admin.proposals.review', $proposal) }}" class="panel">@csrf
-<label>Keputusan<select name="decision"><option value="reviewed">Telah ditinjau, menunggu penerapan</option><option value="rejected">Tolak usulan</option></select></label>
+<label>Keputusan<select name="decision"><option value="reviewed">{{ $proposal->field === 'assistant_feedback' ? 'Laporan telah ditinjau' : 'Telah ditinjau, menunggu penerapan' }}</option><option value="rejected">Tolak usulan</option></select></label>
 <label>Catatan keputusan<textarea name="decision_note" required minlength="20" maxlength="2000"></textarea></label><button>Simpan keputusan</button></form>
-@elseif($proposal->status === 'reviewed')
+@elseif($proposal->status === 'reviewed' && $proposal->field !== 'assistant_feedback')
 @if($proposal->journal && in_array($proposal->field, \App\Http\Controllers\ProposalController::OBSERVATION_FIELDS, true))
 <p><a class="button" href="{{ route('admin.review', ['journal' => $proposal->journal->id, 'proposal_id' => $proposal->id]) }}">Siapkan observasi M10</a></p>
 @else
