@@ -41,7 +41,7 @@ class M17PublicationAssistantTest extends TestCase
         })->andReturn([['text' => 'Cakupannya meliputi sekolah dasar.', 'source_ids' => ['journal:'.$journal->id]]]);
         $this->app->instance(DinoikiResearchAi::class, $mock);
 
-        $this->post('/asisten', ['question' => 'Apa jurnal pendidikan dasar?'])->assertOk()
+        $this->post('/asisten', ['question' => 'Apa jurnal untuk penelitian pendidikan dasar?'])->assertOk()
             ->assertSee('Cakupannya meliputi sekolah dasar.')
             ->assertSee('Panduan pendidikan dasar')->assertDontSee('rahasia');
     }
