@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AccountRecoveryController;
+use App\Http\Controllers\GoogleAccountController;
 use App\Http\Controllers\AuthorshipController;
 use App\Http\Controllers\CatalogController as C;
 use App\Http\Controllers\ChecklistController;
@@ -121,6 +123,17 @@ Route::get('/akun/login', [AccountController::class, 'loginForm'])->name('accoun
 Route::post('/akun/login', [AccountController::class, 'login'])->middleware('throttle:10,1');
 Route::get('/akun/daftar', [AccountController::class, 'registerForm'])->name('account.register');
 Route::post('/akun/daftar', [AccountController::class, 'register'])->middleware('throttle:3,1');
+Route::get('/akun/google', [GoogleAccountController::class, 'redirect'])->middleware('throttle:10,1')->name('account.google.redirect');
+Route::get('/akun/google/kembali', [GoogleAccountController::class, 'callback'])->middleware('throttle:10,1')->name('account.google.callback');
+Route::get('/akun/lupa-password', [AccountRecoveryController::class, 'forgot'])->name('password.request');
+Route::post('/akun/lupa-password', [AccountRecoveryController::class, 'sendReset'])->middleware('throttle:3,1')->name('password.email');
+Route::get('/akun/reset-password/{token}', [AccountRecoveryController::class, 'resetForm'])->name('password.reset');
+Route::post('/akun/reset-password', [AccountRecoveryController::class, 'reset'])->middleware('throttle:5,1')->name('password.update');
+Route::middleware('auth')->group(function () {
+    Route::get('/akun/verifikasi-email', [AccountRecoveryController::class, 'notice'])->name('verification.notice');
+    Route::get('/akun/verifikasi-email/{id}/{hash}', [AccountRecoveryController::class, 'verify'])->middleware('signed')->name('verification.verify');
+    Route::post('/akun/verifikasi-email/kirim-ulang', [AccountRecoveryController::class, 'resend'])->middleware('throttle:3,1')->name('verification.send');
+});
 Route::middleware(RequireAccount::class)->prefix('akun')->name('account.')->group(function () {
     Route::get('/', [AccountController::class, 'index'])->name('index');
     Route::post('/keluar', [AccountController::class, 'logout'])->name('logout');

@@ -13,6 +13,10 @@ class RequireAccount
             return $r->expectsJson() ? response()->json(['message' => 'Login diperlukan.'], 401) : redirect()->route('account.login');
         }
 
-return $next($r);
+        if (config('account.email_enabled') && ! $r->user()->hasVerifiedEmail()) {
+            return $r->expectsJson() ? response()->json(['message' => 'Verifikasi email diperlukan.'], 403) : redirect()->route('verification.notice');
+        }
+
+        return $next($r);
     }
 }

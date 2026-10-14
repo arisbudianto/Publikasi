@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Auth\Events\Registered;
 
 class AccountController extends Controller
 {
@@ -56,10 +57,13 @@ class AccountController extends Controller
         $user->password = $d['password'];
         $user->is_admin = false;
         $user->save();
+        if (config('account.email_enabled')) {
+            event(new Registered($user));
+        }
         Auth::login($user);
         $r->session()->regenerate();
 
-        return redirect()->route('account.index');
+        return redirect()->route(config('account.email_enabled') ? 'verification.notice' : 'account.index');
     }
 
     public function login(Request $r)
@@ -82,7 +86,7 @@ class AccountController extends Controller
         RateLimiter::clear($key);
         $r->session()->regenerate();
 
-        return redirect()->route('account.index');
+        return redirect()->route(config('account.email_enabled') && ! Auth::user()->hasVerifiedEmail() ? 'verification.notice' : 'account.index');
     }
 
     public function logout(Request $r)
