@@ -15,7 +15,7 @@ class SemanticMatcher
     {
         $journals = Journal::where('status', 'published')->orderBy('id')->limit(config('semantic.catalog_limit') + 1)->get();
         if ($journals->count() > config('semantic.catalog_limit')) {
-            throw new RuntimeException('Katalog melebihi batas pemrosesan AI saat ini. Gunakan pencocokan dasar.');
+            throw new RuntimeException('Katalog melebihi batas pemrosesan AI saat ini. Hubungi pengelola.');
         }
         if ($journals->isEmpty()) {
             return [];

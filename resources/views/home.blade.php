@@ -32,7 +32,7 @@
         <a href="{{ route('accreditations.index') }}"><span>01 · TELUSURI</span><h3>Periksa akreditasi SINTA</h3><p>Cari nama jurnal atau ISSN pada keputusan akreditasi resmi.</p><b>Lihat keputusan <span aria-hidden="true">→</span></b></a>
         <a href="{{ route('scopus.index') }}"><span>SCOPUS · TELUSURI</span><h3>Cari sumber Scopus</h3><p>Periksa status dan cakupan pada daftar sumber September 2026.</p><b>Lihat daftar <span aria-hidden="true">→</span></b></a>
         <a href="{{ route('integrity.form') }}"><span>02 · PERIKSA</span><h3>Cek sebelum submit</h3><p>Gunakan daftar periksa untuk menilai transparansi jurnal dan tanda yang perlu diperhatikan.</p><b>Periksa jurnal <span aria-hidden="true">→</span></b></a>
-        <a href="{{ route('match.form') }}"><span>03 · COCOKKAN</span><h3>Bandingkan naskah dan jurnal</h3><p>Mulai dari judul dan abstrak untuk melihat kandidat yang sesuai dengan cakupan terkurasi.</p><b>Coba pencocokan <span aria-hidden="true">→</span></b></a>
+        <a href="{{ route('semantic.form') }}"><span>03 · BANTUAN AI</span><h3>Mencari jurnal yang tepat dengan Bantuan AI</h3><p>Masukkan judul dan abstrak untuk melihat jurnal terkurasi berdasarkan kemiripan cakupan, serta kandidat SINTA atau Scopus dari data indeks.</p><b>Mulai pencarian <span aria-hidden="true">→</span></b></a>
     </div>
 </section>
 

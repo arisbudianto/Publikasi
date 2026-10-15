@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Journal;
+use App\Models\ScopusSource;
 use App\Services\ArticleEvidence;
 use App\Services\DinoikiEmbeddings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,6 +50,23 @@ class SemanticMatchTest extends TestCase
         $this->assertDatabaseCount('catalog_audits', 0);
         Http::assertSent(fn ($r) => str_contains($r->url(), 'ai.dinoiki.com') && $r['model'] === 'text-embedding-3-small');
         Http::assertSent(fn ($r) => str_contains($r->url(), 'api.crossref.org') && ! str_contains($r->url(), 'Technical'));
+    }
+
+    public function test_main_ai_page_has_requested_fields_and_index_filters_separate_candidates(): void
+    {
+        $this->journal();
+        ScopusSource::create(['source_record_id' => 91, 'source_title' => 'Technical Learning Journal',
+            'issn' => '12345678', 'status' => 'Active', 'source_type' => 'Journal',
+            'snapshot_month' => '2026-09', 'is_current' => true]);
+        $this->fake();
+        $this->get('/cocokkan-ai')->assertOk()->assertSee('Mencari jurnal yang tepat dengan Bantuan AI')
+            ->assertSee('Indeks jurnal')->assertSee('SINTA atau Scopus');
+        $this->post('/cocokkan-ai', $this->input() + ['index' => 'scopus'])
+            ->assertOk()->assertSee('Technical Learning Journal')->assertSee('bukan penilaian AI atas scope');
+        $this->post('/cocokkan-ai', $this->input() + ['index' => 'sinta'])
+            ->assertOk()->assertDontSee('Technical Learning Journal');
+        $this->post('/cocokkan-ai', $this->input() + ['index' => 'invalid'])
+            ->assertStatus(422);
     }
 
     public function test_missing_consent_and_disabled_ai_never_call_external(): void

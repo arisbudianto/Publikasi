@@ -10,7 +10,7 @@ class DinoikiEmbeddings
     public function vectors(array $texts): array
     {
         if (! config('semantic.enabled') || ! config('semantic.key')) {
-            throw new RuntimeException('AI belum diaktifkan oleh pengelola. Gunakan pencocokan dasar.');
+            throw new RuntimeException('AI belum diaktifkan oleh pengelola.');
         }
         try {
             $r = Http::withToken(config('semantic.key'))->acceptJson()->connectTimeout(5)->timeout(20)
@@ -48,7 +48,7 @@ class DinoikiEmbeddings
             return array_values($vectors);
         } catch (\Throwable $e) {
             // Never report provider bodies, token, manuscript input, or request objects.
-            throw new RuntimeException('Layanan AI tidak tersedia atau respons tidak valid. Coba pencocokan dasar.');
+            throw new RuntimeException('Layanan AI tidak tersedia atau respons tidak valid. Coba lagi nanti.');
         }
     }
 
