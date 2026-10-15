@@ -14,19 +14,29 @@
 @if(isset($results))
 <section class="match-results indexed-comparison">
 <h2>Bandingkan jurnal untuk naskah Anda</h2>
-<p>{{ count($indexedCandidates) }} kandidat dari judul dan abstrak, maksimal 10 per indeks. Scopus ditampilkan lebih dulu berdasarkan kecocokan istilah, kemudian SINTA 1 sampai 4. Daftar Scopus yang tersedia tidak memuat quartile, sehingga urutan Q1 sampai Q4 belum dapat diverifikasi. Nilai irisan kata bukan peluang diterima.</p>
+<p>{{ count($indexedCandidates) }} kandidat dari judul dan abstrak, maksimal 10 per indeks. Tabel utama menampilkan dua Scopus dan satu SINTA bila keduanya tersedia; daftar lainnya mengikuti urutan Scopus lalu SINTA 1 sampai 4. Daftar Scopus yang tersedia tidak memuat quartile, sehingga urutan Q1 sampai Q4 belum dapat diverifikasi. Nilai irisan kata bukan peluang diterima.</p>
 @if($indexedCandidates)
+@php
+    $comparisonCandidates = array_slice($indexedCandidates, 0, 3);
+    if (($selectedIndex ?? 'all') === 'all') {
+        $sintaCandidate = collect($indexedCandidates)->first(fn ($candidate) => $candidate['sinta'] !== null && $candidate['scopus'] === null);
+        if ($sintaCandidate && count(array_filter($indexedCandidates, fn ($candidate) => $candidate['scopus'] !== null)) >= 2) {
+            $comparisonCandidates = [...array_slice($indexedCandidates, 0, 2), $sintaCandidate];
+        }
+    }
+    $remainingCandidates = array_values(array_filter($indexedCandidates, fn ($candidate) => ! in_array($candidate, $comparisonCandidates, true)));
+@endphp
 <div class="table-wrap comparison-wrap"><table class="comparison-table">
-<thead><tr><th scope="col">Kriteria</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<th scope="col"><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a><small>{{ $candidate['publisher'] ?: 'Penerbit tidak tercatat' }}</small></th>@endforeach</tr></thead>
+<thead><tr><th scope="col">Kriteria</th>@foreach($comparisonCandidates as $candidate)<th scope="col"><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a><small>{{ $candidate['publisher'] ?: 'Penerbit tidak tercatat' }}</small></th>@endforeach</tr></thead>
 <tbody>
-<tr><th scope="row">Kecocokan awal</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>{{ $candidate['score'] }} istilah beririsan<small>{{ implode(', ', $candidate['matches']) }}</small></td>@endforeach</tr>
-<tr><th scope="row">Peringkat dan status</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>@if($candidate['scopus'])<span class="indexed-badge indexed-active">Scopus Active</span> <small>Quartile belum tersedia · snapshot {{ $candidate['scopus']->snapshot_month }}</small>@endif @if($candidate['sinta'])<span class="indexed-badge indexed-sinta">S{{ $candidate['sinta']->rank }}</span><small>SINTA · SK {{ $candidate['sinta']->decree_date?->format('d/m/Y') }}</small>@endif</td>@endforeach</tr>
-<tr><th scope="row">Dasar pencocokan</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>{{ $candidate['evidence'] }}</td>@endforeach</tr>
-<tr><th scope="row">ISSN</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>{{ $candidate['issn'] ?: 'Belum tercatat' }}</td>@endforeach</tr>
-<tr><th scope="row">Peluang diterima</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>Belum tersedia</td>@endforeach</tr>
-<tr><th scope="row">Biaya dan waktu review</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>Periksa panduan jurnal</td>@endforeach</tr>
+<tr><th scope="row">Kecocokan awal</th>@foreach($comparisonCandidates as $candidate)<td>{{ $candidate['score'] }} istilah beririsan<small>{{ implode(', ', $candidate['matches']) }}</small></td>@endforeach</tr>
+<tr><th scope="row">Peringkat dan status</th>@foreach($comparisonCandidates as $candidate)<td>@if($candidate['scopus'])<span class="indexed-badge indexed-active">Scopus Active</span> <small>Quartile belum tersedia · snapshot {{ $candidate['scopus']->snapshot_month }}</small>@endif @if($candidate['sinta'])<span class="indexed-badge indexed-sinta">S{{ $candidate['sinta']->rank }}</span><small>SINTA · SK {{ $candidate['sinta']->decree_date?->format('d/m/Y') }}</small>@endif</td>@endforeach</tr>
+<tr><th scope="row">Dasar pencocokan</th>@foreach($comparisonCandidates as $candidate)<td>{{ $candidate['evidence'] }}</td>@endforeach</tr>
+<tr><th scope="row">ISSN</th>@foreach($comparisonCandidates as $candidate)<td>{{ $candidate['issn'] ?: 'Belum tercatat' }}</td>@endforeach</tr>
+<tr><th scope="row">Peluang diterima</th>@foreach($comparisonCandidates as $candidate)<td>Belum tersedia</td>@endforeach</tr>
+<tr><th scope="row">Biaya dan waktu review</th>@foreach($comparisonCandidates as $candidate)<td>Periksa panduan jurnal</td>@endforeach</tr>
 </tbody></table></div>
-@if(count($indexedCandidates)>3)<details class="comparison-more"><summary>Lihat {{ count($indexedCandidates)-3 }} kandidat lain</summary><div class="table-wrap"><table><thead><tr><th>Jurnal</th><th>Indeks</th><th>Kecocokan awal</th></tr></thead><tbody>@foreach(array_slice($indexedCandidates,3) as $candidate)<tr><td><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a></td><td>{{ $candidate['scopus'] ? 'Scopus, quartile belum tersedia' : 'S'.$candidate['sinta']->rank.' · SINTA' }}</td><td>{{ $candidate['score'] }} istilah: {{ implode(', ', $candidate['matches']) }}</td></tr>@endforeach</tbody></table></div></details>@endif
+@if($remainingCandidates)<details class="comparison-more"><summary>Lihat {{ count($remainingCandidates) }} kandidat lain</summary><div class="table-wrap"><table><thead><tr><th>Jurnal</th><th>Indeks</th><th>Kecocokan awal</th></tr></thead><tbody>@foreach($remainingCandidates as $candidate)<tr><td><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a></td><td>{{ $candidate['scopus'] ? 'Scopus, quartile belum tersedia' : 'S'.$candidate['sinta']->rank.' · SINTA' }}</td><td>{{ $candidate['score'] }} istilah: {{ implode(', ', $candidate['matches']) }}</td></tr>@endforeach</tbody></table></div></details>@endif
 @else<p>Belum ada kandidat terindeks yang beririsan dengan topik. Coba istilah bidang yang lebih spesifik.</p>@endif
 </section>
 <section class="match-results"><h2>Hasil pencocokan · {{ count($results) }} kandidat</h2>
