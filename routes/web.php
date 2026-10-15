@@ -89,6 +89,7 @@ Route::middleware(['auth', RequireAdmin::class])->prefix('admin')->name('admin.'
     Route::post('/agen-jurnal/sumber/{source}', [JournalAgentController::class, 'toggle'])->whereNumber('source')->name('agent.toggle');
     Route::post('/agen-jurnal/kandidat/{candidate}', [JournalAgentController::class, 'review'])->whereNumber('candidate')->name('agent.review');
     Route::post('/agen-jurnal/kandidat-sinta/{candidate}', [JournalAgentController::class, 'reviewSinta'])->whereNumber('candidate')->name('agent.sinta.review');
+    Route::post('/agen-jurnal/calon/{lead}/tolak', [JournalAgentController::class, 'dismissLead'])->whereNumber('lead')->name('agent.lead.dismiss');
     Route::get('/kurasi', [CurationController::class, 'index'])->name('curation');
     Route::get('/panduan', [GuideController::class, 'admin'])->name('guides.index');
     Route::get('/panduan/baru', [GuideController::class, 'create'])->name('guides.create');

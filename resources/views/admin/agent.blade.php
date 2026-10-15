@@ -4,6 +4,19 @@
 <a href="{{ route('admin.curation') }}">Kembali ke kurasi</a>
 <h1>Agen pemantauan jurnal</h1>
 <p>Sumber harus berada pada domain situs resmi jurnal. Agen hanya mencatat kutipan untuk ditinjau; persetujuan di sini tidak menerbitkan informasi ke katalog.</p>
+<h2>Calon jurnal baru untuk katalog terkurasi</h2>
+<p>Agen memilih sumber SINTA dengan tautan HTTPS dan ISSN yang cocok dengan keputusan akreditasi SINTA 1 sampai 4. Nama dan tautan dari snapshot tetap harus diperiksa. Membuka usulan tidak menerbitkan jurnal.</p>
+@forelse($curationLeads as $lead)
+    <article class="panel">
+        <h3>{{ $lead->name }}</h3>
+        <p>SINTA {{ $lead->rank }} · e-ISSN {{ $lead->e_issn ?: 'belum tersedia' }} · SK {{ $lead->decree_number }}, {{ $lead->decree_date }} halaman {{ $lead->source_page }}</p>
+        <p><a href="{{ $lead->official_url }}" target="_blank" rel="noopener noreferrer">Periksa situs jurnal</a> · <a href="{{ route('admin.sources.prepare', $lead->source_id) }}">Tinjau dan siapkan draft</a></p>
+        <form method="post" action="{{ route('admin.agent.lead.dismiss', $lead->id) }}">@csrf
+            <label>Alasan menolak usulan<textarea name="note" minlength="10" maxlength="2000" required></textarea></label>
+            <button type="submit" class="secondary">Tolak usulan</button>
+        </form>
+    </article>
+@empty<p>Belum ada calon jurnal baru yang menunggu pemeriksaan.</p>@endforelse
 <form method="post" action="{{ route('admin.agent.store') }}" class="panel">
     @csrf
     <h2>Daftarkan halaman resmi</h2>
