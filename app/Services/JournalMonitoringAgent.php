@@ -35,7 +35,8 @@ class JournalMonitoringAgent
             // Claim before network I/O. A manual retry cannot fetch this source twice in one day.
             $claimed = DB::table('m19_sources')->where('id', $source->id)->where('enabled', true)
                 ->where(fn ($q) => $q->whereNull('next_check_at')->orWhere('next_check_at', '<=', now()))
-                ->update(['next_check_at' => now()->addDay(), 'last_checked_at' => now(), 'updated_at' => now()]);
+                ->update(['next_check_at' => now()->startOfDay()->addDay()->setTime(3, 0),
+                    'last_checked_at' => now(), 'updated_at' => now()]);
             if (! $claimed) {
                 continue;
             }
