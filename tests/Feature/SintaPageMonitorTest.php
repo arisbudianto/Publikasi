@@ -73,6 +73,41 @@ class SintaPageMonitorTest extends TestCase
         $this->assertDatabaseHas('sinta_page_candidates', ['id' => $candidate, 'status' => 'reviewed']);
     }
 
+    public function test_historical_http_url_is_probed_only_over_https_without_changing_the_import(): void
+    {
+        $source = $this->source(77, 'http://journal.example.org/about');
+        config(['sinta_crawl.enabled' => true, 'sinta_crawl.daily_limit' => 1]);
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                if ($url !== 'https://journal.example.org/about') {
+                    throw new RuntimeException('unsafe_url');
+                }
+                return ['status' => 200, 'body' => '<html><body></body></html>', 'content_type' => 'text/html'];
+            }
+        });
+        $this->assertSame(1, app(SintaPageMonitor::class)->tick()['changed']);
+        $this->assertDatabaseHas('sinta_page_checks', ['journal_source_id' => $source->id,
+            'url' => 'https://journal.example.org/about', 'status' => 'changed']);
+        $this->assertSame('http://journal.example.org/about', $source->fresh()->official_url);
+    }
+
+    public function test_https_source_is_checked_before_historical_http_source(): void
+    {
+        $old = $this->source(1, 'http://old.example.org/about');
+        $secure = $this->source(2, 'https://secure.example.org/about');
+        config(['sinta_crawl.enabled' => true, 'sinta_crawl.daily_limit' => 1]);
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                return ['status' => 200, 'body' => '<html><body></body></html>', 'content_type' => 'text/html'];
+            }
+        });
+        $this->assertSame(1, app(SintaPageMonitor::class)->tick()['checked']);
+        $this->assertDatabaseHas('sinta_page_checks', ['journal_source_id' => $secure->id]);
+        $this->assertDatabaseMissing('sinta_page_checks', ['journal_source_id' => $old->id]);
+    }
+
     public function test_existing_m19_checks_reduce_the_shared_daily_budget(): void
     {
         for ($i = 1; $i <= 20; $i++) {

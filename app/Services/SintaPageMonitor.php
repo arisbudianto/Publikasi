@@ -27,11 +27,18 @@ class SintaPageMonitor
         }
         $sources = DB::table('journal_sources as j')->leftJoin('sinta_page_states as s', 's.journal_source_id', '=', 'j.id')
             ->whereNotNull('j.official_url')->where('j.official_url', '!=', '')
+            ->where(fn ($q) => $q->where('j.official_url', 'like', 'https://%')
+                ->orWhere('j.official_url', 'like', 'http://%'))
             ->where(fn ($q) => $q->whereNull('s.next_check_at')->orWhere('s.next_check_at', '<=', now()))
-            ->orderBy('s.next_check_at')->orderBy('j.id')
+            ->orderBy('s.next_check_at')
+            ->orderByRaw("CASE WHEN j.official_url LIKE 'https://%' THEN 0 ELSE 1 END")
+            ->orderBy('j.id')
             ->limit($limit)->get(['j.id', 'j.official_url', 's.last_hash']);
 
         foreach ($sources as $source) {
+            // Historical SINTA snapshots include HTTP links. Probe the same host
+            // and path over HTTPS; never permit a downgrade or follow redirects.
+            $url = preg_replace('/^http:\/\//i', 'https://', $source->official_url);
             DB::table('sinta_page_states')->insertOrIgnore(['journal_source_id' => $source->id,
                 'created_at' => now(), 'updated_at' => now()]);
             $claimed = DB::table('sinta_page_states')->where('journal_source_id', $source->id)
@@ -43,14 +50,14 @@ class SintaPageMonitor
             }
             $result['checked']++;
             try {
-                $page = $this->fetcher->fetch($source->official_url);
+                $page = $this->fetcher->fetch($url);
                 $hash = hash('sha256', $page['body']);
                 $changed = $hash !== $source->last_hash;
                 $quotes = $changed ? $this->extractor->extract($page['body'], 'scope') : [];
-                $added = DB::transaction(function () use ($source, $page, $hash, $changed, $quotes) {
+                $added = DB::transaction(function () use ($source, $url, $page, $hash, $changed, $quotes) {
                     $added = 0;
                     $check = DB::table('sinta_page_checks')->insertGetId(['journal_source_id' => $source->id,
-                        'url' => $source->official_url, 'status' => $changed ? 'changed' : 'unchanged',
+                        'url' => $url, 'status' => $changed ? 'changed' : 'unchanged',
                         'http_status' => $page['status'], 'content_hash' => $hash, 'created_at' => now()]);
                     foreach (array_slice($quotes, 0, 3) as $quote) {
                         if (DB::table('sinta_page_candidates')->where('journal_source_id', $source->id)
@@ -70,7 +77,7 @@ class SintaPageMonitor
                 $result['changed'] += (int) $changed;
             } catch (Throwable $e) {
                 DB::table('sinta_page_checks')->insert(['journal_source_id' => $source->id,
-                    'url' => $source->official_url, 'status' => 'error',
+                    'url' => $url, 'status' => 'error',
                     'error_code' => mb_substr($e->getMessage(), 0, 60), 'created_at' => now()]);
                 $result['errors']++;
             }
