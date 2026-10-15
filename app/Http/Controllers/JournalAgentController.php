@@ -25,7 +25,8 @@ class JournalAgentController extends Controller
                 ->select('c.id', 'c.status', 'c.error_code', 'c.created_at', 'j.name', 'j.id as journal_source_id')
                 ->orderByDesc('c.id')->limit(20)->get(),
             'sintaCandidates' => DB::table('sinta_page_candidates as c')->join('journal_sources as j', 'j.id', '=', 'c.journal_source_id')
-                ->where('c.status', 'pending')->select('c.id', 'c.quote', 'j.name', 'j.official_url', 'j.id as journal_source_id')
+                ->join('sinta_page_checks as p', 'p.id', '=', 'c.check_id')
+                ->where('c.status', 'pending')->select('c.id', 'c.quote', 'j.name', 'p.url as evidence_url', 'j.id as journal_source_id')
                 ->orderBy('c.id')->limit(30)->get(),
         ])->header('Cache-Control', 'no-store, private');
     }

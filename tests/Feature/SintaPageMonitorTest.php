@@ -108,6 +108,26 @@ class SintaPageMonitorTest extends TestCase
         $this->assertDatabaseMissing('sinta_page_checks', ['journal_source_id' => $old->id]);
     }
 
+    public function test_same_host_scope_link_produces_reviewable_evidence(): void
+    {
+        $source = $this->source(1);
+        config(['sinta_crawl.enabled' => true, 'sinta_crawl.daily_limit' => 1]);
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                $body = str_ends_with($url, '/scope')
+                    ? '<html><body><p>The focus and scope of this journal include vocational education and assessment research.</p></body></html>'
+                    : '<html><body><nav><a href="https://journal.example.org/scope">Focus and Scope</a><a href="https://evil.test/scope">Focus and Scope</a></nav></body></html>';
+                return ['status' => 200, 'body' => $body, 'content_type' => 'text/html'];
+            }
+        });
+        $result = app(SintaPageMonitor::class)->tick();
+        $this->assertSame(1, $result['candidates']);
+        $this->assertDatabaseHas('sinta_page_checks', ['journal_source_id' => $source->id,
+            'url' => 'https://journal.example.org/scope']);
+        $this->assertDatabaseCount('sinta_page_candidates', 1);
+    }
+
     public function test_existing_m19_checks_reduce_the_shared_daily_budget(): void
     {
         for ($i = 1; $i <= 20; $i++) {

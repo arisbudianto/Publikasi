@@ -7,7 +7,8 @@ use Throwable;
 
 class SintaPageMonitor
 {
-    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor) {}
+    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor,
+        private JournalScopeLinkFinder $scopeLinks) {}
 
     public function tick(): array
     {
@@ -51,9 +52,22 @@ class SintaPageMonitor
             $result['checked']++;
             try {
                 $page = $this->fetcher->fetch($url);
+                $quotes = $this->extractor->extract($page['body'], 'scope');
+                if ($quotes === [] && ($scopeUrl = $this->scopeLinks->find($page['body'], $url))) {
+                    try {
+                        $scopePage = $this->fetcher->fetch($scopeUrl);
+                        $page = $scopePage;
+                        $url = $scopeUrl;
+                        $quotes = $this->extractor->extract($page['body'], 'scope');
+                    } catch (Throwable) {
+                        // The original page was fetched successfully; keep its check.
+                    }
+                }
                 $hash = hash('sha256', $page['body']);
                 $changed = $hash !== $source->last_hash;
-                $quotes = $changed ? $this->extractor->extract($page['body'], 'scope') : [];
+                if (! $changed) {
+                    $quotes = [];
+                }
                 $added = DB::transaction(function () use ($source, $url, $page, $hash, $changed, $quotes) {
                     $added = 0;
                     $check = DB::table('sinta_page_checks')->insertGetId(['journal_source_id' => $source->id,
