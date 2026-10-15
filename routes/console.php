@@ -10,6 +10,7 @@ use App\Services\ScopusDiscontinuedDataset;
 use App\Services\ScopusSourceDataset;
 use App\Services\SintaPageMonitor;
 use App\Services\ScopusPageMonitor;
+use App\Services\ScopusCrawlTargetSeeder;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use App\Services\TopicMonitoring;
@@ -34,6 +35,16 @@ Artisan::command('publikasi:crawl-scopus-journals', function (ScopusPageMonitor 
 })->purpose('Pantau halaman penerbit jurnal dalam snapshot Scopus tanpa mengubah status indeks');
 
 Schedule::command('publikasi:crawl-scopus-journals')->dailyAt('03:30')->withoutOverlapping(30);
+
+Artisan::command('publikasi:seed-scopus-crawl {--limit=50} {--apply}', function (ScopusCrawlTargetSeeder $seeder) {
+    try {
+        $this->line(json_encode($seeder->run((int) $this->option('limit'), (bool) $this->option('apply'))));
+    } catch (\RuntimeException $e) {
+        $this->error($e->getMessage());
+        return 1;
+    }
+})->purpose('Siapkan target crawler dari URL SINTA dengan padanan ISSN tepat, tetap dijeda');
+
 
 Artisan::command('publikasi:crawl-sinta', function (SintaPageMonitor $monitor) {
     $this->line(json_encode($monitor->tick()));
