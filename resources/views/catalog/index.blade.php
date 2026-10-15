@@ -2,7 +2,8 @@
 @section('title', 'Katalog jurnal terkurasi')
 @section('content')
 <section class="hero"><div><p class="eyebrow">KATALOG TERBUKA · PENDIDIKAN</p><h1>Kenali jurnal sebelum menentukan tujuan submit.</h1><p>Telusuri bidang, peringkat, indeksasi, bahasa, dan biaya beserta sumber informasinya.</p></div><div class="hero-note"><b>{{ $journals->total() }}</b><span>jurnal dalam hasil pencarian</span><small>Data terstruktur ditampilkan sesuai skema dan status verifikasinya.</small></div></section>
-<div class="notice">Katalog ini memuat {{ $journals->total() }} jurnal dengan scope terkurasi. Sumber SINTA semua bidang tersedia pada <a href="{{ route('sources.index',['q'=>$q]) }}">database utama berisi {{ $sourceCount }} rekaman</a>. Data impor belum menjadi rekomendasi scope terkurasi.</div>
+<div class="notice">Katalog ini memuat {{ $journals->total() }} jurnal dengan scope terkurasi. Calon jurnal baru ditinjau dari data sumber dan <a href="{{ route('accreditations.index') }}">keputusan akreditasi SINTA</a>. Data impor belum menjadi rekomendasi scope terkurasi.</div>
+@auth @if(auth()->user()->is_admin)<p><a href="{{ route('admin.agent.index') }}">Tinjau usulan jurnal baru dan pembaruan dari agen</a></p>@endif @endauth
 <div class="directory-layout">
     <aside>@include('catalog._directory-filters', ['filterAction'=>route('catalog.index'), 'ids'=>$selectedIds, 'noApc'=>false])</aside>
     <section class="directory-results"><section class="selection" aria-label="Jurnal pilihan"><h2>Bandingkan jurnal <small>{{ $selected->count() }}/3 dipilih</small></h2><p>Pilihan tetap tersimpan saat mencari, memfilter, atau berpindah halaman.</p>@foreach($selected as $item)<span class="selected-item">{{ $item->name }} <a aria-label="Hapus {{ $item->name }} dari pilihan" href="{{ route('catalog.index', array_merge(request()->except('page','ids'), ['ids'=>array_values(array_diff($selectedIds,[$item->id]))])) }}">Hapus</a></span>@endforeach

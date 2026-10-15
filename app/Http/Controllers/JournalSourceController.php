@@ -64,6 +64,9 @@ class JournalSourceController extends Controller
             abort_if($s->journal_id, 409, 'Sumber ini sudah memiliki draft katalog.');
             $j = $catalog->save($d, null, $r->user()->id);
             $s->update(['journal_id' => $j->id]);
+            DB::table('curation_leads')->where('journal_source_id', $s->id)->where('status', 'pending')
+                ->update(['status' => 'drafted', 'reviewed_by' => $r->user()->id,
+                    'review_note' => 'Draft dibuat melalui alur kurasi sumber.', 'updated_at' => now()]);
 
             return $j;
         });

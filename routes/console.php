@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Models\Journal;
 use App\Services\JournalAccreditationLinker;
 use App\Services\JournalMonitoringAgent;
+use App\Services\CuratedJournalDiscovery;
 use App\Services\OperationalHealth;
 use App\Services\ScopusDiscontinuedDataset;
 use App\Services\ScopusSourceDataset;
@@ -32,6 +33,12 @@ Artisan::command('publikasi:crawl-sinta', function (SintaPageMonitor $monitor) {
 })->purpose('Periksa halaman resmi sumber SINTA secara bertahap dan simpan bukti');
 
 Schedule::command('publikasi:crawl-sinta')->dailyAt('04:00')->withoutOverlapping(30);
+
+Artisan::command('publikasi:discover-curated', function (CuratedJournalDiscovery $discovery) {
+    $this->line(json_encode($discovery->tick()));
+})->purpose('Temukan calon jurnal terkurasi dari sumber SINTA dan keputusan akreditasi');
+
+Schedule::command('publikasi:discover-curated')->dailyAt('04:30')->withoutOverlapping(10);
 
 Artisan::command('m19:seed-scope {--limit=200} {--apply}', function (\App\Services\JournalPageFetcher $fetcher) {
     $limit = (int) $this->option('limit');

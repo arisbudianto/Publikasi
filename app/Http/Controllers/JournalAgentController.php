@@ -28,6 +28,13 @@ class JournalAgentController extends Controller
                 ->join('sinta_page_checks as p', 'p.id', '=', 'c.check_id')
                 ->where('c.status', 'pending')->select('c.id', 'c.quote', 'j.name', 'p.url as evidence_url', 'j.id as journal_source_id')
                 ->orderBy('c.id')->limit(30)->get(),
+            'curationLeads' => DB::table('curation_leads as l')
+                ->join('journal_sources as s', 's.id', '=', 'l.journal_source_id')
+                ->join('journal_accreditations as a', 'a.id', '=', 'l.accreditation_id')
+                ->where('l.status', 'pending')->whereNull('s.journal_id')
+                ->select('l.id', 's.id as source_id', 's.name', 's.e_issn', 's.official_url',
+                    'a.rank', 'a.decree_number', 'a.decree_date', 'a.source_page')
+                ->orderBy('a.rank')->orderBy('l.id')->limit(50)->get(),
         ])->header('Cache-Control', 'no-store, private');
     }
 
@@ -84,5 +91,16 @@ class JournalAgentController extends Controller
         abort_unless($updated, 409);
 
         return back()->with('success', 'Keputusan disimpan. Snapshot SINTA dan katalog tidak berubah.');
+    }
+
+    public function dismissLead(Request $request, int $lead)
+    {
+        $data = $request->validate(['note' => 'required|string|min:10|max:2000']);
+        $updated = DB::table('curation_leads')->where('id', $lead)->where('status', 'pending')
+            ->update(['status' => 'dismissed', 'reviewed_by' => $request->user()->id,
+                'review_note' => $data['note'], 'updated_at' => now()]);
+        abort_unless($updated, 409);
+
+        return back()->with('success', 'Usulan ditolak. Tidak ada data katalog yang berubah.');
     }
 }
