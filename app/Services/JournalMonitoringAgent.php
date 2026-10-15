@@ -18,7 +18,8 @@ class JournalMonitoringAgent
         $today = now()->startOfDay();
         $checkedToday = DB::table('m19_runs')->join('m19_sources', 'm19_sources.id', '=', 'm19_runs.source_id')
             ->where('m19_runs.created_at', '>=', $today)->distinct()->pluck('m19_sources.journal_id')->all();
-        $remaining = max(0, $limit - count($checkedToday));
+        $sintaToday = DB::table('sinta_page_checks')->where('created_at', '>=', $today)->count();
+        $remaining = max(0, min($limit - count($checkedToday), 20 - count($checkedToday) - $sintaToday));
         $sources = DB::table('m19_sources')->where('enabled', true)
             ->where(fn ($q) => $q->whereNull('next_check_at')->orWhere('next_check_at', '<=', now()))
             ->when($checkedToday, fn ($q) => $q->whereNotIn('journal_id', $checkedToday))
