@@ -24,10 +24,8 @@
             <a class="sidebar-link {{ request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare') ? 'is-active' : '' }}" href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare')) aria-current="page" @endif>Katalog terkurasi</a>
             <a class="sidebar-link {{ request()->routeIs('catalog.no-apc') ? 'is-active' : '' }}" href="{{ route('catalog.no-apc') }}" @if(request()->routeIs('catalog.no-apc')) aria-current="page" @endif>Jurnal tanpa APC</a>
 
-            <a class="sidebar-link {{ request()->routeIs('guides.*') ? 'is-active' : '' }}" href="{{ route('guides.index') }}">Panduan publikasi</a>
-            <a class="sidebar-link {{ request()->routeIs('assistant.*') ? 'is-active' : '' }}" href="{{ route('assistant.index') }}">Tanya publikasi</a>
             <p class="nav-section">ALAT BANTU</p>
-            <a class="sidebar-link {{ request()->routeIs('match.*') ? 'is-active' : '' }}" href="{{ route('match.form') }}" @if(request()->routeIs('match.*')) aria-current="page" @endif>Cocokkan naskah</a>
+            <a class="sidebar-link {{ request()->routeIs('match.*', 'assistant.*', 'guides.*') ? 'is-active' : '' }}" href="{{ route('match.form') }}" @if(request()->routeIs('match.*', 'assistant.*', 'guides.*')) aria-current="page" @endif>Cocokkan naskah publikasi</a>
             <a class="sidebar-link {{ request()->routeIs('integrity.*') ? 'is-active' : '' }}" href="{{ route('integrity.form') }}" @if(request()->routeIs('integrity.*')) aria-current="page" @endif>Periksa jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('references.*') ? 'is-active' : '' }}" href="{{ route('references.form') }}" @if(request()->routeIs('references.*')) aria-current="page" @endif>Periksa referensi</a>
             <a class="sidebar-link {{ request()->routeIs('authorship.*') ? 'is-active' : '' }}" href="{{ route('authorship.form') }}" @if(request()->routeIs('authorship.*')) aria-current="page" @endif>Periksa authorship</a>

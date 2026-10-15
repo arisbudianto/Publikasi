@@ -85,8 +85,8 @@ class M17PublicationAssistantTest extends TestCase
         $this->get(route('catalog.show', $journal))->assertOk()->assertSee('Tanya tentang jurnal ini');
         $this->get(route('assistant.index', ['journal' => $journal->id]))->assertOk()
             ->assertSee('ISSN 2088-2866');
-        $this->get(route('guides.index'))->assertOk()->assertSee('Tanya tentang jurnal dan publikasi')
-            ->assertSee('Cari jawaban');
+        $this->get(route('guides.index'))->assertOk()->assertSee('Alat bantu publikasi')
+            ->assertSee(route('assistant.index'))->assertSee(route('match.form'));
     }
 
     public function test_feedback_requires_login_and_enters_curation_without_storing_conversation(): void
