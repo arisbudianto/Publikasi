@@ -1,6 +1,7 @@
 @extends('layout') @section('title','Hasil Akreditasi SINTA Periode 3 Tahun 2025') @section('content')
 <p class="eyebrow">SK DIREKTUR JENDERAL SAINS DAN TEKNOLOGI · 24 JULI 2026</p>
 <h1>Hasil akreditasi SINTA</h1>
+@include('partials.database-tabs')
 <p>Dokumen Periode 3 Tahun 2025 memuat {{ $totalAccreditations }} keputusan. {{ $matchedAccreditations }} baris cocok dengan sumber atau jurnal terkurasi berdasarkan ISSN yang valid. Hasil ini berasal dari SK Nomor 355/DST/D.D1/HM.01.01/2026; masa berlaku mengikuti volume dan nomor yang tercantum, bukan tahun kalender.</p>
 <div class="notice">Nama, e-ISSN, penerbit, peringkat, dan periode ditranskripsikan dari dokumen keputusan. Data tidak mengubah label historis pada snapshot SINTA 20 Maret 2025. Baris dengan ISSN kosong atau checksum tidak valid tidak ditautkan otomatis.</div>
 <section aria-labelledby="rank-category-title"><h2 id="rank-category-title">Kategori jurnal SINTA 1–4</h2><p>Pilih peringkat untuk melihat keputusan pada kategori tersebut. Peringkat SINTA 5 dan 6 tetap tersedia melalui pilihan filter di bawah.</p><div class="rank-categories">@foreach(range(1,4) as $value)<a class="rank-card" href="{{ route('accreditations.index',['rank'=>$value]) }}" aria-label="Filter peringkat SINTA {{ $value }}, {{ (int) ($rankCounts[$value] ?? 0) }} keputusan"><span class="tag">SINTA {{ $value }}</span><strong>{{ number_format((int) ($rankCounts[$value] ?? 0)) }}</strong><span>rekaman keputusan</span></a>@endforeach</div></section>
