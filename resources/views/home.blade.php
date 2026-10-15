@@ -6,11 +6,11 @@
         <p class="eyebrow">RUANG KERJA PUBLIKASI ILMIAH</p>
         <h1 id="landing-title">Sudah punya naskah. <span>Jurnal mana yang masuk akal?</span></h1>
         <p class="landing-lead">Cari jurnal, periksa cakupan dan status informasinya, lalu siapkan langkah submit. Setiap data yang belum diverifikasi ditandai agar Anda tahu apa yang masih perlu dicek di situs jurnal.</p>
-        <form class="landing-search" action="{{ route('sources.index') }}" method="get">
-            <label for="journal-query">Cari nama jurnal, penerbit, ISSN, atau judul artikel</label>
+        <form class="landing-search" action="{{ route('accreditations.index') }}" method="get">
+            <label for="journal-query">Cari jurnal pada keputusan akreditasi SINTA</label>
             <div><input id="journal-query" name="q" maxlength="120" placeholder="Misalnya: pendidikan vokasi" required><button type="submit">Cari jurnal</button></div>
         </form>
-        <p class="landing-search-note">{{ number_format($sourceCount, 0, ',', '.') }} rekaman sumber SINTA dari snapshot 20 Maret 2025. <a href="{{ route('scopus.index') }}">Cari sumber Scopus</a> dari snapshot September 2026. Status saat ini perlu diperiksa ulang.</p>
+        <p class="landing-search-note">Hasil SINTA mengacu pada keputusan akreditasi resmi 24 Juli 2026. <a href="{{ route('scopus.index') }}">Cari sumber Scopus</a> dari snapshot September 2026. Status saat ini perlu diperiksa ulang.</p>
     </div>
     <div class="landing-preview" aria-label="Contoh langkah pemeriksaan">
         <div class="preview-top"><span>SEBELUM SUBMIT</span><span>01 / 03</span></div>
@@ -29,7 +29,7 @@
 <section class="landing-section" id="fitur">
     <div class="landing-heading"><p class="eyebrow">MULAI DARI KEBUTUHAN ANDA</p><h2>Pilih langkah yang sedang Anda kerjakan.</h2><p>Alat ini membantu memeriksa informasi. Keputusan submit tetap perlu merujuk situs jurnal dan sumber indeks resmi.</p></div>
     <div class="landing-features">
-        <a href="{{ route('sources.index') }}"><span>01 · TELUSURI</span><h3>Cari jurnal dan ISSN</h3><p>Jelajahi rekaman sumber, lalu bedakan data impor dari jurnal yang sudah dikurasi.</p><b>Lihat database <span aria-hidden="true">→</span></b></a>
+        <a href="{{ route('accreditations.index') }}"><span>01 · TELUSURI</span><h3>Periksa akreditasi SINTA</h3><p>Cari nama jurnal atau ISSN pada keputusan akreditasi resmi.</p><b>Lihat keputusan <span aria-hidden="true">→</span></b></a>
         <a href="{{ route('scopus.index') }}"><span>SCOPUS · TELUSURI</span><h3>Cari sumber Scopus</h3><p>Periksa status dan cakupan pada daftar sumber September 2026.</p><b>Lihat daftar <span aria-hidden="true">→</span></b></a>
         <a href="{{ route('integrity.form') }}"><span>02 · PERIKSA</span><h3>Cek sebelum submit</h3><p>Gunakan daftar periksa untuk menilai transparansi jurnal dan tanda yang perlu diperhatikan.</p><b>Periksa jurnal <span aria-hidden="true">→</span></b></a>
         <a href="{{ route('assistant.index') }}"><span>03 · TANYAKAN</span><h3>Tanya publikasi</h3><p>Ajukan pertanyaan tentang jurnal dan proses publikasi. Jawaban merujuk data katalog dan panduan yang tersedia.</p><b>Buka asisten <span aria-hidden="true">→</span></b></a>
