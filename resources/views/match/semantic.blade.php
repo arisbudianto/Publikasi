@@ -26,7 +26,6 @@
 @if($r['evidence']['ranking_unavailable']??false)<p class="muted">Pengurutan semantik artikel gagal; metadata tetap ditampilkan.</p>@endif
 <a href="{{ route('catalog.index',['ids'=>[$journal->id]]) }}">Mulai perbandingan</a>@auth<form method="post" action="{{ route('account.save',$journal) }}" class="shortlist-action">@csrf<button class="secondary">Simpan shortlist</button></form>@endauth</article>
 @empty<div class="empty">Belum ada kandidat katalog yang melewati ambang semantik. Periksa istilah topik atau telusuri katalog.</div>@endforelse</section>@endif
-@endsection
 
 @if(isset($indexedCandidates))
 <section class="match-results">
@@ -34,9 +33,18 @@
 <p>Daftar ini memakai irisan istilah judul dan abstrak, bukan penilaian AI atas scope. Sumber Scopus yang tersedia tidak memuat quartile; verifikasi status terkini pada sumber resmi.</p>
 @forelse($indexedCandidates as $candidate)
 <article class="panel"><h3><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a></h3>
-<p>@if($candidate['scopus'])Scopus · snapshot {{ $candidate['scopus']->snapshot_month }} · quartile belum tersedia@endif
-@if($candidate['sinta'])SINTA {{ $candidate['sinta']->rank }}@endif · ISSN {{ $candidate['issn'] ?: 'belum tercatat' }}</p>
+<p>
+@if($candidate['scopus'])
+Scopus · snapshot {{ $candidate['scopus']->snapshot_month }} · quartile belum tersedia
+@endif
+@if($candidate['sinta'])
+SINTA {{ $candidate['sinta']->rank }}
+@endif
+· ISSN {{ $candidate['issn'] ?: 'belum tercatat' }}</p>
 <p>{{ $candidate['evidence'] }} · Istilah beririsan: {{ implode(', ', $candidate['matches']) }}</p></article>
-@empty<p>Belum ada kandidat dari indeks yang beririsan dengan istilah naskah ini.</p>@endforelse
+@empty
+<p>Belum ada kandidat dari indeks yang beririsan dengan istilah naskah ini.</p>
+@endforelse
 </section>
 @endif
+@endsection
