@@ -14,15 +14,28 @@ class JournalMonitoringAgent
         if (! config('m19.enabled')) {
             return ['status' => 'disabled', 'checked' => 0];
         }
+        $limit = (int) config('m19.batch_limit');
+        $today = now()->startOfDay();
+        $checkedToday = DB::table('m19_runs')->join('m19_sources', 'm19_sources.id', '=', 'm19_runs.source_id')
+            ->where('m19_runs.created_at', '>=', $today)->distinct()->pluck('m19_sources.journal_id')->all();
+        $remaining = max(0, $limit - count($checkedToday));
         $sources = DB::table('m19_sources')->where('enabled', true)
             ->where(fn ($q) => $q->whereNull('next_check_at')->orWhere('next_check_at', '<=', now()))
-            ->orderBy('next_check_at')->limit((int) config('m19.batch_limit'))->get();
+            ->when($checkedToday, fn ($q) => $q->whereNotIn('journal_id', $checkedToday))
+            ->whereNotExists(function ($q) {
+                $q->selectRaw('1')->from('m19_sources as earlier')
+                    ->whereColumn('earlier.journal_id', 'm19_sources.journal_id')
+                    ->whereColumn('earlier.id', '<', 'm19_sources.id')
+                    ->where('earlier.enabled', true)
+                    ->where(fn ($due) => $due->whereNull('earlier.next_check_at')->orWhere('earlier.next_check_at', '<=', now()));
+            })
+            ->orderBy('next_check_at')->orderBy('id')->limit($remaining)->get();
         $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0];
         foreach ($sources as $source) {
-            // Claim before network I/O. A manual retry cannot fetch this source twice in one month.
+            // Claim before network I/O. A manual retry cannot fetch this source twice in one day.
             $claimed = DB::table('m19_sources')->where('id', $source->id)->where('enabled', true)
                 ->where(fn ($q) => $q->whereNull('next_check_at')->orWhere('next_check_at', '<=', now()))
-                ->update(['next_check_at' => now()->startOfMonth()->addMonth()->setTime(3, 0), 'last_checked_at' => now(), 'updated_at' => now()]);
+                ->update(['next_check_at' => now()->addDay(), 'last_checked_at' => now(), 'updated_at' => now()]);
             if (! $claimed) {
                 continue;
             }

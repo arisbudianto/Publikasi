@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\Journal;
 use App\Services\JournalAccreditationLinker;
 use App\Services\JournalMonitoringAgent;
 use App\Services\OperationalHealth;
@@ -10,6 +11,7 @@ use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use App\Services\TopicMonitoring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('m16:tick', function (TopicMonitoring $monitor) {
@@ -22,7 +24,43 @@ Artisan::command('m19:tick', function (JournalMonitoringAgent $agent) {
     $this->line(json_encode($agent->tick()));
 })->purpose('Periksa halaman jurnal yang disetujui dan catat kandidat perubahan');
 
-Schedule::command('m19:tick')->monthlyOn(1, '03:00')->withoutOverlapping(30);
+Schedule::command('m19:tick')->dailyAt('03:00')->withoutOverlapping(30);
+
+Artisan::command('m19:seed-scope {--limit=200} {--apply}', function (\App\Services\JournalPageFetcher $fetcher) {
+    $limit = (int) $this->option('limit');
+    if ($limit < 1 || $limit > 1000) {
+        $this->error('Batas harus antara 1 dan 1000.');
+        return 1;
+    }
+    $created = 0;
+    $eligible = 0;
+    Journal::where('status', 'published')->whereNotNull('scope_source_url')
+        ->orderBy('id')->chunkById(100, function ($journals) use ($fetcher, $limit, &$eligible, &$created) {
+            foreach ($journals as $journal) {
+                if ($eligible >= $limit) {
+                    return false;
+                }
+                try {
+                    if ($fetcher->host($journal->scope_source_url) !== $fetcher->host($journal->official_url)) {
+                        continue;
+                    }
+                } catch (\RuntimeException) {
+                    continue;
+                }
+                if (DB::table('m19_sources')->where('journal_id', $journal->id)->where('field', 'scope')->exists()) {
+                    continue;
+                }
+                $eligible++;
+                if ($this->option('apply')) {
+                    DB::table('m19_sources')->insert(['journal_id' => $journal->id, 'field' => 'scope',
+                        'url' => $journal->scope_source_url, 'enabled' => true,
+                        'created_at' => now(), 'updated_at' => now()]);
+                    $created++;
+                }
+            }
+        });
+    $this->line(json_encode(['eligible' => $eligible, 'created' => $created, 'mode' => $this->option('apply') ? 'apply' : 'dry-run']));
+})->purpose('Daftarkan halaman cakupan jurnal terkurasi untuk pemantauan harian');
 
 Artisan::command('publikasi:admin {email}', function () {
     $email = $this->argument('email');
