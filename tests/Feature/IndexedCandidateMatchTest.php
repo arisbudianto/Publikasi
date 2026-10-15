@@ -44,6 +44,7 @@ class IndexedCandidateMatchTest extends TestCase
         $payload = ['title' => 'Vocational learning curriculum', 'abstract' => str_repeat('Vocational learning and digital training. ', 4)];
         $this->post('/cocokkan', $payload)->assertOk()->assertSeeInOrder(['Journal of Vocational Learning', 'Jurnal Pembelajaran Vokasi'])
             ->assertSee('11 kandidat')
+            ->assertSeeInOrder(['comparison-table', 'Jurnal Pembelajaran Vokasi', 'comparison-more'])
             ->assertSee('Jurnal Pembelajaran Vokasi')
             ->assertSee('Journal of Vocational Learning')->assertSee('S2')
             ->assertDontSee('Discontinued Vocational Journal')->assertDontSee('Inactive Vocational Journal');
