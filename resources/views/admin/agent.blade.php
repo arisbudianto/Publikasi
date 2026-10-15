@@ -32,4 +32,20 @@
         </form>
     </article>
 @empty<p>Belum ada kutipan yang menunggu.</p>@endforelse
+<h2>Pemeriksaan halaman sumber SINTA</h2>
+<p>Catatan halaman sumber SINTA adalah bukti untuk kurasi. Pemeriksaan ini tidak memverifikasi peringkat akreditasi.</p>
+@forelse($sintaChecks as $check)
+    <p><a href="{{ route('sources.show', $check->journal_source_id) }}">{{ $check->name ?: 'SINTA #'.$check->journal_source_id }}</a> · {{ $check->status }} · {{ $check->error_code ?: $check->created_at }}</p>
+@empty<p>Belum ada halaman SINTA yang diperiksa.</p>@endforelse
+<h2>Kutipan SINTA menunggu pemeriksaan</h2>
+@forelse($sintaCandidates as $candidate)
+    <article class="panel"><h3>{{ $candidate->name ?: 'SINTA #'.$candidate->journal_source_id }}</h3>
+        <blockquote>{{ $candidate->quote }}</blockquote>
+        <p>@if(str_starts_with($candidate->official_url ?? '', 'https://'))<a href="{{ $candidate->official_url }}" target="_blank" rel="noopener noreferrer">Buka halaman sumber</a> · @endif<a href="{{ route('sources.show', $candidate->journal_source_id) }}">Lihat rekaman SINTA</a></p>
+        <form method="post" action="{{ route('admin.agent.sinta.review', $candidate->id) }}">@csrf
+            <button name="decision" value="reviewed">Tandai sudah diperiksa</button>
+            <button name="decision" value="rejected" class="secondary">Tolak kutipan</button>
+        </form>
+    </article>
+@empty<p>Belum ada kutipan SINTA yang menunggu.</p>@endforelse
 @endsection
