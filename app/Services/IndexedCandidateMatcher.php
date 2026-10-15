@@ -20,9 +20,9 @@ class IndexedCandidateMatcher
         $results = [];
         if ($index !== 'scopus') {
             // A source is eligible only when linked by ISSN to a published accreditation decision.
-            $query = JournalSource::query()->whereNotNull('name')->whereHas('accreditations', fn ($q) => $q->where('match_status', 'matched')->where('e_issn_checksum_valid', true)->where('valid_to_year', '>=', now()->year));
+            $query = JournalSource::query()->whereNotNull('name')->whereHas('accreditations', fn ($q) => $q->where('match_status', 'matched')->where('e_issn_checksum_valid', true)->whereBetween('rank', [1, 4])->where('valid_to_year', '>=', now()->year));
             $this->whereTerms($query, ['name', 'subject', 'article_titles'], $searchTerms);
-            foreach ($query->with(['accreditations' => fn ($q) => $q->where('match_status', 'matched')->where('e_issn_checksum_valid', true)->where('valid_to_year', '>=', now()->year)->orderByDesc('decree_date')])->orderBy('id')->limit(500)->get() as $source) {
+            foreach ($query->with(['accreditations' => fn ($q) => $q->where('match_status', 'matched')->where('e_issn_checksum_valid', true)->whereBetween('rank', [1, 4])->where('valid_to_year', '>=', now()->year)->orderByDesc('decree_date')])->orderBy('id')->limit(500)->get() as $source) {
                 $evidence = trim($source->subject.' '.implode(' ', array_slice($source->article_titles ?? [], 0, 10)));
                 $matches = array_intersect($terms, $this->matcher->terms($evidence));
                 if ($matches === []) continue;
@@ -54,7 +54,15 @@ class IndexedCandidateMatcher
             if (! isset($merged[$key])) $merged[$key] = $result;
             elseif ($result['scopus']) $merged[$key]['scopus'] = $result['scopus'];
         }
-        usort($merged, fn ($a, $b) => ($b['score'] <=> $a['score']) ?: strcmp($a['name'], $b['name']));
+        // Scopus Source Title List does not contain quartiles. Keep those entries
+        // separate from verified SINTA ranks instead of inferring Q from status.
+        usort($merged, function ($a, $b) {
+            $group = static fn ($item) => $item['scopus'] ? 0 : (($item['sinta']?->rank >= 1 && $item['sinta']?->rank <= 4) ? (int) $item['sinta']->rank : 5);
+
+            return ($group($a) <=> $group($b))
+                ?: ($b['score'] <=> $a['score'])
+                ?: strcmp($a['name'], $b['name']);
+        });
 
         return array_slice($merged, 0, 20);
     }
