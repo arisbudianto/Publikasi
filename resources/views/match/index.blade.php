@@ -4,6 +4,7 @@
 <p class="eyebrow">PENCOCOKAN DASAR · M03</p><h1>Temukan scope yang beririsan.</h1>
 <p>Pencocokan kata kunci judul, abstrak, dan konteks dengan scope katalog. Sistem mendukung padanan istilah Indonesia dan Inggris yang terbatas.</p>
 <p class="muted">Input diproses sementara, tidak disimpan ke database atau sesi aplikasi dan tidak dikirim ke layanan AI. Hasil bukan penilaian mutu naskah atau peluang penerimaan.</p>
+@include('partials.publication-tools-tabs')
 @if(isset($inputErrors))<div class="error" role="alert"><strong>Periksa input. Isi ulang naskah karena input tidak disimpan.</strong><ul>@foreach($inputErrors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <form method="post" action="{{ route('match.run') }}" class="panel match-form" autocomplete="off">@csrf
 <label for="title">Judul penelitian<input id="title" name="title" minlength="10" maxlength="300" required placeholder="10–300 karakter"></label>
