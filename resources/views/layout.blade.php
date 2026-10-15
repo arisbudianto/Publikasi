@@ -10,7 +10,7 @@
 <body>
 <div class="app-shell @guest public-shell @endguest @if(request()->routeIs('home')) landing-shell @endif">
     @guest
-    <header class="public-header"><a class="brand" href="{{ route('home') }}">Publikasi<span>Periksa sebelum submit</span></a><nav aria-label="Navigasi publik"><a href="{{ route('home') }}#fitur">Fitur</a><a href="{{ route('accreditations.index') }}">Database jurnal</a><a href="{{ route('guides.index') }}">Panduan</a><a class="button" href="{{ route('account.login') }}">Masuk</a></nav></header>
+    <header class="public-header"><a class="brand" href="{{ route('home') }}">Publikasi<span>Periksa sebelum submit</span></a><nav aria-label="Navigasi publik"><a href="{{ route('home') }}#fitur">Fitur</a><a href="{{ route('accreditations.index') }}">Database jurnal</a><a class="button" href="{{ route('account.login') }}">Masuk</a></nav></header>
     @endguest
     @auth
     <aside class="sidebar" id="site-sidebar" aria-label="Navigasi utama">
@@ -25,7 +25,7 @@
             <a class="sidebar-link {{ request()->routeIs('catalog.no-apc') ? 'is-active' : '' }}" href="{{ route('catalog.no-apc') }}" @if(request()->routeIs('catalog.no-apc')) aria-current="page" @endif>Jurnal tanpa APC</a>
 
             <p class="nav-section">ALAT BANTU</p>
-            <a class="sidebar-link {{ request()->routeIs('match.*', 'assistant.*', 'guides.*') ? 'is-active' : '' }}" href="{{ route('match.form') }}" @if(request()->routeIs('match.*', 'assistant.*', 'guides.*')) aria-current="page" @endif>Cocokkan naskah publikasi</a>
+            <a class="sidebar-link {{ request()->routeIs('match.*') ? 'is-active' : '' }}" href="{{ route('match.form') }}" @if(request()->routeIs('match.*')) aria-current="page" @endif>Cocokkan naskah publikasi</a>
             <a class="sidebar-link {{ request()->routeIs('integrity.*') ? 'is-active' : '' }}" href="{{ route('integrity.form') }}" @if(request()->routeIs('integrity.*')) aria-current="page" @endif>Periksa jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('references.*') ? 'is-active' : '' }}" href="{{ route('references.form') }}" @if(request()->routeIs('references.*')) aria-current="page" @endif>Periksa referensi</a>
             <a class="sidebar-link {{ request()->routeIs('authorship.*') ? 'is-active' : '' }}" href="{{ route('authorship.form') }}" @if(request()->routeIs('authorship.*')) aria-current="page" @endif>Periksa authorship</a>
