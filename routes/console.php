@@ -9,6 +9,7 @@ use App\Services\OperationalHealth;
 use App\Services\ScopusDiscontinuedDataset;
 use App\Services\ScopusSourceDataset;
 use App\Services\SintaPageMonitor;
+use App\Services\ScopusPageMonitor;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use App\Services\TopicMonitoring;
@@ -27,6 +28,12 @@ Artisan::command('m19:tick', function (JournalMonitoringAgent $agent) {
 })->purpose('Periksa halaman jurnal yang disetujui dan catat kandidat perubahan');
 
 Schedule::command('m19:tick')->dailyAt('03:00')->withoutOverlapping(30);
+
+Artisan::command('publikasi:crawl-scopus-journals', function (ScopusPageMonitor $monitor) {
+    $this->line(json_encode($monitor->tick()));
+})->purpose('Pantau halaman penerbit jurnal dalam snapshot Scopus tanpa mengubah status indeks');
+
+Schedule::command('publikasi:crawl-scopus-journals')->dailyAt('03:30')->withoutOverlapping(30);
 
 Artisan::command('publikasi:crawl-sinta', function (SintaPageMonitor $monitor) {
     $this->line(json_encode($monitor->tick()));

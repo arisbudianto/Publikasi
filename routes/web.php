@@ -85,6 +85,10 @@ Route::post('/admin/login', [C::class, 'login'])->middleware('throttle:10,1');
 Route::middleware(['auth', RequireAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [C::class, 'admin'])->name('index');
     Route::get('/agen-jurnal', [JournalAgentController::class, 'index'])->name('agent.index');
+    Route::get('/crawler-scopus', [\App\Http\Controllers\ScopusCrawlController::class, 'index'])->name('scopus-crawl.index');
+    Route::post('/crawler-scopus/sumber', [\App\Http\Controllers\ScopusCrawlController::class, 'store'])->name('scopus-crawl.store');
+    Route::post('/crawler-scopus/sumber/{target}', [\App\Http\Controllers\ScopusCrawlController::class, 'toggle'])->whereNumber('target')->name('scopus-crawl.toggle');
+    Route::post('/crawler-scopus/kandidat/{candidate}', [\App\Http\Controllers\ScopusCrawlController::class, 'review'])->whereNumber('candidate')->name('scopus-crawl.review');
     Route::post('/agen-jurnal/sumber', [JournalAgentController::class, 'store'])->name('agent.store');
     Route::post('/agen-jurnal/sumber/{source}', [JournalAgentController::class, 'toggle'])->whereNumber('source')->name('agent.toggle');
     Route::post('/agen-jurnal/kandidat/{candidate}', [JournalAgentController::class, 'review'])->whereNumber('candidate')->name('agent.review');

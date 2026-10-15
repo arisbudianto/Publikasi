@@ -37,7 +37,8 @@
                 <a class="sidebar-link {{ request()->routeIs('account.index') ? 'is-active' : '' }}" href="{{ route('account.index') }}" @if(request()->routeIs('account.index')) aria-current="page" @endif>Akun saya</a>
                 <a class="sidebar-link {{ request()->routeIs('proposals.*') ? 'is-active' : '' }}" href="{{ route('proposals.mine') }}">Usulan saya</a>
                 @if(auth()->user()->is_admin)
-                    <a class="sidebar-link {{ request()->routeIs('admin.*') ? 'is-active' : '' }}" href="{{ route('admin.index') }}" @if(request()->routeIs('admin.*')) aria-current="page" @endif>Kelola katalog</a>
+                    <a class="sidebar-link {{ request()->routeIs('admin.*') && !request()->routeIs('admin.scopus-crawl.*') ? 'is-active' : '' }}" href="{{ route('admin.index') }}" @if(request()->routeIs('admin.*') && !request()->routeIs('admin.scopus-crawl.*')) aria-current="page" @endif>Kelola katalog</a>
+                    <a class="sidebar-link {{ request()->routeIs('admin.scopus-crawl.*') ? 'is-active' : '' }}" href="{{ route('admin.scopus-crawl.index') }}">Crawler jurnal Scopus</a>
                     <form method="post" action="{{ route('admin.logout') }}">@csrf<button class="sidebar-link sidebar-action" type="submit">Keluar</button></form>
                 @else
                     <form method="post" action="{{ route('account.logout') }}">@csrf<button class="sidebar-link sidebar-action" type="submit">Keluar</button></form>

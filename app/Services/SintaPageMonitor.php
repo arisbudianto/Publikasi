@@ -20,8 +20,9 @@ class SintaPageMonitor
         $m19Today = DB::table('m19_runs')->join('m19_sources', 'm19_sources.id', '=', 'm19_runs.source_id')
             ->where('m19_runs.created_at', '>=', $today)->distinct()->count('m19_sources.journal_id');
         $sintaToday = DB::table('sinta_page_checks')->where('created_at', '>=', $today)->count();
+        $scopusToday = DB::table('scopus_page_checks')->where('created_at', '>=', $today)->count();
         $limit = max(0, min((int) config('sinta_crawl.daily_limit') - $sintaToday,
-            20 - $m19Today - $sintaToday));
+            20 - $m19Today - $sintaToday - $scopusToday));
         $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'candidates' => 0];
         if ($limit === 0) {
             return $result;
