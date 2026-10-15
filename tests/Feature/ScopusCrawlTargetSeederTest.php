@@ -22,7 +22,7 @@ class ScopusCrawlTargetSeederTest extends TestCase
 
     private function sinta(int $id, string $issn, string $url): JournalSource
     {
-        return JournalSource::create(['source_id' => $id, 'name' => 'Journal '.$id,
+        return JournalSource::create(['source_id' => $id, 'name' => 'Journal '.$id, 'education' => true,
             'p_issn' => $issn, 'official_url' => $url,
             'source_url' => 'https://sinta.example.org/'.$id, 'captured_at' => '2025-03-20',
             'raw_identifiers' => [], 'article_titles' => [], 'dataset_sha256' => str_repeat('a', 64)]);
