@@ -13,8 +13,57 @@ class ScopusCrawlController extends Controller
 {
     public function index(Request $request)
     {
-        $request->validate(['q' => 'nullable|string|max:120']);
+        $request->validate([
+            'q' => 'nullable|string|max:120',
+            'period' => 'nullable|in:today,7d,30d',
+            'source' => 'nullable|in:all,sinta,scopus',
+            'status' => 'nullable|in:all,changed,unchanged,error',
+        ]);
         $q = trim((string) $request->query('q', ''));
+        $period = $request->query('period', '7d');
+        $source = $request->query('source', 'all');
+        $status = $request->query('status', 'all');
+        $since = match ($period) {
+            'today' => now()->startOfDay(),
+            '30d' => now()->subDays(29)->startOfDay(),
+            default => now()->subDays(6)->startOfDay(),
+        };
+        $summary = [];
+        foreach (['sinta' => 'sinta_page_checks', 'scopus' => 'scopus_page_checks'] as $kind => $table) {
+            $counts = DB::table($table)->where('created_at', '>=', $since)
+                ->selectRaw('status, COUNT(*) AS total')->groupBy('status')->pluck('total', 'status');
+            $summary[$kind] = [
+                'checked' => $counts->sum(),
+                'changed' => (int) ($counts['changed'] ?? 0),
+                'unchanged' => (int) ($counts['unchanged'] ?? 0),
+                'error' => (int) ($counts['error'] ?? 0),
+                'last' => DB::table($table)->max('created_at'),
+                'pending' => DB::table($kind.'_page_candidates')->where('status', 'pending')->count(),
+            ];
+        }
+        $history = collect();
+        if ($source !== 'scopus') {
+            $sinta = DB::table('sinta_page_checks as c')->join('journal_sources as j', 'j.id', '=', 'c.journal_source_id')
+                ->where('c.created_at', '>=', $since)
+                ->when($status !== 'all', fn ($query) => $query->where('c.status', $status))
+                ->select('c.id', 'c.status', 'c.http_status', 'c.error_code', 'c.created_at', 'c.url',
+                    'j.name as journal_name', 'c.journal_source_id')
+                ->orderByDesc('c.id')->limit(50)->get()
+                ->map(fn ($row) => (object) [...(array) $row, 'source' => 'SINTA']);
+            $history = $history->concat($sinta);
+        }
+        if ($source !== 'sinta') {
+            $scopus = DB::table('scopus_page_checks as c')->join('scopus_page_targets as t', 't.id', '=', 'c.target_id')
+                ->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
+                ->where('c.created_at', '>=', $since)
+                ->when($status !== 'all', fn ($query) => $query->where('c.status', $status))
+                ->select('c.id', 'c.status', 'c.http_status', 'c.error_code', 'c.created_at', 't.url',
+                    's.source_title as journal_name', 's.id as scopus_source_id')
+                ->orderByDesc('c.id')->limit(50)->get()
+                ->map(fn ($row) => (object) [...(array) $row, 'source' => 'Scopus']);
+            $history = $history->concat($scopus);
+        }
+        $history = $history->sortByDesc('created_at')->take(50)->values();
         $matches = collect();
         if ($q !== '') {
             $matches = ScopusSource::where('is_current', true)->where('source_type', 'Journal')
@@ -25,7 +74,13 @@ class ScopusCrawlController extends Controller
                 })->orderBy('source_title')->limit(20)->get();
         }
         return response()->view('admin.scopus-crawl', [
-            'q' => $q, 'matches' => $matches,
+            'q' => $q, 'matches' => $matches, 'period' => $period, 'source' => $source,
+            'status' => $status, 'summary' => $summary, 'history' => $history,
+            'activeTargets' => DB::table('scopus_page_targets')->where('enabled', true)->count(),
+            'sintaCandidates' => DB::table('sinta_page_candidates as c')
+                ->join('journal_sources as j', 'j.id', '=', 'c.journal_source_id')
+                ->where('c.status', 'pending')->select('c.id', 'c.quote', 'j.name', 'j.id as journal_source_id')
+                ->orderBy('c.id')->limit(10)->get(),
             'targets' => DB::table('scopus_page_targets as t')->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
                 ->select('t.*', 's.source_title', 's.is_current')->orderByDesc('t.id')->limit(50)->get(),
             'candidates' => DB::table('scopus_page_candidates as c')
@@ -33,10 +88,6 @@ class ScopusCrawlController extends Controller
                 ->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
                 ->where('c.status', 'pending')->select('c.*', 't.url', 't.field', 's.source_title')
                 ->orderBy('c.id')->limit(50)->get(),
-            'checks' => DB::table('scopus_page_checks as c')
-                ->join('scopus_page_targets as t', 't.id', '=', 'c.target_id')
-                ->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
-                ->select('c.*', 's.source_title', 't.url')->orderByDesc('c.id')->limit(30)->get(),
         ])->header('Cache-Control', 'no-store, private');
     }
 

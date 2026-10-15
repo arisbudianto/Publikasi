@@ -37,7 +37,7 @@
                 <a class="sidebar-link {{ request()->routeIs('proposals.*') ? 'is-active' : '' }}" href="{{ route('proposals.mine') }}">Usulan saya</a>
                 @if(auth()->user()->is_admin)
                     <a class="sidebar-link {{ request()->routeIs('admin.*') && !request()->routeIs('admin.scopus-crawl.*') ? 'is-active' : '' }}" href="{{ route('admin.index') }}" @if(request()->routeIs('admin.*') && !request()->routeIs('admin.scopus-crawl.*')) aria-current="page" @endif>Kelola katalog</a>
-                    <a class="sidebar-link {{ request()->routeIs('admin.scopus-crawl.*') ? 'is-active' : '' }}" href="{{ route('admin.scopus-crawl.index') }}">Crawler jurnal Scopus</a>
+                    <a class="sidebar-link {{ request()->routeIs('admin.scopus-crawl.*') ? 'is-active' : '' }}" href="{{ route('admin.scopus-crawl.index') }}">Monitoring crawler SINTA dan Scopus</a>
                     <form method="post" action="{{ route('admin.logout') }}">@csrf<button class="sidebar-link sidebar-action" type="submit">Keluar</button></form>
                 @else
                     <form method="post" action="{{ route('account.logout') }}">@csrf<button class="sidebar-link sidebar-action" type="submit">Keluar</button></form>
