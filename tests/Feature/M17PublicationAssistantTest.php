@@ -82,11 +82,10 @@ class M17PublicationAssistantTest extends TestCase
             'scope_source_url' => 'https://example.org/scope', 'official_url' => 'https://example.org',
             'checked_at' => today(), 'status' => 'published']);
 
-        $this->get(route('catalog.show', $journal))->assertOk()->assertSee('Tanya tentang jurnal ini');
+        $this->get(route('catalog.show', $journal))->assertOk()->assertDontSee('Tanya tentang jurnal ini');
         $this->get(route('assistant.index', ['journal' => $journal->id]))->assertOk()
             ->assertSee('ISSN 2088-2866');
-        $this->get(route('guides.index'))->assertOk()->assertSee('Alat bantu publikasi')
-            ->assertSee(route('assistant.index'))->assertSee(route('match.form'));
+        $this->get(route('guides.index'))->assertOk()->assertSee('Panduan publikasi');
     }
 
     public function test_feedback_requires_login_and_enters_curation_without_storing_conversation(): void
