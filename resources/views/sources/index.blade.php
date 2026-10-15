@@ -1,5 +1,6 @@
 @extends('layout') @section('title','Database sumber jurnal seluruh bidang') @section('content')
 <p class="eyebrow">DATABASE JURNAL · SUMBER SINTA</p><h1>Database jurnal seluruh bidang</h1><p>Database memuat {{ $totalSources }} rekaman dari semua bidang: {{ $educationSources }} berlabel Pendidikan dan {{ $otherSources }} bidang lainnya. {{ $sources->total() }} rekaman sesuai pencarian. Data diambil 20 Maret 2025 dan belum diverifikasi ulang. Label SINTA pada snapshot ini bukan status terkini. {{ $sources->total() === $totalSources ? 'Termasuk rekaman yang nama jurnalnya tidak tersedia.' : '' }} Scope lengkap belum tersedia pada dataset.</p><p>Keputusan akreditasi resmi Periode 3 Tahun 2025 memuat {{ $accreditationCount }} jurnal; {{ $matchedAccreditationCount }} cocok dengan database melalui ISSN. <a href="{{ route('accreditations.index') }}">Cari hasil akreditasi</a> · <a href="{{ route('catalog.index') }}">Lima jurnal dalam katalog terkurasi</a></p>
+@include('partials.database-tabs')
 <form class="search" method="get"><label>Nama jurnal, penerbit, ISSN, ID SINTA, atau judul artikel<input name="q" maxlength="120" value="{{ $q }}" placeholder="Nama jurnal, ISSN, ID SINTA, atau judul artikel"></label><button>Cari seluruh database</button></form>
 <div class="cards source-cards">
 @forelse($sources as $s)

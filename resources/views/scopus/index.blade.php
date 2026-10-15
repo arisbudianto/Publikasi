@@ -5,11 +5,7 @@
     <p class="eyebrow">KATALOG TERINDEKS · SNAPSHOT {{ $snapshot ?: 'BELUM TERSEDIA' }}</p>
     <h1>Jelajahi jurnal terindeks</h1>
     <p class="muted">Cari jurnal berdasarkan nama, penerbit, atau ISSN. Data Scopus berasal dari Source Title List September 2026. Status snapshot perlu diperiksa kembali sebelum submit.</p>
-    <nav class="indexed-tabs" aria-label="Jenis katalog">
-        <a href="{{ route('sources.index') }}">SINTA</a>
-        <a href="{{ route('scopus.index') }}" aria-current="page">Scopus</a>
-        <a href="{{ route('catalog.no-apc') }}">Tanpa APC yang terverifikasi</a>
-    </nav>
+    @include('partials.database-tabs')
     <form class="indexed-filters" method="get" action="{{ route('scopus.index') }}">
         <label for="indexed-q">Cari jurnal atau ISSN<input id="indexed-q" name="q" maxlength="120" value="{{ $q }}" placeholder="Nama jurnal, penerbit, atau ISSN"></label>
         <label for="indexed-status">Status snapshot<select id="indexed-status" name="status"><option value="">Semua status</option><option value="Active" @selected($status === 'Active')>Active</option><option value="Inactive" @selected($status === 'Inactive')>Inactive</option></select></label>
