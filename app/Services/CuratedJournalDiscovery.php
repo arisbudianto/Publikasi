@@ -8,7 +8,11 @@ class CuratedJournalDiscovery
 {
     public function tick(int $limit = 20): array
     {
-        $limit = max(1, min($limit, 20));
+        $createdToday = DB::table('curation_leads')->where('created_at', '>=', now()->startOfDay())->count();
+        $limit = max(0, min($limit, 20 - $createdToday));
+        if ($limit === 0) {
+            return ['eligible' => 0, 'created' => 0, 'limit' => 0];
+        }
         $sources = DB::table('journal_sources as s')
             ->join('journal_accreditations as a', 'a.journal_source_id', '=', 's.id')
             ->leftJoin('curation_leads as l', 'l.journal_source_id', '=', 's.id')
