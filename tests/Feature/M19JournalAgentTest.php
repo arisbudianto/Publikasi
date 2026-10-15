@@ -25,6 +25,23 @@ class M19JournalAgentTest extends TestCase
             'checked_at' => today(), 'status' => 'published']);
     }
 
+    public function test_seed_scope_previews_and_registers_only_curated_same_host_urls(): void
+    {
+        $journal = $this->journal();
+        $this->artisan('m19:seed-scope', ['--limit' => 20])->assertSuccessful();
+        $this->assertDatabaseCount('m19_sources', 0);
+        $this->artisan('m19:seed-scope', ['--limit' => 20, '--apply' => true])->assertSuccessful();
+        $this->assertDatabaseHas('m19_sources', ['journal_id' => $journal->id, 'field' => 'scope', 'enabled' => 1]);
+        $this->artisan('m19:seed-scope', ['--apply' => true])->assertSuccessful();
+        $this->assertDatabaseCount('m19_sources', 1);
+        $other = $journal->replicate();
+        $other->issn = '2099-2866';
+        $other->scope_source_url = 'https://other.example.org/about';
+        $other->save();
+        $this->artisan('m19:seed-scope', ['--apply' => true])->assertSuccessful();
+        $this->assertDatabaseCount('m19_sources', 1);
+    }
+
     public function test_admin_registers_exact_official_host_and_cannot_publish_by_reviewing_agent_quote(): void
     {
         $journal = $this->journal();
@@ -69,12 +86,37 @@ class M19JournalAgentTest extends TestCase
         $this->assertSame(1, app(JournalMonitoringAgent::class)->tick()['changed']);
         $this->assertDatabaseCount('m19_candidates', 1);
         $this->assertDatabaseCount('journal_observations', 0);
-        $this->assertSame(now()->startOfMonth()->addMonth()->setTime(3, 0)->toDateTimeString(),
+        $this->assertSame(now()->addDay()->toDateTimeString(),
             DB::table('m19_sources')->where('id', $source)->value('next_check_at'));
         $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['checked']);
         DB::table('m19_sources')->where('id', $source)->update(['next_check_at' => now()->subMinute()]);
         $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['changed']);
         $this->assertDatabaseCount('m19_candidates', 1);
+    }
+
+    public function test_daily_quota_counts_journals_and_avoids_a_second_source_for_the_same_journal(): void
+    {
+        config(['m19.enabled' => true, 'm19.batch_limit' => 10]);
+        for ($i = 0; $i < 12; $i++) {
+            $journal = Journal::create(['name' => 'Jurnal Uji '.$i, 'publisher' => 'Penerbit Uji',
+                'issn' => sprintf('2088-%04d', $i), 'subject' => 'Vokasi', 'scope_summary' => 'Pendidikan vokasi',
+                'scope_source_url' => 'https://journal.example.org/about', 'official_url' => 'https://journal.example.org',
+                'checked_at' => today(), 'status' => 'published']);
+            foreach ($i === 0 ? ['fee', 'scope'] : ['fee'] as $field) {
+                DB::table('m19_sources')->insert(['journal_id' => $journal->id, 'url' => 'https://journal.example.org/about',
+                    'field' => $field, 'enabled' => true, 'created_at' => now(), 'updated_at' => now()]);
+            }
+        }
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                return ['status' => 200, 'body' => '<html><body><p>Publication fee is 500 USD per article.</p></body></html>', 'content_type' => 'text/html'];
+            }
+        });
+        $this->assertSame(10, app(JournalMonitoringAgent::class)->tick()['checked']);
+        $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['checked']);
+        $this->assertSame(10, DB::table('m19_runs')->count());
+        $this->assertSame(10, DB::table('m19_sources')->whereNotNull('last_checked_at')->count());
     }
 
     public function test_url_and_robots_rules_reject_unsafe_targets(): void

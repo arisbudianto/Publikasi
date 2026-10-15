@@ -2,7 +2,7 @@
 
 return [
     'enabled' => env('M19_ENABLED', false),
-    'batch_limit' => 5,
+    'batch_limit' => min(20, max(10, (int) env('M19_DAILY_LIMIT', 20))),
     'max_bytes' => 262144,
     'user_agent' => 'PublikasiJournalMonitor/1.0 (+https://publikasi.speakverse.id)',
     'ai_enabled' => env('M19_AI_ENABLED', false),
