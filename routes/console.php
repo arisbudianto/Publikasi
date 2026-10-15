@@ -7,7 +7,6 @@ use App\Services\JournalMonitoringAgent;
 use App\Services\OperationalHealth;
 use App\Services\ScopusDiscontinuedDataset;
 use App\Services\ScopusSourceDataset;
-use App\Services\SintaPageMonitor;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use App\Services\TopicMonitoring;
@@ -26,12 +25,6 @@ Artisan::command('m19:tick', function (JournalMonitoringAgent $agent) {
 })->purpose('Periksa halaman jurnal yang disetujui dan catat kandidat perubahan');
 
 Schedule::command('m19:tick')->dailyAt('03:00')->withoutOverlapping(30);
-
-Artisan::command('publikasi:crawl-sinta', function (SintaPageMonitor $monitor) {
-    $this->line(json_encode($monitor->tick()));
-})->purpose('Periksa halaman resmi sumber SINTA secara bertahap dan simpan bukti');
-
-Schedule::command('publikasi:crawl-sinta')->dailyAt('04:00')->withoutOverlapping(30);
 
 Artisan::command('m19:seed-scope {--limit=200} {--apply}', function (\App\Services\JournalPageFetcher $fetcher) {
     $limit = (int) $this->option('limit');

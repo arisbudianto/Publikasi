@@ -21,12 +21,6 @@ class JournalAgentController extends Controller
                 ->join('journals', 'journals.id', '=', 'm19_sources.journal_id')
                 ->where('m19_candidates.status', 'pending')->select('m19_candidates.*', 'journals.name as journal_name', 'journals.id as journal_id')
                 ->orderBy('m19_candidates.id')->limit(50)->get(),
-            'sintaChecks' => DB::table('sinta_page_checks as c')->join('journal_sources as j', 'j.id', '=', 'c.journal_source_id')
-                ->select('c.id', 'c.status', 'c.error_code', 'c.created_at', 'j.name', 'j.id as journal_source_id')
-                ->orderByDesc('c.id')->limit(20)->get(),
-            'sintaCandidates' => DB::table('sinta_page_candidates as c')->join('journal_sources as j', 'j.id', '=', 'c.journal_source_id')
-                ->where('c.status', 'pending')->select('c.id', 'c.quote', 'j.name', 'j.official_url', 'j.id as journal_source_id')
-                ->orderBy('c.id')->limit(30)->get(),
         ])->header('Cache-Control', 'no-store, private');
     }
 
@@ -73,15 +67,5 @@ class JournalAgentController extends Controller
         abort_unless($updated, 409);
 
         return back()->with('success', 'Keputusan disimpan. Informasi katalog tidak berubah.');
-    }
-
-    public function reviewSinta(Request $request, int $candidate)
-    {
-        $data = $request->validate(['decision' => 'required|in:reviewed,rejected']);
-        $updated = DB::table('sinta_page_candidates')->where('id', $candidate)->where('status', 'pending')
-            ->update(['status' => $data['decision'], 'updated_at' => now()]);
-        abort_unless($updated, 409);
-
-        return back()->with('success', 'Keputusan disimpan. Snapshot SINTA dan katalog tidak berubah.');
     }
 }
