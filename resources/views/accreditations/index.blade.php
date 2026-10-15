@@ -7,6 +7,21 @@
 <section aria-labelledby="rank-category-title"><h2 id="rank-category-title">Kategori jurnal SINTA 1–4</h2><p>Pilih peringkat untuk melihat keputusan pada kategori tersebut. Peringkat SINTA 5 dan 6 tetap tersedia melalui pilihan filter di bawah.</p><div class="rank-categories">@foreach(range(1,4) as $value)<a class="rank-card" href="{{ route('accreditations.index',['rank'=>$value]) }}" aria-label="Filter peringkat SINTA {{ $value }}, {{ (int) ($rankCounts[$value] ?? 0) }} keputusan"><span class="tag">SINTA {{ $value }}</span><strong>{{ number_format((int) ($rankCounts[$value] ?? 0)) }}</strong><span>rekaman keputusan</span></a>@endforeach</div></section>
 <form class="search" method="get"><label>Nama jurnal, penerbit, atau e-ISSN<input name="q" maxlength="120" value="{{ $q }}" placeholder="Cari nama jurnal atau e-ISSN"></label><label>Peringkat<select name="rank"><option value="">Semua peringkat</option>@foreach(range(1,6) as $value)<option value="{{ $value }}" @selected((string) $rank === (string) $value)>Peringkat {{ $value }}</option>@endforeach</select></label><button>Cari keputusan</button></form>
 <p>{{ $accreditations->total() }} keputusan ditemukan</p>
-<div class="cards">@forelse($accreditations as $item)<article class="card"><p class="tag">Peringkat SINTA {{ $item->rank }} · {{ $item->decision_type }}</p><h2>{{ $item->journal_name }}</h2><p>{{ $item->publisher ?: 'Penerbit tidak tercantum' }}</p><p>e-ISSN tercantum: {{ $item->e_issn_raw ?: 'tidak tersedia' }}@if($item->e_issn_raw && ! $item->e_issn_checksum_valid) · checksum tidak valid, tidak ditautkan otomatis @endif</p><p>{{ $item->decision_text }}</p><small>SK {{ $item->decree_number }}, 24/07/2026 · halaman {{ $item->source_page }} · {{ $item->match_status === 'matched' ? 'ISSN cocok dengan data jurnal' : 'belum ditautkan melalui ISSN' }}</small>@if($item->source)<p><a href="{{ route('sources.show',$item->source) }}">Lihat rekaman database sumber SINTA</a></p>@endif @if($item->journal)<p><a href="{{ route('catalog.show',$item->journal) }}">Lihat jurnal dalam katalog terkurasi</a></p>@endif</article>@empty<p>Tidak ada hasil. Coba nama, penerbit, e-ISSN, atau peringkat lain.</p>@endforelse</div>
+<div class="cards accreditation-cards">
+@forelse($accreditations as $item)
+    <article class="card accreditation-card" data-rank="{{ $item->rank }}">
+        <div class="accreditation-card-head">
+            <span class="accreditation-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 6 4-6M8 3H5l4 8m7-8h3l-4 8"/><circle cx="12" cy="16" r="5"/><path d="m10.5 16 1 1 2-2"/></svg></span>
+            <div><span class="accreditation-rank">SINTA {{ $item->rank }}</span><span class="accreditation-decision">{{ $item->decision_type }}</span></div>
+        </div>
+        <h2>{{ $item->journal_name }}</h2>
+        <p class="accreditation-publisher">{{ $item->publisher ?: 'Penerbit tidak tercantum' }}</p>
+        <p class="accreditation-issn">e-ISSN <strong>{{ $item->e_issn_raw ?: 'tidak tersedia' }}</strong>@if($item->e_issn_raw && ! $item->e_issn_checksum_valid) <span>Checksum tidak valid</span>@endif</p>
+        <p class="accreditation-period">{{ $item->decision_text }}</p>
+        <div class="accreditation-evidence"><strong>Keputusan resmi</strong><span>SK {{ $item->decree_number }} · 24/07/2026 · halaman {{ $item->source_page }}</span><small>{{ $item->match_status === 'matched' ? 'ISSN cocok dengan data jurnal' : 'Belum ditautkan melalui ISSN' }}</small></div>
+        @if($item->source || $item->journal)<div class="accreditation-links">@if($item->source)<a href="{{ route('sources.show',$item->source) }}">Lihat rekaman sumber SINTA</a>@endif @if($item->journal)<a href="{{ route('catalog.show',$item->journal) }}">Lihat jurnal terkurasi</a>@endif</div>@endif
+    </article>
+@empty<p>Tidak ada hasil. Coba nama, penerbit, e-ISSN, atau peringkat lain.</p>@endforelse
+</div>
 <div class="pagination">{{ $accreditations->links('pagination') }}</div>
 @endsection

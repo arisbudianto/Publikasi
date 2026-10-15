@@ -22,6 +22,7 @@ class CuratedJournalDiscoveryTest extends TestCase
         $result = app(CuratedJournalDiscovery::class)->tick();
         $this->assertGreaterThan(0, $result['created']);
         $this->assertLessThanOrEqual(20, $result['created']);
+        $this->assertSame(0, app(CuratedJournalDiscovery::class)->tick()['created']);
         $this->assertDatabaseCount('journals', 0);
     }
 
