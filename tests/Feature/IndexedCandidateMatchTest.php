@@ -36,8 +36,14 @@ class IndexedCandidateMatchTest extends TestCase
                 'eissn' => $issn, 'status' => $status, 'discontinued' => $discontinued,
                 'source_type' => 'Journal', 'snapshot_month' => '2026-09', 'is_current' => true]);
         }
+        for ($i = 4; $i <= 28; $i++) {
+            ScopusSource::create(['source_record_id' => $i, 'source_title' => 'Vocational Learning Studies '.$i,
+                'eissn' => str_pad((string) $i, 8, '0', STR_PAD_LEFT), 'status' => 'Active',
+                'discontinued' => false, 'source_type' => 'Journal', 'snapshot_month' => '2026-09', 'is_current' => true]);
+        }
         $payload = ['title' => 'Vocational learning curriculum', 'abstract' => str_repeat('Vocational learning and digital training. ', 4)];
         $this->post('/cocokkan', $payload)->assertOk()->assertSeeInOrder(['Journal of Vocational Learning', 'Jurnal Pembelajaran Vokasi'])
+            ->assertSee('11 kandidat')
             ->assertSee('Jurnal Pembelajaran Vokasi')
             ->assertSee('Journal of Vocational Learning')->assertSee('S2')
             ->assertDontSee('Discontinued Vocational Journal')->assertDontSee('Inactive Vocational Journal');
