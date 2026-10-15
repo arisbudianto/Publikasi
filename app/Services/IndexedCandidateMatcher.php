@@ -64,6 +64,14 @@ class IndexedCandidateMatcher
                 ?: strcmp($a['name'], $b['name']);
         });
 
+        if ($index === 'all') {
+            $scopus = array_values(array_filter($merged, fn ($item) => $item['scopus'] !== null));
+            $sinta = array_values(array_filter($merged, fn ($item) => $item['scopus'] === null));
+
+            // Keep both indexes visible when one source has far more title hits.
+            return array_merge(array_slice($scopus, 0, 10), array_slice($sinta, 0, 10));
+        }
+
         return array_slice($merged, 0, 20);
     }
 

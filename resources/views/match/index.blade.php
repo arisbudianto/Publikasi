@@ -14,7 +14,7 @@
 @if(isset($results))
 <section class="match-results indexed-comparison">
 <h2>Bandingkan jurnal untuk naskah Anda</h2>
-<p>{{ count($indexedCandidates) }} kandidat dari judul dan abstrak. Scopus ditampilkan lebih dulu berdasarkan kecocokan istilah, kemudian SINTA 1 sampai 4. Daftar Scopus yang tersedia tidak memuat quartile, sehingga urutan Q1 sampai Q4 belum dapat diverifikasi. Nilai irisan kata bukan peluang diterima.</p>
+<p>{{ count($indexedCandidates) }} kandidat dari judul dan abstrak, maksimal 10 per indeks. Scopus ditampilkan lebih dulu berdasarkan kecocokan istilah, kemudian SINTA 1 sampai 4. Daftar Scopus yang tersedia tidak memuat quartile, sehingga urutan Q1 sampai Q4 belum dapat diverifikasi. Nilai irisan kata bukan peluang diterima.</p>
 @if($indexedCandidates)
 <div class="table-wrap comparison-wrap"><table class="comparison-table">
 <thead><tr><th scope="col">Kriteria</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<th scope="col"><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a><small>{{ $candidate['publisher'] ?: 'Penerbit tidak tercatat' }}</small></th>@endforeach</tr></thead>
@@ -26,7 +26,7 @@
 <tr><th scope="row">Peluang diterima</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>Belum tersedia</td>@endforeach</tr>
 <tr><th scope="row">Biaya dan waktu review</th>@foreach(array_slice($indexedCandidates,0,3) as $candidate)<td>Periksa panduan jurnal</td>@endforeach</tr>
 </tbody></table></div>
-@if(count($indexedCandidates)>3)<details class="comparison-more"><summary>Lihat {{ count($indexedCandidates)-3 }} kandidat lain</summary><div class="table-wrap"><table><thead><tr><th>Jurnal</th><th>Indeks</th><th>Kecocokan awal</th></tr></thead><tbody>@foreach(array_slice($indexedCandidates,3) as $candidate)<tr><td><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a></td><td>{{ $candidate['scopus'] ? 'Scopus, quartile belum tersedia' : 'SINTA '.$candidate['sinta']->rank }}</td><td>{{ $candidate['score'] }} istilah: {{ implode(', ', $candidate['matches']) }}</td></tr>@endforeach</tbody></table></div></details>@endif
+@if(count($indexedCandidates)>3)<details class="comparison-more"><summary>Lihat {{ count($indexedCandidates)-3 }} kandidat lain</summary><div class="table-wrap"><table><thead><tr><th>Jurnal</th><th>Indeks</th><th>Kecocokan awal</th></tr></thead><tbody>@foreach(array_slice($indexedCandidates,3) as $candidate)<tr><td><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a></td><td>{{ $candidate['scopus'] ? 'Scopus, quartile belum tersedia' : 'S'.$candidate['sinta']->rank.' · SINTA' }}</td><td>{{ $candidate['score'] }} istilah: {{ implode(', ', $candidate['matches']) }}</td></tr>@endforeach</tbody></table></div></details>@endif
 @else<p>Belum ada kandidat terindeks yang beririsan dengan topik. Coba istilah bidang yang lebih spesifik.</p>@endif
 </section>
 <section class="match-results"><h2>Hasil pencocokan · {{ count($results) }} kandidat</h2>
