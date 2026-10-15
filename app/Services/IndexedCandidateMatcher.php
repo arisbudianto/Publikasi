@@ -25,10 +25,13 @@ class IndexedCandidateMatcher
             foreach ($query->with(['accreditations' => fn ($q) => $q->where('match_status', 'matched')->where('e_issn_checksum_valid', true)->whereBetween('rank', [1, 4])->where('valid_to_year', '>=', now()->year)->orderByDesc('decree_date')])->orderBy('id')->limit(500)->get() as $source) {
                 $evidence = trim($source->subject.' '.implode(' ', array_slice($source->article_titles ?? [], 0, 10)));
                 $matches = array_intersect($terms, $this->matcher->terms($evidence));
-                if ($matches === []) continue;
+                // Article titles can contain generic methods outside the journal's
+                // subject. Do not recommend a source solely on those incidental hits.
+                $subjectMatches = array_intersect($terms, $this->matcher->terms((string) $source->subject));
+                if ($matches === [] || $subjectMatches === []) continue;
                 $results[] = ['name' => $source->name, 'issn' => $source->e_issn ?: $source->p_issn, 'publisher' => $source->publisher,
                     'evidence' => 'Subjek dan judul artikel pada data sumber SINTA', 'matches' => array_values($matches),
-                    'score' => count($matches), 'sinta' => $source->accreditations->first(), 'scopus' => null,
+                    'score' => count($matches) + 2 * count($subjectMatches), 'sinta' => $source->accreditations->first(), 'scopus' => null,
                     'url' => route('sources.show', $source)];
             }
         }

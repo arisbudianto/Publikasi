@@ -26,6 +26,9 @@
     }
     $remainingCandidates = array_values(array_filter($indexedCandidates, fn ($candidate) => ! in_array($candidate, $comparisonCandidates, true)));
 @endphp
+@if(($selectedIndex ?? 'all') === 'all' && ! collect($indexedCandidates)->contains(fn ($candidate) => $candidate['sinta'] !== null))
+<p class="notice">Belum ada kandidat SINTA 1 sampai 4 dengan subjek yang beririsan dengan naskah ini. Ubah istilah topik jika perlu; jangan menganggap jurnal dari bidang lain sebagai pilihan submit.</p>
+@endif
 <div class="table-wrap comparison-wrap"><table class="comparison-table">
 <thead><tr><th scope="col">Kriteria</th>@foreach($comparisonCandidates as $candidate)<th scope="col"><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a><small>{{ $candidate['publisher'] ?: 'Penerbit tidak tercatat' }}</small></th>@endforeach</tr></thead>
 <tbody>
