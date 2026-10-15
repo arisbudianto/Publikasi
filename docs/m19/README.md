@@ -1,6 +1,6 @@
 # M19: agen pemantauan halaman jurnal
 
-M19 membaca URL HTTPS pada domain yang sama persis dengan situs resmi jurnal terkurasi. Admin dapat mendaftarkan sumber satu per satu (awal dalam keadaan jeda), atau mendaftarkan halaman cakupan jurnal terbit yang sudah tercatat di katalog dengan perintah `m19:seed-scope`. `M19_ENABLED=false` adalah pengaman global. Jadwal Laravel berjalan setiap hari pukul 03.00 UTC (10.00 WIB) lewat cron `schedule:run` yang sudah ada. `M19_DAILY_LIMIT=20` membatasi jumlah jurnal berbeda per hari; nilai hanya dapat diatur antara 10 dan 20. Jumlah aktual bisa lebih rendah bila sumber aktif yang jatuh tempo kurang dari 10. Setiap sumber dijadwalkan lagi paling cepat 24 jam setelah pemeriksaan, termasuk kegagalan. Pemeriksaan manual tetap tunduk pada kuota harian.
+M19 membaca URL HTTPS pada domain yang sama persis dengan situs resmi jurnal terkurasi. Admin dapat mendaftarkan sumber satu per satu (awal dalam keadaan jeda), atau mendaftarkan halaman cakupan jurnal terbit yang sudah tercatat di katalog dengan perintah `m19:seed-scope`. `M19_ENABLED=false` adalah pengaman global. Jadwal Laravel berjalan setiap hari pukul 03.00 UTC (10.00 WIB) lewat cron `schedule:run` yang sudah ada. `M19_DAILY_LIMIT=20` membatasi jumlah jurnal berbeda per hari; nilai hanya dapat diatur antara 10 dan 20. Jumlah aktual bisa lebih rendah bila sumber aktif yang jatuh tempo kurang dari 10. Setiap sumber dijadwalkan lagi pukul 03.00 UTC pada hari kalender berikutnya, termasuk kegagalan. Pemeriksaan manual tetap tunduk pada kuota harian.
 
 ## Alur
 

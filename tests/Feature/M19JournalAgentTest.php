@@ -69,6 +69,7 @@ class M19JournalAgentTest extends TestCase
 
     public function test_scheduled_agent_creates_evidence_only_when_changed_and_is_disabled_by_default(): void
     {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-10-15 03:34:00', 'UTC'));
         $journal = $this->journal();
         $source = DB::table('m19_sources')->insertGetId(['journal_id' => $journal->id,
             'url' => 'https://journal.example.org/about', 'field' => 'fee', 'enabled' => true,
@@ -86,7 +87,7 @@ class M19JournalAgentTest extends TestCase
         $this->assertSame(1, app(JournalMonitoringAgent::class)->tick()['changed']);
         $this->assertDatabaseCount('m19_candidates', 1);
         $this->assertDatabaseCount('journal_observations', 0);
-        $this->assertSame(now()->addDay()->toDateTimeString(),
+        $this->assertSame('2026-10-16 03:00:00',
             DB::table('m19_sources')->where('id', $source)->value('next_check_at'));
         $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['checked']);
         DB::table('m19_sources')->where('id', $source)->update(['next_check_at' => now()->subMinute()]);
