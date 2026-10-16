@@ -39,11 +39,6 @@
 @empty<tr><td colspan="4">Belum ada pemeriksaan untuk filter ini.</td></tr>@endforelse
 </tbody></table></div>
 <p class="muted">Menampilkan maksimal 50 pemeriksaan terbaru yang sesuai filter. Kesalahan seperti HTTP 403 atau robots disallowed tidak diulang otomatis pada halaman yang sama sampai jadwal berikutnya.</p>
-<h2>Bukti SINTA yang belum tersinkron</h2>
-<p>Bukti yang cocok diproses otomatis setiap hari. Data tanpa identitas atau halaman resmi yang sesuai tidak diterbitkan.</p>
-@forelse($sintaCandidates as $candidate)
-<article class="panel"><h3>{{ $candidate->name ?: 'SINTA #'.$candidate->journal_source_id }}</h3><blockquote>{{ $candidate->quote }}</blockquote><a href="{{ route('sources.show', $candidate->journal_source_id) }}">Lihat data sumber</a></article>
-@empty<p>Tidak ada bukti SINTA yang menunggu sinkronisasi.</p>@endforelse
 <h2>Target dan kutipan Scopus</h2>
 <p>Daftarkan URL resmi jurnal dari snapshot Scopus. Verifikasi identitas halaman sebelum mengaktifkannya. Maksimal {{ config('scopus_crawl.daily_limit') }} jurnal Scopus per hari, dalam kuota gabungan 20 pemeriksaan.</p>
 <form method="get" action="{{ route('admin.scopus-crawl.index') }}" class="panel">

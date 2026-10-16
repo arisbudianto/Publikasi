@@ -79,10 +79,6 @@ class ScopusCrawlController extends Controller
             'q' => $q, 'matches' => $matches, 'period' => $period, 'source' => $source,
             'status' => $status, 'summary' => $summary, 'history' => $history,
             'activeTargets' => DB::table('scopus_page_targets')->where('enabled', true)->count(),
-            'sintaCandidates' => DB::table('sinta_page_candidates as c')
-                ->join('journal_sources as j', 'j.id', '=', 'c.journal_source_id')
-                ->where('c.status', 'pending')->select('c.id', 'c.quote', 'j.name', 'j.id as journal_source_id')
-                ->orderBy('c.id')->limit(10)->get(),
             'targets' => DB::table('scopus_page_targets as t')->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
                 ->select('t.*', 's.source_title', 's.is_current')->orderByDesc('t.id')->limit(50)->get(),
             'candidates' => DB::table('scopus_page_candidates as c')
