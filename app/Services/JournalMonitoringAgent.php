@@ -7,7 +7,8 @@ use Throwable;
 
 class JournalMonitoringAgent
 {
-    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor, private JournalAiExtractor $ai) {}
+    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor,
+        private JournalAiExtractor $ai, private CrawledJournalSync $sync) {}
 
     public function tick(): array
     {
@@ -32,7 +33,7 @@ class JournalMonitoringAgent
                     ->where(fn ($due) => $due->whereNull('earlier.next_check_at')->orWhere('earlier.next_check_at', '<=', now()));
             })
             ->orderBy('next_check_at')->orderBy('id')->limit($remaining)->get();
-        $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0];
+        $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'synced' => 0];
         foreach ($sources as $source) {
             // Claim before network I/O. A manual retry cannot fetch this source twice in one day.
             $claimed = DB::table('m19_sources')->where('id', $source->id)->where('enabled', true)
@@ -47,7 +48,8 @@ class JournalMonitoringAgent
                 $page = $this->fetcher->fetch($source->url);
                 $hash = hash('sha256', $page['body']);
                 $changed = $source->last_hash !== $hash;
-                $quotes = $changed ? $this->extractor->extract($page['body'], $source->field) : [];
+                $ruleQuotes = $changed ? $this->extractor->extract($page['body'], $source->field) : [];
+                $quotes = $ruleQuotes;
                 $aiStatus = null;
                 if ($changed && config('m19.ai_enabled') && $this->ai->ready()) {
                     try {
@@ -58,11 +60,14 @@ class JournalMonitoringAgent
                         $aiStatus = 'failed';
                     }
                 }
-                DB::transaction(function () use ($source, $page, $hash, $changed, $quotes, $aiStatus) {
+                $synced = DB::transaction(function () use ($source, $page, $hash, $changed, $quotes, $ruleQuotes, $aiStatus) {
                     $run = DB::table('m19_runs')->insertGetId(['source_id' => $source->id,
                         'status' => $changed ? 'changed' : 'unchanged', 'http_status' => $page['status'],
                         'content_hash' => $hash, 'ai_status' => $aiStatus, 'created_at' => now()]);
-                    if ($changed) {
+                    $synced = $changed && $ruleQuotes && $this->sync->fromRegisteredPage(
+                        $source->journal_id, $source->url, $source->field, $ruleQuotes[0]);
+                    if ($synced) DB::table('m19_runs')->where('id', $run)->update(['synced' => true]);
+                    if ($changed && ! $synced) {
                         foreach (array_slice($quotes, 0, 3) as $quote) {
                             $exists = DB::table('m19_candidates')->where('source_id', $source->id)
                                 ->where('status', 'pending')->where('quote', $quote)->exists();
@@ -75,8 +80,10 @@ class JournalMonitoringAgent
                         }
                     }
                     DB::table('m19_sources')->where('id', $source->id)->update(['last_hash' => $hash]);
+                    return $synced;
                 });
                 $result['changed'] += (int) $changed;
+                $result['synced'] += (int) $synced;
             } catch (Throwable $e) {
                 DB::table('m19_runs')->insert(['source_id' => $source->id, 'status' => 'error',
                     'error_code' => mb_substr($e->getMessage(), 0, 60), 'created_at' => now()]);

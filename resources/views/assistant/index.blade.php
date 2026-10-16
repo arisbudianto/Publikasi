@@ -4,7 +4,7 @@
 <section class="page-heading">
     <p class="eyebrow">ASISTEN PUBLIKASI</p>
     <h1>Tanya tentang jurnal dan publikasi</h1>
-    <p>Jawaban merujuk pada katalog terkurasi dan panduan yang sudah diterbitkan. Periksa halaman sumber sebelum memilih jurnal.</p>
+    <p>Jawaban merujuk pada katalog jurnal dan panduan yang sudah diterbitkan. Periksa halaman sumber sebelum memilih jurnal.</p>
     <p>Untuk pertanyaan yang memerlukan AI, teks pertanyaan dan potongan sumber terkait dikirim ke penyedia model. Hindari memasukkan naskah atau data pribadi yang belum ingin Anda bagikan.</p>
     @include('assistant._form')
     @isset($notice)<p class="notice" role="status">{{ $notice }}</p>@endisset

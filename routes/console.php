@@ -54,9 +54,8 @@ Schedule::command('publikasi:crawl-sinta')->dailyAt('04:00')->withoutOverlapping
 
 Artisan::command('publikasi:discover-curated', function (CuratedJournalDiscovery $discovery) {
     $this->line(json_encode($discovery->tick()));
-})->purpose('Temukan calon jurnal terkurasi dari sumber SINTA dan keputusan akreditasi');
+})->purpose('Temukan jurnal dari sumber SINTA dan keputusan akreditasi');
 
-Schedule::command('publikasi:discover-curated')->dailyAt('04:30')->withoutOverlapping(10);
 
 Artisan::command('m19:seed-scope {--limit=200} {--apply}', function (\App\Services\JournalPageFetcher $fetcher) {
     $limit = (int) $this->option('limit');
@@ -92,7 +91,7 @@ Artisan::command('m19:seed-scope {--limit=200} {--apply}', function (\App\Servic
             }
         });
     $this->line(json_encode(['eligible' => $eligible, 'created' => $created, 'mode' => $this->option('apply') ? 'apply' : 'dry-run']));
-})->purpose('Daftarkan halaman cakupan jurnal terkurasi untuk pemantauan harian');
+})->purpose('Daftarkan halaman cakupan jurnal katalog untuk pemantauan harian');
 
 Artisan::command('publikasi:admin {email}', function () {
     $email = $this->argument('email');

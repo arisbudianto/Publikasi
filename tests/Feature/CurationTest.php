@@ -83,8 +83,8 @@ class CurationTest extends TestCase
         $this->post('/admin/kurasi/'.$j->id.'/observasi/'.$id.'/tarik', ['reason' => 'Biaya telah berubah dan belum diketahui'])->assertRedirect();
         $this->assertDatabaseCount('journal_observations', 1);
         $this->assertSame(0, $j->observations()->count());
-        $this->get('/katalog-terkurasi?information=fee&availability=known')->assertDontSee('Jurnal Kurasi');
-        $this->get('/katalog-terkurasi?information=fee&availability=unknown')->assertSee('Jurnal Kurasi');
+        $this->get('/katalog-jurnal?information=fee&availability=known')->assertDontSee('Jurnal Kurasi');
+        $this->get('/katalog-jurnal?information=fee&availability=unknown')->assertSee('Jurnal Kurasi');
         $this->assertSame('observation_retired', DB::table('catalog_audits')->latest('id')->first()->action);
     }
 

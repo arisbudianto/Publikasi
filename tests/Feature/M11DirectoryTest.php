@@ -50,9 +50,9 @@ class M11DirectoryTest extends TestCase
         $paid = $this->journal(2);
         $this->observation($paid, ['amount_minor' => 1, 'value' => 'IDR 1']);
 
-        $this->get('/katalog-terkurasi?apc_max_minor=0')->assertSessionHasErrors('apc_currency');
-        $this->get('/katalog-terkurasi?apc_max_minor=0&apc_currency=IDR')->assertOk()->assertSee('Jurnal M11 1')->assertDontSee('Jurnal M11 2');
-        $this->get('/katalog-terkurasi?sort=cost')->assertSessionHasErrors('apc_currency');
+        $this->get('/katalog-jurnal?apc_max_minor=0')->assertSessionHasErrors('apc_currency');
+        $this->get('/katalog-jurnal?apc_max_minor=0&apc_currency=IDR')->assertOk()->assertSee('Jurnal M11 1')->assertDontSee('Jurnal M11 2');
+        $this->get('/katalog-jurnal?sort=cost')->assertSessionHasErrors('apc_currency');
     }
 
     public function test_rank_scheme_is_not_mixed_and_verified_filter_is_explicit(): void
@@ -62,21 +62,21 @@ class M11DirectoryTest extends TestCase
         $old = $this->journal(2);
         $old->observations()->create(['kind' => 'index', 'label' => 'SINTA', 'value' => '2', 'verification' => 'verified', 'source_url' => 'https://example.org/old', 'checked_at' => today(), 'metric_scheme' => 'SINTA-lama', 'rank_value' => 2, 'period' => '2020']);
 
-        $this->get('/katalog-terkurasi?rank_scheme=SINTA-2026&rank_value=2')->assertSee('Jurnal M11 1')->assertDontSee('Jurnal M11 2');
-        $this->get('/katalog-terkurasi?sort=rank')->assertSessionHasErrors('rank_scheme');
+        $this->get('/katalog-jurnal?rank_scheme=SINTA-2026&rank_value=2')->assertSee('Jurnal M11 1')->assertDontSee('Jurnal M11 2');
+        $this->get('/katalog-jurnal?sort=rank')->assertSessionHasErrors('rank_scheme');
     }
 
     public function test_filters_persist_when_returning_from_comparison(): void
     {
         $this->journal(1);
-        $this->get('/bandingkan?ids[]=1&subject=Pendidikan&sort=name')->assertOk()->assertSee('/katalog-terkurasi?subject=Pendidikan', false)->assertSee('ids%5B0%5D=1');
+        $this->get('/bandingkan?ids[]=1&subject=Pendidikan&sort=name')->assertOk()->assertSee('/katalog-jurnal?subject=Pendidikan', false)->assertSee('ids%5B0%5D=1');
     }
 
     public function test_frequency_range_is_validated_and_catalog_pages_are_public(): void
     {
         $this->journal(1);
-        $this->get('/katalog-terkurasi?frequency_min=4&frequency_max=2')->assertSessionHasErrors('frequency_max');
-        $this->get('/katalog-terkurasi')->assertOk();
+        $this->get('/katalog-jurnal?frequency_min=4&frequency_max=2')->assertSessionHasErrors('frequency_max');
+        $this->get('/katalog-jurnal')->assertOk();
         $this->get('/tanpa-apc')->assertOk();
     }
 }

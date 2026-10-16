@@ -2,7 +2,7 @@
 <p class="eyebrow">SK DIREKTUR JENDERAL SAINS DAN TEKNOLOGI · 24 JULI 2026</p>
 <h1>Hasil akreditasi SINTA</h1>
 @include('partials.database-tabs')
-<p>Dokumen Periode 3 Tahun 2025 memuat {{ $totalAccreditations }} keputusan untuk SINTA 1 sampai 4. {{ $matchedAccreditations }} baris cocok dengan sumber atau jurnal terkurasi berdasarkan ISSN yang valid. Hasil ini berasal dari SK Nomor 355/DST/D.D1/HM.01.01/2026; masa berlaku mengikuti volume dan nomor yang tercantum, bukan tahun kalender.</p>
+<p>Dokumen Periode 3 Tahun 2025 memuat {{ $totalAccreditations }} keputusan untuk SINTA 1 sampai 4. {{ $matchedAccreditations }} baris cocok dengan sumber atau jurnal yang tersinkron berdasarkan ISSN yang valid. Hasil ini berasal dari SK Nomor 355/DST/D.D1/HM.01.01/2026; masa berlaku mengikuti volume dan nomor yang tercantum, bukan tahun kalender.</p>
 <div class="notice">Nama, e-ISSN, penerbit, peringkat, dan periode ditranskripsikan dari dokumen keputusan. Data tidak mengubah label historis pada snapshot SINTA 20 Maret 2025. Baris dengan ISSN kosong atau checksum tidak valid tidak ditautkan otomatis.</div>
 <section aria-labelledby="rank-category-title"><h2 id="rank-category-title">Kategori jurnal SINTA 1–4</h2><p>Pilih peringkat untuk melihat keputusan pada kategori tersebut.</p><div class="rank-categories">@foreach(range(1,4) as $value)<a class="rank-card rank-card--sinta-{{ $value }}" href="{{ route('accreditations.index',['rank'=>$value]) }}" aria-label="Filter peringkat SINTA {{ $value }}, {{ (int) ($rankCounts[$value] ?? 0) }} keputusan"><span class="tag">SINTA {{ $value }}</span><strong>{{ number_format((int) ($rankCounts[$value] ?? 0)) }}</strong><span>rekaman keputusan</span></a>@endforeach</div></section>
 <form class="search" method="get"><label>Nama jurnal, penerbit, atau e-ISSN<input name="q" maxlength="120" value="{{ $q }}" placeholder="Cari nama jurnal atau e-ISSN"></label><label>Peringkat<select name="rank"><option value="">Semua peringkat SINTA 1–4</option>@foreach(range(1,4) as $value)<option value="{{ $value }}" @selected((string) $rank === (string) $value)>SINTA {{ $value }}</option>@endforeach</select></label><button>Cari keputusan</button></form>
@@ -22,7 +22,7 @@
                 <span>{{ $item->journal->scope_summary }}</span>
                 <small><a href="{{ $item->journal->scope_source_url }}" target="_blank" rel="noopener noreferrer">Lihat sumber scope</a> · Diperiksa {{ $item->journal->checked_at?->format('d/m/Y') ?: 'tanggal belum tersedia' }}</small>
             @else
-                <span>Scope belum tersedia dalam katalog terkurasi. Periksa situs resmi jurnal sebelum menilai kecocokan naskah.</span>
+                <span>Scope belum tersedia dalam katalog jurnal. Periksa situs resmi jurnal sebelum menilai kecocokan naskah.</span>
             @endif
         </div>
         @if($item->journal?->status === 'published')
@@ -39,7 +39,7 @@
             @endforeach
         @endif
         <p class="accreditation-acceptance"><strong>Peluang diterima:</strong> Belum dapat dihitung dari peringkat dan scope jurnal.</p>
-        @if($item->source || $item->journal)<div class="accreditation-links">@if($item->source)<a href="{{ route('sources.show',$item->source) }}">Lihat rekaman sumber SINTA</a>@endif @if($item->journal)<a href="{{ route('catalog.show',$item->journal) }}">Lihat jurnal terkurasi</a>@endif</div>@endif
+        @if($item->source || $item->journal)<div class="accreditation-links">@if($item->source)<a href="{{ route('sources.show',$item->source) }}">Lihat rekaman sumber SINTA</a>@endif @if($item->journal)<a href="{{ route('catalog.show',$item->journal) }}">Lihat jurnal yang tersinkron</a>@endif</div>@endif
     </article>
 @empty<p>Tidak ada hasil. Coba nama, penerbit, e-ISSN, atau peringkat lain.</p>@endforelse
 </div>

@@ -3,8 +3,8 @@
 @section('content')
 <a href="{{ route('admin.curation') }}">Kembali ke kurasi</a>
 <h1>Agen pemantauan jurnal</h1>
-<p>Sumber harus berada pada domain situs resmi jurnal. Agen hanya mencatat kutipan untuk ditinjau; persetujuan di sini tidak menerbitkan informasi ke katalog.</p>
-<h2>Calon jurnal baru untuk katalog terkurasi</h2>
+<p>Sumber harus berada pada domain situs resmi jurnal. Halaman yang cocok identitasnya disinkronkan ke katalog. Kutipan lain tetap tersedia untuk diperiksa.</p>
+<h2>Sumber jurnal baru</h2>
 <p>Agen memilih sumber SINTA dengan tautan HTTPS dan ISSN yang cocok dengan keputusan akreditasi SINTA 1 sampai 4. Nama dan tautan dari snapshot tetap harus diperiksa. Membuka usulan tidak menerbitkan jurnal.</p>
 @forelse($curationLeads as $lead)
     <article class="panel">
@@ -49,7 +49,7 @@
     </article>
 @empty<p>Belum ada kutipan yang menunggu.</p>@endforelse
 <h2>Pemeriksaan halaman sumber SINTA</h2>
-<p>Catatan halaman sumber SINTA adalah bukti untuk kurasi. Pemeriksaan ini tidak memverifikasi peringkat akreditasi.</p>
+<p>Catatan halaman sumber SINTA adalah bukti sinkronisasi. Pemeriksaan ini tidak memverifikasi peringkat akreditasi.</p>
 @forelse($sintaChecks as $check)
     <p><a href="{{ route('sources.show', $check->journal_source_id) }}">{{ $check->name ?: 'SINTA #'.$check->journal_source_id }}</a> · {{ $check->status }} · {{ $check->error_code ?: $check->created_at }}</p>
 @empty<p>Belum ada halaman SINTA yang diperiksa.</p>@endforelse

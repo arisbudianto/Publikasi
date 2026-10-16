@@ -21,15 +21,15 @@ class CatalogTest extends TestCase
     public function test_public_search_and_unknown_fees(): void
     {
         Journal::create($this->row());
-        $this->get('/katalog-terkurasi?q=2088-2866')->assertOk()->assertSee('Jurnal Pendidikan Uji');
+        $this->get('/katalog-jurnal?q=2088-2866')->assertOk()->assertSee('Jurnal Pendidikan Uji');
         $this->get('/jurnal/1')->assertOk()->assertSee('Belum diketahui');
-        $this->get('/katalog-terkurasi?q=tidak-ada')->assertSee('Belum ada jurnal');
+        $this->get('/katalog-jurnal?q=tidak-ada')->assertSee('Belum ada jurnal');
     }
 
     public function test_drafts_and_archives_are_not_public(): void
     {
         $j = Journal::create($this->row(['status' => 'draft']));
-        $this->get('/katalog-terkurasi')->assertDontSee('Jurnal Pendidikan Uji');
+        $this->get('/katalog-jurnal')->assertDontSee('Jurnal Pendidikan Uji');
         $this->get('/jurnal/'.$j->id)->assertNotFound();
         $j->update(['status' => 'archived']);
         $this->get('/jurnal/'.$j->id)->assertNotFound();
@@ -97,6 +97,6 @@ class CatalogTest extends TestCase
     public function test_html_is_escaped(): void
     {
         Journal::create($this->row(['name' => '<script>alert(1)</script>']));
-        $this->get('/katalog-terkurasi')->assertSee('&lt;script&gt;', false)->assertDontSee('<script>alert(1)</script>', false);
+        $this->get('/katalog-jurnal')->assertSee('&lt;script&gt;', false)->assertDontSee('<script>alert(1)</script>', false);
     }
 }
