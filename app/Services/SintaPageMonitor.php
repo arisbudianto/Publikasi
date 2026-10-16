@@ -8,7 +8,7 @@ use Throwable;
 class SintaPageMonitor
 {
     public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor,
-        private JournalScopeLinkFinder $scopeLinks) {}
+        private JournalScopeLinkFinder $scopeLinks, private CrawledJournalSync $sync) {}
 
     public function tick(): array
     {
@@ -23,7 +23,7 @@ class SintaPageMonitor
         $scopusToday = DB::table('scopus_page_checks')->where('created_at', '>=', $today)->count();
         $limit = max(0, min((int) config('sinta_crawl.daily_limit') - $sintaToday,
             20 - $m19Today - $sintaToday - $scopusToday));
-        $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'candidates' => 0];
+        $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'candidates' => 0, 'synced' => 0];
         if ($limit === 0) {
             return $result;
         }
@@ -74,7 +74,9 @@ class SintaPageMonitor
                     $check = DB::table('sinta_page_checks')->insertGetId(['journal_source_id' => $source->id,
                         'url' => $url, 'status' => $changed ? 'changed' : 'unchanged',
                         'http_status' => $page['status'], 'content_hash' => $hash, 'created_at' => now()]);
-                    foreach (array_slice($quotes, 0, 3) as $quote) {
+                    $synced = $quotes && $this->sync->fromSinta($source->id, $url, $quotes[0]);
+                    if ($synced) DB::table('sinta_page_checks')->where('id', $check)->update(['synced' => true]);
+                    foreach ($synced ? [] : array_slice($quotes, 0, 3) as $quote) {
                         if (DB::table('sinta_page_candidates')->where('journal_source_id', $source->id)
                             ->where('status', 'pending')->where('quote', $quote)->exists()) {
                             continue;
@@ -86,9 +88,10 @@ class SintaPageMonitor
                     }
                     DB::table('sinta_page_states')->where('journal_source_id', $source->id)
                         ->update(['last_hash' => $hash, 'updated_at' => now()]);
-                    return $added;
+                    return [$added, (int) $synced];
                 });
-                $result['candidates'] += $added;
+                $result['candidates'] += $added[0];
+                $result['synced'] += $added[1];
                 $result['changed'] += (int) $changed;
             } catch (Throwable $e) {
                 DB::table('sinta_page_checks')->insert(['journal_source_id' => $source->id,

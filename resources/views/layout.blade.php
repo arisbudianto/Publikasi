@@ -21,7 +21,7 @@
         <nav class="sidebar-nav">
             <p class="nav-section">TEMUKAN JURNAL</p>
             <a class="sidebar-link {{ request()->routeIs('sources.*', 'accreditations.*', 'scopus.*') ? 'is-active' : '' }}" href="{{ route('accreditations.index') }}" @if(request()->routeIs('sources.*', 'accreditations.*', 'scopus.*')) aria-current="page" @endif>Database jurnal</a>
-            <a class="sidebar-link {{ request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare') ? 'is-active' : '' }}" href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare')) aria-current="page" @endif>Katalog terkurasi</a>
+            <a class="sidebar-link {{ request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare') ? 'is-active' : '' }}" href="{{ route('catalog.index') }}" @if(request()->routeIs('catalog.index') || request()->routeIs('catalog.show') || request()->routeIs('catalog.compare')) aria-current="page" @endif>Katalog jurnal</a>
             <a class="sidebar-link {{ request()->routeIs('catalog.no-apc') ? 'is-active' : '' }}" href="{{ route('catalog.no-apc') }}" @if(request()->routeIs('catalog.no-apc')) aria-current="page" @endif>Jurnal tanpa APC</a>
 
             <p class="nav-section">ALAT BANTU</p>
@@ -68,7 +68,7 @@
             @yield('content')
         </main>
 
-        <footer>Publikasi · Data awal dikurasi dari sumber resmi. Informasi yang belum diperiksa ditandai secara terbuka. · <a href="{{ route('service.status') }}">Layanan dan pembayaran opsional</a></footer>
+        <footer>Publikasi · Data jurnal disinkronkan dari halaman resmi saat identitas sumber cocok. Informasi yang belum diperiksa ditandai secara terbuka. · <a href="{{ route('service.status') }}">Layanan dan pembayaran opsional</a></footer>
     </div>
 </div>
 <script>

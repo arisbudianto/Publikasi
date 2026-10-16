@@ -2,7 +2,7 @@
 @section('title','Mencari jurnal yang tepat dengan Bantuan AI')
 @section('content')
 <h1>Mencari jurnal yang tepat dengan Bantuan AI</h1>
-<p>Masukkan judul dan abstrak. AI membandingkan naskah dengan cakupan jurnal terkurasi. Kandidat SINTA dan Scopus ditampilkan terpisah berdasarkan irisan kata pada data indeks.</p>
+<p>Masukkan judul dan abstrak. AI membandingkan naskah dengan cakupan jurnal dalam katalog. Kandidat SINTA dan Scopus ditampilkan terpisah berdasarkan irisan kata pada data indeks.</p>
 <p class="muted">Kecocokan bukan peluang diterima. Periksa cakupan, indeks, dan persyaratan pada sumber resmi sebelum submit.</p>
 @if(!$ready)<div class="notice" role="status">Layanan AI belum diaktifkan pengelola. Formulir tersedia setelah layanan siap.</div>@endif
 @if(isset($failure))<div class="error" role="alert">{{ $failure }}</div>@endif
@@ -12,7 +12,7 @@
 <label for="abstract">Abstrak<textarea id="abstract" name="abstract" required minlength="80" maxlength="5000" rows="8" placeholder="80–5.000 karakter; uraikan tujuan, metode, dan temuan"></textarea></label>
 <label for="context">Konteks penelitian (opsional)<textarea id="context" name="context" maxlength="500" rows="3" placeholder="Contoh: jenjang pendidikan, populasi, metode, atau jenis artikel"></textarea></label>
 <label for="index">Indeks jurnal<select id="index" name="index"><option value="all" @selected(($selectedIndex ?? 'all') === 'all')>SINTA atau Scopus</option><option value="sinta" @selected(($selectedIndex ?? '') === 'sinta')>SINTA</option><option value="scopus" @selected(($selectedIndex ?? '') === 'scopus')>Scopus</option></select></label>
-<p class="muted">Pilihan indeks berlaku untuk daftar kandidat dari data indeks. AI membandingkan cakupan katalog terkurasi yang tersedia, bukan seluruh jurnal Scopus atau SINTA.</p>
+<p class="muted">Pilihan indeks berlaku untuk daftar kandidat dari data indeks. AI membandingkan cakupan katalog jurnal yang tersedia, bukan seluruh jurnal Scopus atau SINTA.</p>
 <p>Judul, abstrak, dan konteks dikirim ke Dinoiki untuk membuat embedding. Dinoiki dapat meneruskan pemrosesan ke penyedia model sesuai kebijakannya. Aplikasi tidak menyimpan isi naskah atau embedding naskah; metadata publik dan embedding cakupan dapat di-cache.</p>
 <label class="consent"><input type="checkbox" name="consent" value="1" required> Saya menyetujui pengiriman judul, abstrak, dan konteks ke Dinoiki untuk pencocokan ini.</label>
 <p class="muted">Crossref hanya menerima ISSN jurnal. Hindari memasukkan data pribadi atau naskah rahasia tanpa izin.</p>

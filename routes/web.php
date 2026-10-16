@@ -60,10 +60,11 @@ Route::get('/', function () {
 
     return view('home', [
         'sourceCount' => JournalSource::count(),
-        'curatedCount' => Journal::where('status', 'published')->count(),
+        'catalogCount' => Journal::where('status', 'published')->count(),
     ]);
 })->name('home');
-Route::get('/katalog-terkurasi', [C::class, 'index'])->name('catalog.index');
+Route::get('/katalog-terkurasi', [C::class, 'index']);
+Route::get('/katalog-jurnal', [C::class, 'index'])->name('catalog.index');
 Route::get('/tanpa-apc', [C::class, 'noApc'])->name('catalog.no-apc');
 Route::get('/periksa/jurnal', [JournalIntegrityController::class, 'index'])->name('integrity.form');
 Route::post('/periksa/jurnal', [JournalIntegrityController::class, 'check'])->middleware('throttle:12,1')->name('integrity.check');

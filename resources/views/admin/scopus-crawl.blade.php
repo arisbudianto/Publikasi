@@ -3,7 +3,7 @@
 @section('content')
 <a href="{{ route('admin.index') }}">Kembali ke admin</a>
 <h1>Monitoring crawler SINTA dan Scopus</h1>
-<p>Lihat hasil pemeriksaan halaman jurnal dan kutipan yang perlu ditinjau. Status “berubah” berarti isi halaman berbeda dari pemeriksaan sebelumnya. Itu belum membuktikan perubahan akreditasi, indeks Scopus, quartile, atau data katalog.</p>
+<p>Lihat pemeriksaan halaman jurnal dan hasil sinkronisasi. Perubahan halaman saja belum membuktikan perubahan akreditasi, indeks Scopus, atau quartile. Identitas yang belum cocok tetap dicatat untuk ditinjau.</p>
 @if(session('success'))<p role="status">{{ session('success') }}</p>@endif
 @if($errors->any())<div role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <form method="get" action="{{ route('admin.scopus-crawl.index') }}" class="panel crawl-filters">
@@ -25,6 +25,7 @@
             <span class="crawl-changed"><strong>{{ $summary[$kind]['changed'] }}</strong> berubah</span>
             <span class="crawl-unchanged"><strong>{{ $summary[$kind]['unchanged'] }}</strong> tetap</span>
             <span class="crawl-error"><strong>{{ $summary[$kind]['error'] }}</strong> gagal</span>
+            <span><strong>{{ $summary[$kind]['synced'] }}</strong> tersinkron</span>
         </div>
         <p>Kutipan menunggu tinjauan: <strong>{{ $summary[$kind]['pending'] }}</strong> · terakhir diperiksa: {{ $summary[$kind]['last'] ?: 'belum pernah' }} UTC</p>
     </section>
@@ -34,7 +35,7 @@
 <h2>Riwayat pemeriksaan</h2>
 <div class="table-wrap"><table class="crawl-history"><thead><tr><th>Waktu UTC</th><th>Sumber</th><th>Jurnal dan halaman</th><th>Hasil</th></tr></thead><tbody>
 @forelse($history as $check)
-<tr><td>{{ $check->created_at }}</td><td>{{ $check->source }}</td><td><strong>{{ $check->journal_name ?: 'Tanpa nama' }}</strong><br><a href="{{ $check->url }}" target="_blank" rel="noopener noreferrer">Buka halaman diperiksa</a></td><td><span class="crawl-status crawl-status-{{ $check->status }}">{{ match($check->status) {'changed' => 'Berubah', 'unchanged' => 'Tetap', default => 'Gagal'} }}</span><small>{{ $check->error_code ?: ($check->http_status ? 'HTTP '.$check->http_status : '') }}</small></td></tr>
+<tr><td>{{ $check->created_at }}</td><td>{{ $check->source }}</td><td><strong>{{ $check->journal_name ?: 'Tanpa nama' }}</strong><br><a href="{{ $check->url }}" target="_blank" rel="noopener noreferrer">Buka halaman diperiksa</a></td><td><span class="crawl-status crawl-status-{{ $check->status }}">{{ match($check->status) {'changed' => 'Berubah', 'unchanged' => 'Tetap', default => 'Gagal'} }}</span> {{ $check->synced ? '· Tersinkron ke jurnal' : '' }}<small>{{ $check->error_code ?: ($check->http_status ? 'HTTP '.$check->http_status : '') }}</small></td></tr>
 @empty<tr><td colspan="4">Belum ada pemeriksaan untuk filter ini.</td></tr>@endforelse
 </tbody></table></div>
 <p class="muted">Menampilkan maksimal 50 pemeriksaan terbaru yang sesuai filter. Kesalahan seperti HTTP 403 atau robots disallowed tidak diulang otomatis pada halaman yang sama sampai jadwal berikutnya.</p>

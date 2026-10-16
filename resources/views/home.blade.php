@@ -16,13 +16,13 @@
         <div class="preview-top"><span>SEBELUM SUBMIT</span><span>01 / 03</span></div>
         <h2>Periksa satu per satu</h2>
         <ol><li><strong>Cakupan jurnal</strong><span>Apakah topik naskah sesuai dengan aims dan scope?</span></li><li><strong>Biaya dan indeksasi</strong><span>Buka sumber resmi dan lihat tanggal informasinya.</span></li><li><strong>Persyaratan submit</strong><span>Catat dokumen dan ketentuan penulis.</span></li></ol>
-        <a href="{{ route('catalog.index') }}">Buka katalog terkurasi <span aria-hidden="true">→</span></a>
+        <a href="{{ route('catalog.index') }}">Buka katalog jurnal <span aria-hidden="true">→</span></a>
     </div>
 </section>
 
 <section class="landing-metrics" aria-label="Cakupan data">
-    <div><strong>{{ number_format($sourceCount, 0, ',', '.') }}</strong><span>rekaman sumber SINTA, belum dikurasi satu per satu</span></div>
-    <div><strong>{{ $curatedCount }}</strong><span>jurnal dengan cakupan yang dikurasi</span></div>
+    <div><strong>{{ number_format($sourceCount, 0, ',', '.') }}</strong><span>rekaman sumber SINTA</span></div>
+    <div><strong>{{ $catalogCount }}</strong><span>jurnal dengan data cakupan</span></div>
     <div><strong>Terbuka</strong><span>sumber dan keterbatasan data ditampilkan pada detail</span></div>
 </section>
 
@@ -32,7 +32,7 @@
         <a href="{{ route('accreditations.index') }}"><span>01 · TELUSURI</span><h3>Periksa akreditasi SINTA</h3><p>Cari nama jurnal atau ISSN pada keputusan akreditasi resmi.</p><b>Lihat keputusan <span aria-hidden="true">→</span></b></a>
         <a href="{{ route('scopus.index') }}"><span>SCOPUS · TELUSURI</span><h3>Cari sumber Scopus</h3><p>Periksa status dan cakupan pada daftar sumber September 2026.</p><b>Lihat daftar <span aria-hidden="true">→</span></b></a>
         <a href="{{ route('integrity.form') }}"><span>02 · PERIKSA</span><h3>Cek sebelum submit</h3><p>Gunakan daftar periksa untuk menilai transparansi jurnal dan tanda yang perlu diperhatikan.</p><b>Periksa jurnal <span aria-hidden="true">→</span></b></a>
-        <a href="{{ route('semantic.form') }}"><span>03 · BANTUAN AI</span><h3>Mencari jurnal yang tepat dengan Bantuan AI</h3><p>Masukkan judul dan abstrak untuk melihat jurnal terkurasi berdasarkan kemiripan cakupan, serta kandidat SINTA atau Scopus dari data indeks.</p><b>Mulai pencarian <span aria-hidden="true">→</span></b></a>
+        <a href="{{ route('semantic.form') }}"><span>03 · BANTUAN AI</span><h3>Mencari jurnal yang tepat dengan Bantuan AI</h3><p>Masukkan judul dan abstrak untuk melihat jurnal dengan data cakupan berdasarkan kemiripan cakupan, serta kandidat SINTA atau Scopus dari data indeks.</p><b>Mulai pencarian <span aria-hidden="true">→</span></b></a>
     </div>
 </section>
 

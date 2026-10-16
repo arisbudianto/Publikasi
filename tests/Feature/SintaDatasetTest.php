@@ -29,14 +29,14 @@ class SintaDatasetTest extends TestCase
         $this->assertSame(691, JournalSource::where('education', false)->count());
         $this->get('/sumber-jurnal')->assertOk()->assertSee('999 rekaman sesuai pencarian')->assertSee('308 berlabel Pendidikan')->assertSee('691 bidang lainnya')->assertSee('bukan status terkini');
         $this->get('/')->assertOk()->assertSee('999')->assertSee('keputusan akreditasi resmi 24 Juli 2026')->assertSee('Cari jurnal')->assertDontSee('id="site-sidebar"', false);
-        $this->get('/katalog-terkurasi')->assertOk()->assertSee('jurnal dengan scope terkurasi');
+        $this->get('/katalog-jurnal')->assertOk()->assertSee('jurnal yang sudah memiliki cakupan');
         $this->get('/sumber-jurnal?q=24423904')->assertSee('Jurnal Pendidikan Sains');
         $this->get('/sumber-jurnal?q=Problem-Based%20Learning')->assertSee('Jurnal Pendidikan Sains');
         $this->get('/sumber-jurnal?q=978')->assertSee('Padjadjaran Journal of Dentistry');
         $unnamed = JournalSource::where('source_id', 15)->first();
         $this->get('/sumber-jurnal?q=15')->assertSee('Nama jurnal tidak tersedia (SINTA #15)');
         $this->get('/sumber-jurnal/'.$unnamed->id)->assertOk()->assertSee('Nama jurnal tidak tersedia (SINTA #15)');
-        $this->get('/sumber-jurnal/'.JournalSource::where('source_id', 1)->first()->id)->assertSee('belum tersedia')->assertSee('20/03/2025');
+        $this->get('/sumber-jurnal/'.JournalSource::where('source_id', 1)->first()->id)->assertSee('belum tersinkron')->assertSee('20/03/2025');
     }
 
     private function source(): JournalSource

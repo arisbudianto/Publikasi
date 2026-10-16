@@ -7,7 +7,8 @@ use Throwable;
 
 class ScopusPageMonitor
 {
-    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor) {}
+    public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor,
+        private CrawledJournalSync $sync) {}
 
     public function tick(): array
     {
@@ -23,7 +24,7 @@ class ScopusPageMonitor
         $sintaToday = DB::table('sinta_page_checks')->where('created_at', '>=', $today)->count();
         $limit = max(0, min((int) config('scopus_crawl.daily_limit') - count($checkedToday),
             20 - count($checkedToday) - $m19Today - $sintaToday));
-        $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'candidates' => 0];
+        $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'candidates' => 0, 'synced' => 0];
         if ($limit === 0) {
             return $result;
         }
@@ -58,7 +59,9 @@ class ScopusPageMonitor
                         'status' => $changed ? 'changed' : 'unchanged', 'http_status' => $page['status'],
                         'content_hash' => $hash, 'created_at' => now()]);
                     $added = 0;
-                    foreach ($quotes as $quote) {
+                    $synced = $quotes && $this->sync->fromScopus($target->id, $quotes[0]);
+                    if ($synced) DB::table('scopus_page_checks')->where('id', $check)->update(['synced' => true]);
+                    foreach ($synced ? [] : $quotes as $quote) {
                         if (DB::table('scopus_page_candidates')->where('target_id', $target->id)
                             ->where('status', 'pending')->where('quote', $quote)->exists()) continue;
                         DB::table('scopus_page_candidates')->insert(['target_id' => $target->id, 'check_id' => $check,
@@ -66,10 +69,11 @@ class ScopusPageMonitor
                         $added++;
                     }
                     DB::table('scopus_page_targets')->where('id', $target->id)->update(['last_hash' => $hash]);
-                    return $added;
+                    return [$added, (int) $synced];
                 });
                 $result['changed'] += (int) $changed;
-                $result['candidates'] += $added;
+                $result['candidates'] += $added[0];
+                $result['synced'] += $added[1];
             } catch (Throwable $e) {
                 DB::table('scopus_page_checks')->insert(['target_id' => $target->id, 'status' => 'error',
                     'error_code' => mb_substr($e->getMessage(), 0, 60), 'created_at' => now()]);

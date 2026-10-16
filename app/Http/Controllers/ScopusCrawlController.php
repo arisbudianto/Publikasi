@@ -37,6 +37,7 @@ class ScopusCrawlController extends Controller
                 'changed' => (int) ($counts['changed'] ?? 0),
                 'unchanged' => (int) ($counts['unchanged'] ?? 0),
                 'error' => (int) ($counts['error'] ?? 0),
+                'synced' => DB::table($table)->where('created_at', '>=', $since)->where('synced', true)->count(),
                 'last' => DB::table($table)->max('created_at'),
                 'pending' => DB::table($kind.'_page_candidates')->where('status', 'pending')->count(),
             ];
@@ -46,7 +47,7 @@ class ScopusCrawlController extends Controller
             $sinta = DB::table('sinta_page_checks as c')->join('journal_sources as j', 'j.id', '=', 'c.journal_source_id')
                 ->where('c.created_at', '>=', $since)
                 ->when($status !== 'all', fn ($query) => $query->where('c.status', $status))
-                ->select('c.id', 'c.status', 'c.http_status', 'c.error_code', 'c.created_at', 'c.url',
+                ->select('c.id', 'c.status', 'c.synced', 'c.http_status', 'c.error_code', 'c.created_at', 'c.url',
                     'j.name as journal_name', 'c.journal_source_id')
                 ->orderByDesc('c.id')->limit(50)->get()
                 ->map(fn ($row) => (object) [...(array) $row, 'source' => 'SINTA']);
@@ -57,7 +58,7 @@ class ScopusCrawlController extends Controller
                 ->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
                 ->where('c.created_at', '>=', $since)
                 ->when($status !== 'all', fn ($query) => $query->where('c.status', $status))
-                ->select('c.id', 'c.status', 'c.http_status', 'c.error_code', 'c.created_at', 't.url',
+                ->select('c.id', 'c.status', 'c.synced', 'c.http_status', 'c.error_code', 'c.created_at', 't.url',
                     's.source_title as journal_name', 's.id as scopus_source_id')
                 ->orderByDesc('c.id')->limit(50)->get()
                 ->map(fn ($row) => (object) [...(array) $row, 'source' => 'Scopus']);

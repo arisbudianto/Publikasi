@@ -127,7 +127,7 @@ class SintaAccreditationTest extends TestCase
 
         $this->get('/akreditasi-sinta?q=23556544')
             ->assertOk()->assertSee('Hasil akreditasi SINTA')->assertSee('Geoplanning: Journal of Geomatics and Planning')->assertSee('SINTA 1')
-            ->assertSee('Scope belum tersedia dalam katalog terkurasi.')
+            ->assertSee('Scope belum tersedia dalam katalog jurnal.')
             ->assertDontSee('Belum ditautkan melalui ISSN');
         $this->get('/akreditasi-sinta')
             ->assertOk()

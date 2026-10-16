@@ -117,13 +117,13 @@ class M10StructuredCatalogTest extends TestCase
             'type' => 'print_issn', 'value' => '2049-3630', 'source_url' => 'https://example.org/issn', 'checked_at' => today()->format('Y-m-d'),
         ])->assertRedirect();
         $identifier = $journal->identifiers()->firstOrFail();
-        $this->get('/katalog-terkurasi?q=2049-3630')->assertSee($journal->name);
+        $this->get('/katalog-jurnal?q=2049-3630')->assertSee($journal->name);
         $this->assertDatabaseHas('catalog_audits', ['action' => 'identifier_added', 'journal_id' => $journal->id]);
 
         $this->post(route('admin.identifier.retire', [$journal, $identifier->id]), ['reason' => 'Identitas tidak lagi berlaku menurut sumber resmi.'])->assertRedirect();
         $this->assertDatabaseCount('journal_identifiers', 1);
         $this->assertNotNull($identifier->fresh()->retired_at);
-        $this->get('/katalog-terkurasi?q=2049-3630')->assertDontSee($journal->name);
+        $this->get('/katalog-jurnal?q=2049-3630')->assertDontSee($journal->name);
         $this->assertDatabaseHas('catalog_audits', ['action' => 'identifier_retired', 'journal_id' => $journal->id]);
         $this->assertSame('2339-1286', $other->issn);
     }
