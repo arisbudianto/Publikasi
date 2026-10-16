@@ -13,7 +13,7 @@ class JournalAccreditationController extends Controller
         $q = trim($data['q'] ?? '');
         $compact = strtoupper(str_replace('-', '', $q));
         $accreditations = JournalAccreditation::query()
-            ->with(['source:id,name,source_id', 'journal:id,name,issn'])
+            ->with(['source:id,name,source_id', 'journal:id,name,issn,scope_summary,scope_source_url,checked_at,status'])
             ->whereBetween('rank', [1, 4])
             ->when($q !== '', fn ($query) => $query->where(function ($query) use ($q, $compact) {
                 $query->where('journal_name', 'like', '%'.addcslashes($q, '%_\\').'%')

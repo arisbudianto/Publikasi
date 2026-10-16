@@ -17,8 +17,14 @@
         <h2>{{ $item->journal_name }}</h2>
         <p class="accreditation-publisher">{{ $item->publisher ?: 'Penerbit tidak tercantum' }}</p>
         <p class="accreditation-issn">e-ISSN <strong>{{ $item->e_issn_raw ?: 'tidak tersedia' }}</strong>@if($item->e_issn_raw && ! $item->e_issn_checksum_valid) <span>Checksum tidak valid</span>@endif</p>
-        <p class="accreditation-period">{{ $item->decision_text }}</p>
-        <div class="accreditation-evidence"><strong>Keputusan resmi</strong><span>SK {{ $item->decree_number }} · 24/07/2026 · halaman {{ $item->source_page }}</span><small>{{ $item->match_status === 'matched' ? 'ISSN cocok dengan data jurnal' : 'Belum ditautkan melalui ISSN' }}</small></div>
+        <div class="accreditation-evidence accreditation-scope"><strong>Scope jurnal</strong>
+            @if($item->journal?->status === 'published' && filled($item->journal->scope_summary))
+                <span>{{ $item->journal->scope_summary }}</span>
+                <small><a href="{{ $item->journal->scope_source_url }}" target="_blank" rel="noopener noreferrer">Lihat sumber scope</a> · Diperiksa {{ $item->journal->checked_at?->format('d/m/Y') ?: 'tanggal belum tersedia' }}</small>
+            @else
+                <span>Scope belum tersedia dalam katalog terkurasi. Periksa situs resmi jurnal sebelum menilai kecocokan naskah.</span>
+            @endif
+        </div>
         @if($item->source || $item->journal)<div class="accreditation-links">@if($item->source)<a href="{{ route('sources.show',$item->source) }}">Lihat rekaman sumber SINTA</a>@endif @if($item->journal)<a href="{{ route('catalog.show',$item->journal) }}">Lihat jurnal terkurasi</a>@endif</div>@endif
     </article>
 @empty<p>Tidak ada hasil. Coba nama, penerbit, e-ISSN, atau peringkat lain.</p>@endforelse
