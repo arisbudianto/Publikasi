@@ -67,6 +67,12 @@ class SintaAccreditationTest extends TestCase
         $this->assertSame(2023, $matchedSourceRecord->valid_from_year);
         $this->assertSame(2028, $matchedSourceRecord->valid_to_year);
 
+        $this->get('/akreditasi-sinta?q=24076899')
+            ->assertOk()
+            ->assertSee('Scope yang telah ditinjau secara editorial.')
+            ->assertSee('Lihat sumber scope')
+            ->assertDontSee('Keputusan resmi');
+
         $invalid = JournalAccreditation::where('e_issn_raw', '2354911')->firstOrFail();
         $this->assertFalse($invalid->e_issn_checksum_valid);
         $this->assertNull($invalid->journal_source_id);
@@ -100,7 +106,9 @@ class SintaAccreditationTest extends TestCase
         app(SintaAccreditationDataset::class)->import();
 
         $this->get('/akreditasi-sinta?q=23556544')
-            ->assertOk()->assertSee('Hasil akreditasi SINTA')->assertSee('Geoplanning: Journal of Geomatics and Planning')->assertSee('SINTA 1');
+            ->assertOk()->assertSee('Hasil akreditasi SINTA')->assertSee('Geoplanning: Journal of Geomatics and Planning')->assertSee('SINTA 1')
+            ->assertSee('Scope belum tersedia dalam katalog terkurasi.')
+            ->assertDontSee('Belum ditautkan melalui ISSN');
         $this->get('/akreditasi-sinta')
             ->assertOk()
             ->assertSee('catalog.css?v=', false)
