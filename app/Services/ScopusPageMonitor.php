@@ -22,8 +22,9 @@ class ScopusPageMonitor
         $m19Today = DB::table('m19_runs as r')->join('m19_sources as s', 's.id', '=', 'r.source_id')
             ->where('r.created_at', '>=', $today)->distinct()->count('s.journal_id');
         $sintaToday = DB::table('sinta_page_checks')->where('created_at', '>=', $today)->count();
+        $verificationToday = DB::table('scopus_page_targets')->where('verification_checked_at', '>=', $today)->count();
         $limit = max(0, min((int) config('scopus_crawl.daily_limit') - count($checkedToday),
-            20 - count($checkedToday) - $m19Today - $sintaToday));
+            20 - count($checkedToday) - $m19Today - $sintaToday - $verificationToday));
         $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'candidates' => 0, 'synced' => 0];
         if ($limit === 0) {
             return $result;

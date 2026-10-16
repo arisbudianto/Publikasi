@@ -9,7 +9,7 @@ class ScopusCrawlTargetSeeder
 {
     public function __construct(private JournalPageFetcher $fetcher) {}
 
-    public function run(int $limit = 50, bool $apply = false): array
+    public function run(int $limit = 50, bool $apply = false, bool $adoptExisting = false): array
     {
         if ($limit < 1 || $limit > 100) {
             throw new RuntimeException('limit_out_of_range');
@@ -30,6 +30,7 @@ class ScopusCrawlTargetSeeder
         $existing = DB::table('scopus_page_targets')->where('field', 'scope')
             ->pluck('scopus_source_id')->flip()->all();
         $pairs = [];
+        $adopted = 0;
         foreach (DB::table('journal_sources')->where('official_url', 'like', 'https://%')
             ->orderBy('id')->get(['id', 'p_issn', 'e_issn', 'official_url']) as $source) {
             try {
@@ -50,11 +51,25 @@ class ScopusCrawlTargetSeeder
                 continue;
             }
             $id = array_key_first($ids);
-            if (isset($existing[$id]) || isset($pairs[$id])) {
+            if (isset($existing[$id])) {
+                if ($apply && $adoptExisting && $adopted < $limit) {
+                    $adopted += DB::table('scopus_page_targets')->where('scopus_source_id', $id)
+                        ->where('url', $source->official_url)->where('field', 'scope')
+                        ->where('enabled', false)->where('auto_verify', false)
+                        ->whereNull('last_hash')->whereNull('next_check_at')
+                        ->whereNotExists(function ($query) {
+                            $query->selectRaw('1')->from('scopus_page_checks as c')
+                                ->whereColumn('c.target_id', 'scopus_page_targets.id');
+                        })->update(['auto_verify' => true, 'updated_at' => now()]);
+                }
+                continue;
+            }
+            if (isset($pairs[$id])) {
                 continue;
             }
             $pairs[$id] = ['scopus_source_id' => $id, 'url' => $source->official_url,
-                'field' => 'scope', 'enabled' => false, 'created_at' => now(), 'updated_at' => now()];
+                'field' => 'scope', 'enabled' => false, 'auto_verify' => true,
+                'created_at' => now(), 'updated_at' => now()];
             if (count($pairs) >= $limit) {
                 break;
             }
@@ -65,6 +80,6 @@ class ScopusCrawlTargetSeeder
             }
         }
         return ['eligible' => count($pairs), 'created' => $apply ? count($pairs) : 0,
-            'mode' => $apply ? 'apply' : 'dry-run'];
+            'adopted' => $adopted, 'mode' => $apply ? 'apply' : 'dry-run'];
     }
 }

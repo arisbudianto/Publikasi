@@ -62,12 +62,18 @@
 @forelse($targets as $target)
 <article class="panel">
     <h3>{{ $target->source_title }}</h3>
-    <p>{{ $target->field }} · {{ $target->enabled ? 'Aktif' : 'Jeda' }} · {{ $target->is_current ? 'Snapshot aktif' : 'Snapshot lama' }}</p>
-    <p><a href="{{ $target->url }}" target="_blank" rel="noopener noreferrer">Periksa halaman resmi</a> · berikutnya {{ $target->next_check_at ?: 'belum dijadwalkan' }}</p>
+    <p>{{ $target->field }} · {{ $target->enabled ? 'Aktif' : ($target->auto_verify ? 'Menunggu verifikasi otomatis' : 'Jeda') }} · {{ $target->is_current ? 'Snapshot aktif' : 'Snapshot lama' }}</p>
+    <p><a href="{{ $target->url }}" target="_blank" rel="noopener noreferrer">Halaman penerbit</a> · berikutnya {{ $target->next_check_at ?: 'belum dijadwalkan' }}</p>
+    @if($target->verification_error)<p>Verifikasi terakhir: {{ $target->verification_error }}</p>@endif
+    @if($target->enabled)
     <form method="post" action="{{ route('admin.scopus-crawl.toggle', $target->id) }}">@csrf
-        <input type="hidden" name="enabled" value="{{ $target->enabled ? 0 : 1 }}">
-        <button class="secondary">{{ $target->enabled ? 'Jeda' : 'Aktifkan setelah verifikasi URL' }}</button>
+        <input type="hidden" name="enabled" value="0"><button class="secondary">Jeda</button>
     </form>
+    @elseif(! $target->auto_verify)
+    <form method="post" action="{{ route('admin.scopus-crawl.toggle', $target->id) }}">@csrf
+        <input type="hidden" name="enabled" value="1"><button class="secondary">Jadwalkan verifikasi</button>
+    </form>
+    @endif
 </article>
 @empty<p>Belum ada halaman resmi terdaftar. Cari jurnal dan periksa alamat situs penerbitnya sebelum mendaftar.</p>@endforelse
 <h2>Bukti Scopus yang belum tersinkron</h2>

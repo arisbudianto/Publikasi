@@ -32,13 +32,26 @@ class ScopusCrawlTargetSeederTest extends TestCase
     {
         $source = $this->scopus(1, '12345678');
         $this->sinta(1, '1234-5678', 'https://journal.example.org/about');
-        $this->assertSame(['eligible' => 1, 'created' => 0, 'mode' => 'dry-run'],
+        $this->assertSame(['eligible' => 1, 'created' => 0, 'adopted' => 0, 'mode' => 'dry-run'],
             app(ScopusCrawlTargetSeeder::class)->run());
         $this->assertDatabaseCount('scopus_page_targets', 0);
         $this->assertSame(1, app(ScopusCrawlTargetSeeder::class)->run(50, true)['created']);
         $this->assertDatabaseHas('scopus_page_targets', ['scopus_source_id' => $source->id,
-            'url' => 'https://journal.example.org/about', 'field' => 'scope', 'enabled' => false]);
+            'url' => 'https://journal.example.org/about', 'field' => 'scope', 'enabled' => false,
+            'auto_verify' => true]);
         $this->assertSame(0, app(ScopusCrawlTargetSeeder::class)->run(50, true)['created']);
+    }
+
+    public function test_existing_paused_target_is_adopted_only_when_explicitly_requested(): void
+    {
+        $source = $this->scopus(11, '12345678');
+        $this->sinta(11, '1234-5678', 'https://journal.example.org/about');
+        DB::table('scopus_page_targets')->insert(['scopus_source_id' => $source->id,
+            'url' => 'https://journal.example.org/about', 'field' => 'scope', 'enabled' => false,
+            'created_at' => now(), 'updated_at' => now()]);
+        $this->assertSame(0, app(ScopusCrawlTargetSeeder::class)->run(50, true)['adopted']);
+        $this->assertSame(1, app(ScopusCrawlTargetSeeder::class)->run(50, true, true)['adopted']);
+        $this->assertSame(0, app(ScopusCrawlTargetSeeder::class)->run(50, true, true)['adopted']);
     }
 
     public function test_ambiguous_and_insecure_matches_are_skipped(): void
