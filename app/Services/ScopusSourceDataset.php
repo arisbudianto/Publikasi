@@ -85,7 +85,7 @@ class ScopusSourceDataset
                         'scope_checked_at' => $sameIdentity ? $old->scope_checked_at : null];
                     return $record;
                 }, $chunk);
-                ScopusSource::upsert($records, ['source_record_id', 'snapshot_month'], ['source_title', 'issn', 'eissn', 'status', 'coverage', 'discontinued', 'source_type', 'publisher', 'asjc_codes', 'is_current', 'updated_at']);
+                ScopusSource::upsert($records, ['source_record_id', 'snapshot_month'], ['source_title', 'issn', 'eissn', 'status', 'coverage', 'discontinued', 'source_type', 'publisher', 'asjc_codes', 'scope_excerpt', 'scope_source_url', 'scope_checked_at', 'is_current', 'updated_at']);
             }
         });
         return ['imported' => count($rows), 'current' => ScopusSource::where('is_current', true)->count(), 'snapshot_month' => $month];
