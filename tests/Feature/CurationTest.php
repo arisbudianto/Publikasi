@@ -32,6 +32,20 @@ class CurationTest extends TestCase
         return ['kind' => 'fee', 'label' => 'APC', 'value' => 'USD 100, akses terbuka', 'verification' => 'publisher_claim', 'source_url' => 'https://example.org/apc', 'checked_at' => today()->format('Y-m-d'), 'period' => '2026', 'review_note' => 'Diperiksa tabel biaya pada halaman resmi penerbit.', 'confirmed' => '1'];
     }
 
+    public function test_curation_opens_all_journals_and_shows_new_drafts(): void
+    {
+        $draft = $this->journal();
+        $draft->update(['status' => 'draft']);
+        $this->actingAs($this->admin())
+            ->get('/admin/kurasi')
+            ->assertOk()
+            ->assertSee('1 draft')
+            ->assertSee('Draft · belum publik')
+            ->assertSee('Tinjau dan terbitkan')
+            ->assertSee(route('admin.edit', $draft));
+        $this->get('/admin/kurasi?review=due')->assertOk()->assertDontSee('Jurnal Kurasi');
+    }
+
     public function test_non_admin_cannot_review_publish_or_retire(): void
     {
         $j = $this->journal();
