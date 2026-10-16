@@ -9,7 +9,7 @@
 @forelse($curationLeads as $lead)
     <article class="panel">
         <h3>{{ $lead->name }}</h3>
-        <p>SINTA {{ $lead->rank }} · e-ISSN {{ $lead->e_issn ?: 'belum tersedia' }} · SK {{ $lead->decree_number }}, {{ $lead->decree_date }} halaman {{ $lead->source_page }}</p>
+        <p><span class="rank-badge rank-badge--sinta-{{ $lead->rank }}">SINTA {{ $lead->rank }}</span> · e-ISSN {{ $lead->e_issn ?: 'belum tersedia' }} · SK {{ $lead->decree_number }}, {{ $lead->decree_date }} halaman {{ $lead->source_page }}</p>
         <div class="agent-lead-actions">
             <a class="button secondary" href="{{ $lead->official_url }}" target="_blank" rel="noopener noreferrer">Periksa situs jurnal ↗</a>
             <a class="button" href="{{ route('admin.sources.prepare', $lead->source_id) }}">Tinjau dan siapkan draft</a>

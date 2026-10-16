@@ -38,7 +38,7 @@
 Scopus · snapshot {{ $candidate['scopus']->snapshot_month }} · quartile belum tersedia
 @endif
 @if($candidate['sinta'])
-SINTA {{ $candidate['sinta']->rank }}
+<span class="rank-badge rank-badge--sinta-{{ $candidate['sinta']->rank }}">SINTA {{ $candidate['sinta']->rank }}</span>
 @endif
 · ISSN {{ $candidate['issn'] ?: 'belum tercatat' }}</p>
 <p>{{ $candidate['evidence'] }} · Istilah beririsan: {{ implode(', ', $candidate['matches']) }}</p></article>
