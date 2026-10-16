@@ -19,7 +19,7 @@ class CrawlEvidenceBackfillTest extends TestCase
             'raw_identifiers' => [], 'article_titles' => [], 'dataset_sha256' => str_repeat('a', 64)]);
         $check = DB::table('sinta_page_checks')->insertGetId(['journal_source_id' => $source->id,
             'url' => 'https://journal.example.org/scope', 'status' => 'changed', 'created_at' => now()]);
-        $quote = 'The focus and scope of this journal include educational research.';
+        $quote = 'This journal welcomes empirical articles in business, management, economics, and accounting.';
         $candidate = DB::table('sinta_page_candidates')->insertGetId(['journal_source_id' => $source->id,
             'check_id' => $check, 'quote' => $quote, 'status' => 'pending',
             'created_at' => now(), 'updated_at' => now()]);

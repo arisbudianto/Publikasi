@@ -53,8 +53,9 @@ class CrawlEvidenceBackfill
 
     private function validScopeQuote(string $quote): bool
     {
+        // The extractor also accepts a paragraph under a scope heading, even
+        // when the paragraph itself does not repeat the heading's keyword.
         return mb_strlen($quote) >= 20 && mb_strlen($quote) <= 600
-            && (bool) preg_match('/\b(scope|aims|focus|cakupan|ruang lingkup)\b/iu', $quote)
             && (bool) preg_match('/[.!?;:]/u', $quote);
     }
 }
