@@ -108,20 +108,23 @@ class ScopusCrawlController extends Controller
         if (DB::table('scopus_page_targets')->where($data)->exists()) {
             return back()->withErrors(['url' => 'Halaman untuk bidang ini sudah terdaftar.']);
         }
-        DB::table('scopus_page_targets')->insert($data + ['enabled' => false, 'created_at' => now(), 'updated_at' => now()]);
-        return back()->with('success', 'Halaman didaftarkan dalam keadaan jeda. Periksa situs resmi sebelum mengaktifkannya.');
+        DB::table('scopus_page_targets')->insert($data + ['enabled' => false, 'auto_verify' => true,
+            'created_at' => now(), 'updated_at' => now()]);
+        return back()->with('success', 'Halaman didaftarkan dan menunggu verifikasi otomatis.');
     }
 
     public function toggle(Request $request, int $target)
     {
         $data = $request->validate(['enabled' => 'required|boolean']);
         $updated = DB::table('scopus_page_targets')->where('id', $target)->update([
-            'enabled' => (bool) $data['enabled'],
+            'enabled' => false,
+            'auto_verify' => (bool) $data['enabled'],
             'next_check_at' => $data['enabled'] ? now() : null,
+            'verification_error' => null,
             'updated_at' => now(),
         ]);
         abort_unless($updated, 404);
-        return back()->with('success', $data['enabled'] ? 'Pemantauan diaktifkan.' : 'Pemantauan dijeda.');
+        return back()->with('success', $data['enabled'] ? 'Verifikasi otomatis dijadwalkan.' : 'Pemantauan dijeda.');
     }
 
     public function review(Request $request, int $candidate)

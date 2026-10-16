@@ -12,6 +12,7 @@ use App\Services\ScopusSourceDataset;
 use App\Services\SintaPageMonitor;
 use App\Services\ScopusPageMonitor;
 use App\Services\ScopusCrawlTargetSeeder;
+use App\Services\ScopusTargetVerifier;
 use App\Services\SintaAccreditationDataset;
 use App\Services\SintaDataset;
 use App\Services\TopicMonitoring;
@@ -37,14 +38,23 @@ Artisan::command('publikasi:crawl-scopus-journals', function (ScopusPageMonitor 
 
 Schedule::command('publikasi:crawl-scopus-journals')->dailyAt('03:30')->withoutOverlapping(30);
 
-Artisan::command('publikasi:seed-scopus-crawl {--limit=50} {--apply}', function (ScopusCrawlTargetSeeder $seeder) {
+Artisan::command('publikasi:seed-scopus-crawl {--limit=50} {--apply} {--adopt-existing}', function (ScopusCrawlTargetSeeder $seeder) {
     try {
-        $this->line(json_encode($seeder->run((int) $this->option('limit'), (bool) $this->option('apply'))));
+        $this->line(json_encode($seeder->run((int) $this->option('limit'), (bool) $this->option('apply'),
+            (bool) $this->option('adopt-existing'))));
     } catch (\RuntimeException $e) {
         $this->error($e->getMessage());
         return 1;
     }
-})->purpose('Siapkan target crawler dari URL SINTA dengan padanan ISSN tepat, tetap dijeda');
+})->purpose('Siapkan target crawler dari URL SINTA dengan padanan ISSN tepat untuk verifikasi otomatis');
+
+Schedule::command('publikasi:seed-scopus-crawl --limit=50 --apply')->dailyAt('03:06')->withoutOverlapping(10);
+
+Artisan::command('publikasi:verify-scopus-targets {--limit=5}', function (ScopusTargetVerifier $verifier) {
+    $this->line(json_encode($verifier->tick((int) $this->option('limit'))));
+})->purpose('Verifikasi identitas jurnal pada halaman penerbit sebelum mengaktifkan crawler');
+
+Schedule::command('publikasi:verify-scopus-targets --limit=5')->dailyAt('03:18')->withoutOverlapping(15);
 
 
 Artisan::command('publikasi:crawl-sinta', function (SintaPageMonitor $monitor) {

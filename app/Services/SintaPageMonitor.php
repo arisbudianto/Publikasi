@@ -21,8 +21,9 @@ class SintaPageMonitor
             ->where('m19_runs.created_at', '>=', $today)->distinct()->count('m19_sources.journal_id');
         $sintaToday = DB::table('sinta_page_checks')->where('created_at', '>=', $today)->count();
         $scopusToday = DB::table('scopus_page_checks')->where('created_at', '>=', $today)->count();
+        $verificationToday = DB::table('scopus_page_targets')->where('verification_checked_at', '>=', $today)->count();
         $limit = max(0, min((int) config('sinta_crawl.daily_limit') - $sintaToday,
-            20 - $m19Today - $sintaToday - $scopusToday));
+            20 - $m19Today - $sintaToday - $scopusToday - $verificationToday));
         $result = ['status' => 'ok', 'checked' => 0, 'changed' => 0, 'errors' => 0, 'candidates' => 0, 'synced' => 0];
         if ($limit === 0) {
             return $result;

@@ -6,6 +6,7 @@ use App\Models\ScopusSource;
 use App\Models\User;
 use App\Services\JournalPageFetcher;
 use App\Services\ScopusPageMonitor;
+use App\Services\ScopusTargetVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -39,9 +40,15 @@ class ScopusPageMonitorTest extends TestCase
         $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
             public function fetch(string $url): array
             {
-                return ['status' => 200, 'body' => '<html><body><p>The focus and scope of this journal include vocational education and assessment research.</p></body></html>'];
+                return ['status' => 200, 'body' => '<html><title>Test Journal 1</title><body><p>ISSN 1234-5678. The focus and scope of this journal include vocational education and assessment research.</p></body></html>'];
             }
         });
+        // A manually entered URL has no matching SINTA source, so it cannot be activated automatically.
+        $this->assertSame(1, app(ScopusTargetVerifier::class)->tick()['rejected']);
+        $this->assertDatabaseHas('scopus_page_targets', ['id' => $target->id, 'enabled' => false]);
+        $this->assertSame(0, app(ScopusPageMonitor::class)->tick()['checked']);
+        $this->post(route('admin.scopus-crawl.toggle', $target->id), ['enabled' => 0])->assertRedirect();
+        DB::table('scopus_page_targets')->where('id', $target->id)->update(['enabled' => true, 'next_check_at' => now()]);
         $this->assertSame(1, app(ScopusPageMonitor::class)->tick()['checked']);
         $this->assertSame(0, app(ScopusPageMonitor::class)->tick()['checked']);
         $this->assertDatabaseCount('scopus_page_candidates', 0);
