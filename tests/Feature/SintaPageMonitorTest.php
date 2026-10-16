@@ -111,6 +111,35 @@ class SintaPageMonitorTest extends TestCase
         $this->assertDatabaseMissing('sinta_page_checks', ['journal_source_id' => $old->id]);
     }
 
+    public function test_verified_discovery_lead_is_crawled_before_other_due_sources(): void
+    {
+        $ordinary = $this->source(1);
+        $priority = $this->source(2);
+        $accreditation = DB::table('journal_accreditations')->insertGetId([
+            'item_key' => 'test:2', 'rank' => 2, 'journal_name' => $priority->name,
+            'e_issn_raw' => '23556544', 'e_issn_checksum_valid' => true,
+            'decision_type' => 'new', 'decision_text' => 'Terakreditasi peringkat 2',
+            'source_page' => 12, 'decree_number' => '355/2026', 'decree_date' => '2026-07-24',
+            'period' => '2025-3', 'source_pdf_sha256' => str_repeat('b', 64),
+            'journal_source_id' => $priority->id, 'match_status' => 'matched',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('curation_leads')->insert(['journal_source_id' => $priority->id,
+            'accreditation_id' => $accreditation, 'status' => 'pending',
+            'created_at' => now(), 'updated_at' => now()]);
+        config(['sinta_crawl.enabled' => true, 'sinta_crawl.daily_limit' => 1]);
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                return ['status' => 200, 'body' => '<html><body></body></html>', 'content_type' => 'text/html'];
+            }
+        });
+
+        $this->assertSame(1, app(SintaPageMonitor::class)->tick()['checked']);
+        $this->assertDatabaseHas('sinta_page_checks', ['journal_source_id' => $priority->id]);
+        $this->assertDatabaseMissing('sinta_page_checks', ['journal_source_id' => $ordinary->id]);
+    }
+
     public function test_same_host_scope_link_updates_source_evidence(): void
     {
         $source = $this->source(1);

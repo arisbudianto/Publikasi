@@ -28,10 +28,12 @@ class SintaPageMonitor
             return $result;
         }
         $sources = DB::table('journal_sources as j')->leftJoin('sinta_page_states as s', 's.journal_source_id', '=', 'j.id')
+            ->leftJoin('curation_leads as l', 'l.journal_source_id', '=', 'j.id')
             ->whereNotNull('j.official_url')->where('j.official_url', '!=', '')
             ->where(fn ($q) => $q->where('j.official_url', 'like', 'https://%')
                 ->orWhere('j.official_url', 'like', 'http://%'))
             ->where(fn ($q) => $q->whereNull('s.next_check_at')->orWhere('s.next_check_at', '<=', now()))
+            ->orderByRaw("CASE WHEN l.status = 'pending' THEN 0 ELSE 1 END")
             ->orderBy('s.next_check_at')
             ->orderByRaw("CASE WHEN j.official_url LIKE 'https://%' THEN 0 ELSE 1 END")
             ->orderBy('j.id')

@@ -27,11 +27,11 @@
             <span class="crawl-error"><strong>{{ $summary[$kind]['error'] }}</strong> gagal</span>
             <span><strong>{{ $summary[$kind]['synced'] }}</strong> tersinkron</span>
         </div>
-        <p>Kutipan menunggu tinjauan: <strong>{{ $summary[$kind]['pending'] }}</strong> · terakhir diperiksa: {{ $summary[$kind]['last'] ?: 'belum pernah' }} UTC</p>
+        <p>Bukti belum tersinkron: <strong>{{ $summary[$kind]['pending'] }}</strong> · terakhir diperiksa: {{ $summary[$kind]['last'] ?: 'belum pernah' }} UTC</p>
     </section>
 @endforeach
 </div>
-<p class="muted">Hitungan pemeriksaan mengikuti periode terpilih. Kutipan menunggu tinjauan dan waktu terakhir menunjukkan seluruh data. SINTA berjalan pukul 04.00 UTC, Scopus 03.30 UTC; keduanya berbagi kuota dengan agen katalog.</p>
+<p class="muted">Hitungan pemeriksaan mengikuti periode terpilih. Bukti belum tersinkron dan waktu terakhir menunjukkan seluruh data. SINTA berjalan pukul 04.00 UTC, Scopus 03.30 UTC, dan sinkronisasi ulang pukul 04.48 UTC. Ketiganya memakai cron yang sama.</p>
 <h2>Riwayat pemeriksaan</h2>
 <div class="table-wrap"><table class="crawl-history"><thead><tr><th>Waktu UTC</th><th>Sumber</th><th>Jurnal dan halaman</th><th>Hasil</th></tr></thead><tbody>
 @forelse($history as $check)
@@ -39,11 +39,11 @@
 @empty<tr><td colspan="4">Belum ada pemeriksaan untuk filter ini.</td></tr>@endforelse
 </tbody></table></div>
 <p class="muted">Menampilkan maksimal 50 pemeriksaan terbaru yang sesuai filter. Kesalahan seperti HTTP 403 atau robots disallowed tidak diulang otomatis pada halaman yang sama sampai jadwal berikutnya.</p>
-<h2>Kutipan SINTA menunggu tinjauan</h2>
-<p><a href="{{ route('admin.agent.index') }}">Buka agen jurnal untuk meninjau seluruh kutipan SINTA</a>.</p>
+<h2>Bukti SINTA yang belum tersinkron</h2>
+<p>Bukti yang cocok diproses otomatis setiap hari. Data tanpa identitas atau halaman resmi yang sesuai tidak diterbitkan.</p>
 @forelse($sintaCandidates as $candidate)
-<article class="panel"><h3>{{ $candidate->name ?: 'SINTA #'.$candidate->journal_source_id }}</h3><blockquote>{{ $candidate->quote }}</blockquote><a href="{{ route('admin.agent.index') }}">Tinjau di agen jurnal</a></article>
-@empty<p>Belum ada kutipan SINTA yang menunggu.</p>@endforelse
+<article class="panel"><h3>{{ $candidate->name ?: 'SINTA #'.$candidate->journal_source_id }}</h3><blockquote>{{ $candidate->quote }}</blockquote><a href="{{ route('sources.show', $candidate->journal_source_id) }}">Lihat data sumber</a></article>
+@empty<p>Tidak ada bukti SINTA yang menunggu sinkronisasi.</p>@endforelse
 <h2>Target dan kutipan Scopus</h2>
 <p>Daftarkan URL resmi jurnal dari snapshot Scopus. Verifikasi identitas halaman sebelum mengaktifkannya. Maksimal {{ config('scopus_crawl.daily_limit') }} jurnal Scopus per hari, dalam kuota gabungan 20 pemeriksaan.</p>
 <form method="get" action="{{ route('admin.scopus-crawl.index') }}" class="panel">
@@ -75,17 +75,13 @@
     </form>
 </article>
 @empty<p>Belum ada halaman resmi terdaftar. Cari jurnal dan periksa alamat situs penerbitnya sebelum mendaftar.</p>@endforelse
-<h2>Kutipan menunggu tinjauan</h2>
+<h2>Bukti Scopus yang belum tersinkron</h2>
 @forelse($candidates as $candidate)
 <article class="panel">
     <h3>{{ $candidate->source_title }} · {{ $candidate->field }}</h3>
     <blockquote>{{ $candidate->quote }}</blockquote>
     <p><a href="{{ $candidate->url }}" target="_blank" rel="noopener noreferrer">Buka bukti di situs jurnal</a></p>
-    <form method="post" action="{{ route('admin.scopus-crawl.review', $candidate->id) }}">@csrf
-        <label>Catatan pemeriksaan<textarea name="note" minlength="10" maxlength="2000" required></textarea></label>
-        <button name="decision" value="reviewed">Tandai diperiksa</button>
-        <button name="decision" value="rejected" class="secondary">Tolak kutipan</button>
-    </form>
+    <p>Sinkronisasi otomatis akan mencoba kembali bila identitas dan URL sumber memenuhi syarat.</p>
 </article>
-@empty<p>Belum ada kutipan yang menunggu tinjauan.</p>@endforelse
+@empty<p>Tidak ada bukti Scopus yang menunggu sinkronisasi.</p>@endforelse
 @endsection

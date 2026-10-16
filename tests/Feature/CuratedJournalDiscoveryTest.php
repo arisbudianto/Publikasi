@@ -56,7 +56,8 @@ class CuratedJournalDiscoveryTest extends TestCase
         $lead = DB::table('curation_leads')->value('id');
         $this->actingAs($user)->get(route('admin.agent.index'))->assertForbidden();
         $this->actingAs($admin)->get(route('admin.agent.index'))->assertOk()
-            ->assertSee('Jurnal Pendidikan Teruji')->assertSee(route('admin.sources.prepare', $source));
+            ->assertSee('Jurnal Pendidikan Teruji')->assertSee(route('sources.show', $source))
+            ->assertDontSee('Tinjau dan siapkan draft');
         $this->post(route('admin.agent.lead.dismiss', $lead), ['note' => 'Sumber tidak lagi dapat diverifikasi.'])->assertRedirect();
         $this->assertDatabaseHas('curation_leads', ['id' => $lead, 'status' => 'dismissed']);
         $this->assertSame(0, app(CuratedJournalDiscovery::class)->tick()['created']);
