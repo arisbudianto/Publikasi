@@ -25,6 +25,20 @@
                 <span>Scope belum tersedia dalam katalog terkurasi. Periksa situs resmi jurnal sebelum menilai kecocokan naskah.</span>
             @endif
         </div>
+        @if($item->journal?->status === 'published')
+            @foreach(['fee' => 'Biaya publikasi', 'time' => 'Waktu proses'] as $kind => $label)
+                @php($details = $item->journal->observations->where('kind', $kind)->filter(fn ($observation) => filled($observation->value) || ($kind === 'fee' && $observation->amount_minor !== null)))
+                @if($details->isNotEmpty())
+                    <div class="accreditation-publication"><strong>{{ $label }}</strong>
+                        @foreach($details as $observation)
+                            <p>{{ $observation->label }} · @if($kind === 'fee' && $observation->amount_minor !== null && $observation->currency){{ $observation->currency }} {{ number_format($observation->amount_minor, 0, ',', '.') }}@else{{ $observation->value }}@endif</p>
+                            <small>{{ $observation->verification === 'verified' ? 'Terverifikasi dari sumber utama' : 'Klaim penerbit, belum diverifikasi independen' }} · <a href="{{ $observation->source_url }}" target="_blank" rel="noopener noreferrer">Sumber</a> · Diperiksa {{ $observation->checked_at?->format('d/m/Y') ?: 'tanggal belum tersedia' }}@if($observation->checked_at && $observation->checked_at->lt(today()->subDays(180))) · Perlu diperiksa ulang @endif</small>
+                        @endforeach
+                    </div>
+                @endif
+            @endforeach
+        @endif
+        <p class="accreditation-acceptance"><strong>Peluang diterima:</strong> Belum dapat dihitung dari peringkat dan scope jurnal.</p>
         @if($item->source || $item->journal)<div class="accreditation-links">@if($item->source)<a href="{{ route('sources.show',$item->source) }}">Lihat rekaman sumber SINTA</a>@endif @if($item->journal)<a href="{{ route('catalog.show',$item->journal) }}">Lihat jurnal terkurasi</a>@endif</div>@endif
     </article>
 @empty<p>Tidak ada hasil. Coba nama, penerbit, e-ISSN, atau peringkat lain.</p>@endforelse
