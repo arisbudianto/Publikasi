@@ -62,11 +62,47 @@ class SemanticMatchTest extends TestCase
         $this->get('/cocokkan-ai')->assertOk()->assertSee('Mencari jurnal yang tepat dengan Bantuan AI')
             ->assertSee('Indeks jurnal')->assertSee('SINTA atau Scopus');
         $this->post('/cocokkan-ai', $this->input() + ['index' => 'scopus'])
-            ->assertOk()->assertSee('Technical Learning Journal')->assertSee('bukan penilaian AI atas scope');
+            ->assertOk()->assertSee('Technical Learning Journal')
+            ->assertSee('Ditemukan lewat kata kunci, belum dinilai AI');
         $this->post('/cocokkan-ai', $this->input() + ['index' => 'sinta'])
             ->assertOk()->assertDontSee('Technical Learning Journal');
         $this->post('/cocokkan-ai', $this->input() + ['index' => 'invalid'])
             ->assertStatus(422);
+    }
+
+    public function test_indexed_candidate_with_scope_is_ai_ranked_and_unscoped_candidate_is_labeled_keyword(): void
+    {
+        ScopusSource::create(['source_record_id' => 92, 'source_title' => 'Technical Learning Journal',
+            'issn' => '12345678', 'status' => 'Active', 'source_type' => 'Journal',
+            'snapshot_month' => '2026-09', 'is_current' => true,
+            'scope_excerpt' => 'Technical skills and vocational learning research',
+            'scope_source_url' => 'https://journal.example.org/scope']);
+        ScopusSource::create(['source_record_id' => 93, 'source_title' => 'Technical Skills Review',
+            'issn' => '23456789', 'status' => 'Active', 'source_type' => 'Journal',
+            'snapshot_month' => '2026-09', 'is_current' => true]);
+        $this->fake();
+        $this->post('/cocokkan-ai', $this->input() + ['index' => 'scopus'])->assertOk()
+            ->assertSee('Dinilai AI dari kutipan scope')->assertSee('Kemiripan 1.000')
+            ->assertSee('Ditemukan lewat kata kunci, belum dinilai AI')
+            ->assertSee('https://journal.example.org/scope');
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'ai.dinoiki.com')
+            && in_array('Technical skills and vocational learning research', $request['input'], true));
+    }
+
+    public function test_indexed_ai_failure_does_not_mislabel_keyword_results(): void
+    {
+        ScopusSource::create(['source_record_id' => 94, 'source_title' => 'Technical Learning Journal',
+            'issn' => '12345678', 'status' => 'Active', 'source_type' => 'Journal',
+            'snapshot_month' => '2026-09', 'is_current' => true,
+            'scope_excerpt' => 'Technical skills and practical learning research',
+            'scope_source_url' => 'https://journal.example.org/scope']);
+        Http::fake(['ai.dinoiki.com/*' => Http::sequence()
+            ->push(['data' => [['index' => 0, 'embedding' => [1, 0]]]])
+            ->push([], 503)]);
+        $this->post('/cocokkan-ai', $this->input() + ['index' => 'scopus'])->assertOk()
+            ->assertSee('Penilaian AI pada kandidat indeks sedang tidak tersedia')
+            ->assertSee('Ditemukan lewat kata kunci, belum dinilai AI')
+            ->assertDontSee('Dinilai AI dari kutipan scope');
     }
 
     public function test_missing_consent_and_disabled_ai_never_call_external(): void

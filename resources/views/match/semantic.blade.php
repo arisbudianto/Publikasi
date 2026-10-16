@@ -2,7 +2,7 @@
 @section('title','Mencari jurnal yang tepat dengan Bantuan AI')
 @section('content')
 <h1>Mencari jurnal yang tepat dengan Bantuan AI</h1>
-<p>Masukkan judul dan abstrak. AI membandingkan naskah dengan cakupan jurnal dalam katalog. Kandidat SINTA dan Scopus ditampilkan terpisah berdasarkan irisan kata pada data indeks.</p>
+<p>Masukkan judul dan abstrak. AI membandingkan naskah dengan cakupan katalog dan kandidat indeks yang memiliki kutipan scope. Kandidat tanpa scope ditemukan lewat kata kunci dan ditandai jelas.</p>
 <p class="muted">Kecocokan bukan peluang diterima. Periksa cakupan, indeks, dan persyaratan pada sumber resmi sebelum submit.</p>
 @if(!$ready)<div class="notice" role="status">Layanan AI belum diaktifkan pengelola. Formulir tersedia setelah layanan siap.</div>@endif
 @if(isset($failure))<div class="error" role="alert">{{ $failure }}</div>@endif
@@ -12,7 +12,7 @@
 <label for="abstract">Abstrak<textarea id="abstract" name="abstract" required minlength="80" maxlength="5000" rows="8" placeholder="80–5.000 karakter; uraikan tujuan, metode, dan temuan"></textarea></label>
 <label for="context">Konteks penelitian (opsional)<textarea id="context" name="context" maxlength="500" rows="3" placeholder="Contoh: jenjang pendidikan, populasi, metode, atau jenis artikel"></textarea></label>
 <label for="index">Indeks jurnal<select id="index" name="index"><option value="all" @selected(($selectedIndex ?? 'all') === 'all')>SINTA atau Scopus</option><option value="sinta" @selected(($selectedIndex ?? '') === 'sinta')>SINTA</option><option value="scopus" @selected(($selectedIndex ?? '') === 'scopus')>Scopus</option></select></label>
-<p class="muted">Pilihan indeks berlaku untuk daftar kandidat dari data indeks. AI membandingkan cakupan katalog jurnal yang tersedia, bukan seluruh jurnal Scopus atau SINTA.</p>
+<p class="muted">Pilihan indeks berlaku untuk daftar kandidat indeks. Kandidat dipilih lebih dulu lewat irisan istilah; AI hanya mengurutkan kandidat terpilih yang punya kutipan scope. Seluruh jurnal Scopus dan SINTA belum dinilai AI.</p>
 <p>Judul, abstrak, dan konteks dikirim ke Dinoiki untuk membuat embedding. Dinoiki dapat meneruskan pemrosesan ke penyedia model sesuai kebijakannya. Aplikasi tidak menyimpan isi naskah atau embedding naskah; metadata publik dan embedding cakupan dapat di-cache.</p>
 <label class="consent"><input type="checkbox" name="consent" value="1" required> Saya menyetujui pengiriman judul, abstrak, dan konteks ke Dinoiki untuk pencocokan ini.</label>
 <p class="muted">Crossref hanya menerima ISSN jurnal. Hindari memasukkan data pribadi atau naskah rahasia tanpa izin.</p>
@@ -30,7 +30,8 @@
 @if(isset($indexedCandidates))
 <section class="match-results">
 <h2>Kandidat dari data indeks · {{ count($indexedCandidates) }}</h2>
-<p>Daftar ini memakai irisan istilah judul dan abstrak, bukan penilaian AI atas scope. Sumber Scopus yang tersedia tidak memuat quartile; verifikasi status terkini pada sumber resmi.</p>
+<p>Kandidat awal dipilih lewat irisan istilah. AI hanya membandingkan naskah dengan scope yang tersedia pada kandidat awal. Angka kemiripan bukan peluang diterima. Sumber Scopus ini tidak memuat quartile; periksa status terkini pada sumber resmi.</p>
+@if(($indexedRankingStatus ?? '') === 'unavailable')<p class="notice">Penilaian AI pada kandidat indeks sedang tidak tersedia. Daftar di bawah hanya berdasarkan kata kunci.</p>@endif
 @forelse($indexedCandidates as $candidate)
 <article class="panel"><h3><a href="{{ $candidate['url'] }}">{{ $candidate['name'] }}</a></h3>
 <p>
@@ -41,7 +42,8 @@ Scopus · snapshot {{ $candidate['scopus']->snapshot_month }} · quartile belum 
 <span class="rank-badge rank-badge--sinta-{{ $candidate['sinta']->rank }}">SINTA {{ $candidate['sinta']->rank }}</span>
 @endif
 · ISSN {{ $candidate['issn'] ?: 'belum tercatat' }}</p>
-<p>{{ $candidate['evidence'] }} · Istilah beririsan: {{ implode(', ', $candidate['matches']) }}</p></article>
+<p>@if(($candidate['method'] ?? 'keyword') === 'ai_scope')<strong>Dinilai AI dari kutipan scope</strong> · Kemiripan {{ number_format($candidate['similarity'],3) }} · <a href="{{ $candidate['scope_evidence_url'] }}" target="_blank" rel="noopener noreferrer">Bukti scope</a>@else<strong>Ditemukan lewat kata kunci, belum dinilai AI</strong> · {{ $candidate['evidence'] }}@endif</p>
+<p>Istilah beririsan: {{ implode(', ', $candidate['matches']) }}</p></article>
 @empty
 <p>Belum ada kandidat dari indeks yang beririsan dengan istilah naskah ini.</p>
 @endforelse
