@@ -58,7 +58,10 @@ class CrawledJournalSyncTest extends TestCase
     {
         $source = $this->source(false);
         $sync = app(CrawledJournalSync::class);
-        $this->assertFalse($sync->fromSinta($source->id, 'https://journal.example.org/scope', 'Aims and scope: vocational education.'));
+        $this->assertTrue($sync->fromSinta($source->id, 'https://journal.example.org/scope', 'Aims and scope: vocational education.'));
+        $this->assertDatabaseHas('journal_sources', ['id' => $source->id,
+            'scope_excerpt' => 'Aims and scope: vocational education.']);
+        $this->assertDatabaseCount('journals', 0);
         JournalAccreditation::create(['item_key' => 'decision-892', 'rank' => 2,
             'journal_name' => $source->name, 'e_issn_raw' => '2355-6544',
             'e_issn_checksum_valid' => true, 'decision_text' => 'Accredited',
@@ -98,6 +101,8 @@ class CrawledJournalSyncTest extends TestCase
         $this->assertSame(1, app(ScopusPageMonitor::class)->tick()['synced']);
         $this->assertStringContainsString('vocational education', $journal->fresh()->scope_summary);
         $this->assertDatabaseHas('scopus_page_checks', ['target_id' => $target, 'synced' => true]);
+        $this->assertDatabaseHas('scopus_sources', ['id' => $scopus->id,
+            'scope_source_url' => 'https://journal.example.org/about']);
         $this->assertSame('Active', $scopus->fresh()->status);
     }
 }

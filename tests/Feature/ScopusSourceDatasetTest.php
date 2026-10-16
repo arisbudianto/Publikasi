@@ -43,4 +43,28 @@ class ScopusSourceDatasetTest extends TestCase
             unlink($path);
         }
     }
+
+    public function test_new_snapshot_keeps_scope_only_for_the_same_source_and_issn(): void
+    {
+        ScopusSource::create(['source_record_id' => 1, 'source_title' => 'Known Journal',
+            'issn' => '12345679', 'status' => 'Active', 'source_type' => 'Journal',
+            'snapshot_month' => '2026-09', 'is_current' => true,
+            'scope_excerpt' => 'The focus and scope include vocational education.',
+            'scope_source_url' => 'https://journal.example.org/scope', 'scope_checked_at' => today()]);
+        ScopusSource::create(['source_record_id' => 2, 'source_title' => 'Changed Journal',
+            'issn' => '12345679', 'status' => 'Active', 'source_type' => 'Journal',
+            'snapshot_month' => '2026-09', 'is_current' => true,
+            'scope_excerpt' => 'The focus and scope include vocational education.',
+            'scope_source_url' => 'https://changed.example.org/scope', 'scope_checked_at' => today()]);
+        $rows = [];
+        for ($i = 1; $i <= 1000; $i++) {
+            $rows[] = ['source_record_id' => $i, 'source_title' => 'Journal '.$i,
+                'issn' => $i === 2 ? '23456787' : '12345679', 'eissn' => null,
+                'status' => 'Active', 'coverage' => null, 'discontinued' => '0',
+                'source_type' => 'Journal', 'publisher' => null, 'asjc_codes' => null];
+        }
+        app(ScopusSourceDataset::class)->import($rows, '2026-10');
+        $this->assertNotNull(ScopusSource::where('source_record_id', 1)->where('is_current', true)->value('scope_excerpt'));
+        $this->assertNull(ScopusSource::where('source_record_id', 2)->where('is_current', true)->value('scope_excerpt'));
+    }
 }

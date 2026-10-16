@@ -10,6 +10,6 @@ class ScopusSource extends Model
 
     protected function casts(): array
     {
-        return ['discontinued' => 'boolean', 'is_current' => 'boolean'];
+        return ['discontinued' => 'boolean', 'is_current' => 'boolean', 'scope_checked_at' => 'date'];
     }
 }

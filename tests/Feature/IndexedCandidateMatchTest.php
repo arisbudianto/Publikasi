@@ -5,12 +5,26 @@ namespace Tests\Feature;
 use App\Models\JournalAccreditation;
 use App\Models\JournalSource;
 use App\Models\ScopusSource;
+use App\Services\IndexedCandidateMatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class IndexedCandidateMatchTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_scopus_candidate_can_match_a_crawled_scope_even_when_title_has_no_topic(): void
+    {
+        ScopusSource::create(['source_record_id' => 991, 'source_title' => 'Journal of Testing',
+            'eissn' => '12345679', 'status' => 'Active', 'source_type' => 'Journal',
+            'snapshot_month' => '2026-09', 'is_current' => true,
+            'scope_excerpt' => 'The focus and scope include vocational learning and digital assessment.',
+            'scope_source_url' => 'https://journal.example.org/scope', 'scope_checked_at' => today()]);
+        $results = app(IndexedCandidateMatcher::class)->match('Vocational learning',
+            'Digital assessment for vocational learning.', 'scopus');
+        $this->assertCount(1, $results);
+        $this->assertSame('Kutipan scope dari situs jurnal', $results[0]['evidence']);
+    }
 
     public function test_recommendations_use_linked_sinta_and_active_non_discontinued_scopus_records(): void
     {

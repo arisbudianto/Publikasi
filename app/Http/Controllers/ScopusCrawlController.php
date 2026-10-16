@@ -58,8 +58,9 @@ class ScopusCrawlController extends Controller
                 ->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
                 ->where('c.created_at', '>=', $since)
                 ->when($status !== 'all', fn ($query) => $query->where('c.status', $status))
-                ->select('c.id', 'c.status', 'c.synced', 'c.http_status', 'c.error_code', 'c.created_at', 't.url',
+                ->select('c.id', 'c.status', 'c.synced', 'c.http_status', 'c.error_code', 'c.created_at',
                     's.source_title as journal_name', 's.id as scopus_source_id')
+                ->selectRaw('COALESCE(c.evidence_url, t.url) as url')
                 ->orderByDesc('c.id')->limit(50)->get()
                 ->map(fn ($row) => (object) [...(array) $row, 'source' => 'Scopus']);
             $history = $history->concat($scopus);
@@ -86,8 +87,10 @@ class ScopusCrawlController extends Controller
                 ->select('t.*', 's.source_title', 's.is_current')->orderByDesc('t.id')->limit(50)->get(),
             'candidates' => DB::table('scopus_page_candidates as c')
                 ->join('scopus_page_targets as t', 't.id', '=', 'c.target_id')
+                ->join('scopus_page_checks as p', 'p.id', '=', 'c.check_id')
                 ->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
-                ->where('c.status', 'pending')->select('c.*', 't.url', 't.field', 's.source_title')
+                ->where('c.status', 'pending')->select('c.*', 't.field', 's.source_title')
+                ->selectRaw('COALESCE(p.evidence_url, t.url) as url')
                 ->orderBy('c.id')->limit(50)->get(),
         ])->header('Cache-Control', 'no-store, private');
     }

@@ -21,7 +21,7 @@ class ScopusPageMonitorTest extends TestCase
             'snapshot_month' => '2026-09', 'is_current' => true]);
     }
 
-    public function test_admin_registers_official_page_and_reviews_quote_without_changing_index(): void
+    public function test_admin_registers_official_page_and_crawl_updates_source_without_changing_index(): void
     {
         $source = $this->source(1);
         $route = route('admin.scopus-crawl.index');
@@ -44,14 +44,34 @@ class ScopusPageMonitorTest extends TestCase
         });
         $this->assertSame(1, app(ScopusPageMonitor::class)->tick()['checked']);
         $this->assertSame(0, app(ScopusPageMonitor::class)->tick()['checked']);
-        $this->assertDatabaseCount('scopus_page_candidates', 1);
-        $candidate = DB::table('scopus_page_candidates')->value('id');
-        $this->get($route)->assertOk()->assertSee('vocational education');
-        $this->post(route('admin.scopus-crawl.review', $candidate), ['decision' => 'reviewed',
-            'note' => 'Verified on publisher site'])->assertRedirect();
-        $this->assertDatabaseHas('scopus_page_candidates', ['id' => $candidate, 'status' => 'reviewed']);
+        $this->assertDatabaseCount('scopus_page_candidates', 0);
+        $this->assertDatabaseHas('scopus_sources', ['id' => $source->id,
+            'scope_source_url' => 'https://journal.example.org/about']);
+        $this->get(route('scopus.index', ['q' => 'Test Journal 1']))->assertOk()->assertSee('vocational education');
         $this->assertSame('Active', $source->fresh()->status);
         $this->assertDatabaseCount('journals', 0);
+    }
+
+    public function test_scope_link_is_fetched_on_same_host_and_saved_with_its_url(): void
+    {
+        $source = $this->source(31);
+        DB::table('scopus_page_targets')->insert(['scopus_source_id' => $source->id,
+            'url' => 'https://journal.example.org/about', 'field' => 'scope', 'enabled' => true,
+            'created_at' => now(), 'updated_at' => now()]);
+        config(['scopus_crawl.enabled' => true]);
+        $this->app->instance(JournalPageFetcher::class, new class extends JournalPageFetcher {
+            public function fetch(string $url): array
+            {
+                $body = str_ends_with($url, '/scope')
+                    ? '<html><body><p>The focus and scope of this journal include vocational education and assessment research.</p></body></html>'
+                    : '<html><body><nav><a href="/scope">Focus and Scope</a><a href="https://evil.test/scope">Focus and Scope</a></nav></body></html>';
+                return ['status' => 200, 'body' => $body];
+            }
+        });
+        $this->assertSame(1, app(ScopusPageMonitor::class)->tick()['synced']);
+        $this->assertDatabaseHas('scopus_page_checks', ['evidence_url' => 'https://journal.example.org/scope',
+            'synced' => true]);
+        $this->assertSame('https://journal.example.org/scope', $source->fresh()->scope_source_url);
     }
 
     public function test_shared_daily_quota_limits_scopus_checks(): void
