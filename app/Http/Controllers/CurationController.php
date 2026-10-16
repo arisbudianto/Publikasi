@@ -14,7 +14,7 @@ class CurationController extends Controller
     public function index(Request $r)
     {
         $data = $r->validate(['review' => 'nullable|in:all,due,claims']);
-        $filter = $data['review'] ?? 'due';
+        $filter = $data['review'] ?? 'all';
         $query = Journal::query()->withCount('observations');
         if ($filter === 'due') {
             $query->where(fn ($b) => $b->where('checked_at', '<', today()->subDays(180))->orWhereHas('observations', fn ($o) => $o->where('checked_at', '<', today()->subDays(180))));
@@ -22,9 +22,15 @@ class CurationController extends Controller
         if ($filter === 'claims') {
             $query->whereHas('observations', fn ($b) => $b->where('verification', 'publisher_claim'));
         }
-        $journals = $query->orderBy('checked_at')->paginate(20)->withQueryString();
+        $journals = $query->orderByRaw("CASE WHEN status = 'draft' THEN 0 WHEN status = 'published' THEN 1 ELSE 2 END")
+            ->orderBy('checked_at')->paginate(20)->withQueryString();
 
-        return response()->view('admin.curation', ['journals' => $journals, 'filter' => $filter])->header('Cache-Control', 'no-store, private');
+        return response()->view('admin.curation', [
+            'journals' => $journals,
+            'filter' => $filter,
+            'draftCount' => Journal::where('status', 'draft')->count(),
+            'publishedCount' => Journal::where('status', 'published')->count(),
+        ])->header('Cache-Control', 'no-store, private');
     }
 
     public function show(Request $request, Journal $journal)
