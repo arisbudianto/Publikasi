@@ -23,14 +23,28 @@ class CrawlEvidenceBackfillTest extends TestCase
         $candidate = DB::table('sinta_page_candidates')->insertGetId(['journal_source_id' => $source->id,
             'check_id' => $check, 'quote' => $quote, 'status' => 'pending',
             'created_at' => now(), 'updated_at' => now()]);
+        $duplicate = DB::table('sinta_page_candidates')->insertGetId(['journal_source_id' => $source->id,
+            'check_id' => $check, 'quote' => 'An older paragraph about management and accounting research.',
+            'status' => 'pending', 'created_at' => now(), 'updated_at' => now()]);
 
         $this->artisan('publikasi:sync-crawl-evidence')->assertExitCode(0);
         $this->assertNull($source->fresh()->scope_excerpt);
         $this->artisan('publikasi:sync-crawl-evidence --apply')->assertExitCode(0);
         $this->assertSame($quote, $source->fresh()->scope_excerpt);
         $this->assertDatabaseHas('sinta_page_candidates', ['id' => $candidate, 'status' => 'synced']);
+        $this->assertDatabaseHas('sinta_page_candidates', ['id' => $duplicate, 'status' => 'superseded']);
         $this->assertDatabaseHas('sinta_page_checks', ['id' => $check, 'synced' => true]);
         $this->assertDatabaseCount('journals', 0);
         $this->get(route('sources.show', $source))->assertOk()->assertSee($quote);
+        $this->artisan('publikasi:sync-crawl-evidence --apply')->assertExitCode(0);
+        $this->assertSame($quote, $source->fresh()->scope_excerpt);
+    }
+
+    public function test_backfill_is_scheduled_after_daily_crawlers(): void
+    {
+        $event = collect(\Illuminate\Support\Facades\Schedule::events())
+            ->first(fn ($e) => str_contains($e->command, 'publikasi:sync-crawl-evidence --limit=50 --apply'));
+        $this->assertNotNull($event);
+        $this->assertSame('48 4 * * *', $event->expression);
     }
 }

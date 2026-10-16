@@ -57,6 +57,9 @@ Artisan::command('publikasi:sync-crawl-evidence {--limit=50} {--apply}', functio
     $this->line(json_encode($backfill->run((int) $this->option('limit'), (bool) $this->option('apply'))));
 })->purpose('Sinkronkan kutipan scope crawler yang telah tercatat pada 60 hari terakhir');
 
+Schedule::command('publikasi:sync-crawl-evidence --limit=50 --apply')
+    ->dailyAt('04:48')->withoutOverlapping(30);
+
 Artisan::command('publikasi:discover-curated', function (CuratedJournalDiscovery $discovery) {
     $this->line(json_encode($discovery->tick()));
 })->purpose('Temukan jurnal dari sumber SINTA dan keputusan akreditasi');
