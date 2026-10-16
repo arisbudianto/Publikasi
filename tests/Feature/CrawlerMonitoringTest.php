@@ -34,6 +34,8 @@ class CrawlerMonitoringTest extends TestCase
         $url = route('admin.scopus-crawl.index');
         $this->actingAs($admin)->get($url)->assertOk()->assertSee('Monitoring crawler SINTA dan Scopus')
             ->assertSee('SINTA Education Journal')->assertSee('Scopus Engineering Journal')
+            ->assertDontSee('Bukti SINTA yang belum tersinkron')
+            ->assertSee('Cari jurnal dari snapshot')
             ->assertSee('robots_unreachable')->assertSee('1</strong> berubah', false)
             ->assertSee('1</strong> gagal', false);
         $this->get($url.'?source=scopus&status=error&period=today')->assertOk()
