@@ -109,9 +109,13 @@ class SintaAccreditationTest extends TestCase
             ->assertSee('SINTA 2, 192 keputusan', false)
             ->assertSee('SINTA 3, 658 keputusan', false)
             ->assertSee('Filter peringkat SINTA 4, 1130 keputusan', false)
-            ->assertSee('Peringkat SINTA 5 dan 6 tetap tersedia');
-        $this->get('/akreditasi-sinta?rank=6')
-            ->assertOk()->assertSee('class="accreditation-rank">SINTA 6', false)->assertDontSee('class="accreditation-rank">SINTA 1', false);
+            ->assertSee('Semua peringkat SINTA 1–4')
+            ->assertDontSee('SINTA 5</option>', false)
+            ->assertDontSee('SINTA 6</option>', false);
+        $this->getJson('/akreditasi-sinta?rank=6')
+            ->assertUnprocessable();
+        $this->get('/akreditasi-sinta?rank=4')
+            ->assertOk()->assertSee('SINTA 4')->assertDontSee('class="accreditation-rank">SINTA 6', false);
         $this->get('/sumber-jurnal/'.$source->id)
             ->assertOk()->assertSee('Keputusan akreditasi yang cocok')->assertSee('Peringkat 1');
     }

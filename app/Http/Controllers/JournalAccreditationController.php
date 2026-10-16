@@ -9,11 +9,12 @@ class JournalAccreditationController extends Controller
 {
     public function index(Request $request)
     {
-        $data = $request->validate(['q' => 'nullable|string|max:120', 'rank' => 'nullable|integer|between:1,6']);
+        $data = $request->validate(['q' => 'nullable|string|max:120', 'rank' => 'nullable|integer|between:1,4']);
         $q = trim($data['q'] ?? '');
         $compact = strtoupper(str_replace('-', '', $q));
         $accreditations = JournalAccreditation::query()
             ->with(['source:id,name,source_id', 'journal:id,name,issn'])
+            ->whereBetween('rank', [1, 4])
             ->when($q !== '', fn ($query) => $query->where(function ($query) use ($q, $compact) {
                 $query->where('journal_name', 'like', '%'.addcslashes($q, '%_\\').'%')
                     ->orWhere('publisher', 'like', '%'.addcslashes($q, '%_\\').'%')
@@ -33,8 +34,8 @@ class JournalAccreditationController extends Controller
             'q' => $q,
             'rank' => $data['rank'] ?? '',
             'rankCounts' => $rankCounts,
-            'totalAccreditations' => JournalAccreditation::count(),
-            'matchedAccreditations' => JournalAccreditation::whereIn('match_status', ['matched'])->count(),
+            'totalAccreditations' => JournalAccreditation::whereBetween('rank', [1, 4])->count(),
+            'matchedAccreditations' => JournalAccreditation::whereBetween('rank', [1, 4])->where('match_status', 'matched')->count(),
         ]);
     }
 }
