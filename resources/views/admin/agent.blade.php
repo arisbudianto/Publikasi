@@ -10,7 +10,10 @@
     <article class="panel">
         <h3>{{ $lead->name }}</h3>
         <p>SINTA {{ $lead->rank }} · e-ISSN {{ $lead->e_issn ?: 'belum tersedia' }} · SK {{ $lead->decree_number }}, {{ $lead->decree_date }} halaman {{ $lead->source_page }}</p>
-        <p><a href="{{ $lead->official_url }}" target="_blank" rel="noopener noreferrer">Periksa situs jurnal</a> · <a href="{{ route('admin.sources.prepare', $lead->source_id) }}">Tinjau dan siapkan draft</a></p>
+        <div class="agent-lead-actions">
+            <a class="button secondary" href="{{ $lead->official_url }}" target="_blank" rel="noopener noreferrer">Periksa situs jurnal ↗</a>
+            <a class="button" href="{{ route('admin.sources.prepare', $lead->source_id) }}">Tinjau dan siapkan draft</a>
+        </div>
         <form method="post" action="{{ route('admin.agent.lead.dismiss', $lead->id) }}">@csrf
             <label>Alasan menolak usulan<textarea name="note" minlength="10" maxlength="2000" required></textarea></label>
             <button type="submit" class="secondary">Tolak usulan</button>
