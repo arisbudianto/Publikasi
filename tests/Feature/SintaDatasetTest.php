@@ -36,7 +36,7 @@ class SintaDatasetTest extends TestCase
         $unnamed = JournalSource::where('source_id', 15)->first();
         $this->get('/sumber-jurnal?q=15')->assertSee('Nama jurnal tidak tersedia (SINTA #15)');
         $this->get('/sumber-jurnal/'.$unnamed->id)->assertOk()->assertSee('Nama jurnal tidak tersedia (SINTA #15)');
-        $this->get('/sumber-jurnal/'.JournalSource::where('source_id', 1)->first()->id)->assertSee('belum tersedia')->assertSee('20/03/2025');
+        $this->get('/sumber-jurnal/'.JournalSource::where('source_id', 1)->first()->id)->assertSee('belum tersinkron')->assertSee('20/03/2025');
     }
 
     private function source(): JournalSource

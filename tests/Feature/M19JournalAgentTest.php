@@ -85,14 +85,16 @@ class M19JournalAgentTest extends TestCase
         };
         $this->app->instance(JournalPageFetcher::class, $fake);
         $this->assertSame(1, app(JournalMonitoringAgent::class)->tick()['changed']);
-        $this->assertDatabaseCount('m19_candidates', 1);
-        $this->assertDatabaseCount('journal_observations', 0);
+        $this->assertDatabaseCount('m19_candidates', 0);
+        $this->assertDatabaseHas('m19_runs', ['source_id' => $source, 'synced' => true]);
+        $this->assertDatabaseHas('journal_observations', ['journal_id' => $journal->id,
+            'kind' => 'fee', 'verification' => 'publisher_claim']);
         $this->assertSame('2026-10-16 03:00:00',
             DB::table('m19_sources')->where('id', $source)->value('next_check_at'));
         $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['checked']);
         DB::table('m19_sources')->where('id', $source)->update(['next_check_at' => now()->subMinute()]);
         $this->assertSame(0, app(JournalMonitoringAgent::class)->tick()['changed']);
-        $this->assertDatabaseCount('m19_candidates', 1);
+        $this->assertDatabaseCount('m19_candidates', 0);
     }
 
     public function test_daily_quota_counts_journals_and_avoids_a_second_source_for_the_same_journal(): void
@@ -204,8 +206,8 @@ class M19JournalAgentTest extends TestCase
         Http::fake(['*' => Http::response(['error' => 'unavailable'], 503)]);
         $this->assertSame(1, app(JournalMonitoringAgent::class)->tick()['changed']);
         $this->assertDatabaseHas('m19_runs', ['ai_status' => 'failed']);
-        $this->assertDatabaseHas('m19_candidates', ['quote' => 'Publication fee is 500 USD per article, payable only after acceptance.']);
-        $this->assertDatabaseCount('journal_observations', 0);
+        $this->assertDatabaseHas('journal_observations', ['journal_id' => $journal->id,
+            'kind' => 'fee', 'value' => 'Publication fee is 500 USD per article, payable only after acceptance.']);
     }
 
     public function test_ai_adds_verified_quote_when_rule_extractor_misses_it(): void
