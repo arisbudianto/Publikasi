@@ -13,18 +13,21 @@ class CrawledJournalSync
     public function fromSinta(int $sourceId, string $url, string $quote): bool
     {
         $source = DB::table('journal_sources')->where('id', $sourceId)->first();
-        if (! $source || ! filled($source->name) || ! filled($source->publisher)
+        if (! $source || ! filled($source->name)
             || ! $this->sameSite($source->official_url, $url)) return false;
+
+        $stored = $this->storeScope('journal_sources', $sourceId, $url, $quote);
+        if (! filled($source->publisher)) return $stored;
 
         $accreditation = DB::table('journal_accreditations')
             ->where('journal_source_id', $sourceId)->where('match_status', 'matched')
             ->where('e_issn_checksum_valid', true)->whereBetween('rank', [1, 4])
             ->orderByDesc('decree_date')->first();
-        if (! $accreditation) return false;
+        if (! $accreditation) return $stored;
         $issn = $this->issn($accreditation->e_issn_raw);
-        if (! $issn || ! in_array($issn, [$this->issn($source->e_issn), $this->issn($source->p_issn)], true)) return false;
+        if (! $issn || ! in_array($issn, [$this->issn($source->e_issn), $this->issn($source->p_issn)], true)) return $stored;
 
-        return DB::transaction(function () use ($source, $accreditation, $issn, $url, $quote) {
+        $catalogSynced = DB::transaction(function () use ($source, $accreditation, $issn, $url, $quote) {
             $journalIds = array_values(array_unique(array_filter([
                 $this->issn($source->p_issn), $this->issn($source->e_issn),
             ])));
@@ -52,19 +55,24 @@ class CrawledJournalSync
             DB::table('journal_accreditations')->where('id', $accreditation->id)->update(['journal_id' => $journal->id]);
             return true;
         });
+        return $stored || $catalogSynced;
     }
 
-    public function fromScopus(int $targetId, string $quote): bool
+    public function fromScopus(int $targetId, string $quote, ?string $evidenceUrl = null): bool
     {
         $target = DB::table('scopus_page_targets as t')->join('scopus_sources as s', 's.id', '=', 't.scopus_source_id')
             ->where('t.id', $targetId)->where('t.enabled', true)
             ->where('s.is_current', true)->where('s.discontinued', false)->where('s.source_type', 'Journal')
-            ->first(['t.url', 't.field', 's.issn', 's.eissn']);
+            ->first(['t.url', 't.field', 's.id as source_id', 's.issn', 's.eissn']);
         if (! $target) return false;
+        $url = $evidenceUrl ?: $target->url;
+        if (! $this->sameSite($target->url, $url)) return false;
+        $stored = $target->field === 'scope'
+            ? $this->storeScope('scopus_sources', $target->source_id, $url, $quote) : false;
         $ids = array_values(array_filter([$this->issn($target->issn), $this->issn($target->eissn)]));
         $journals = Journal::where('status', 'published')->whereIn('issn', $ids)->get();
-        if ($journals->count() !== 1 || ! $this->sameSite($journals->first()->official_url, $target->url)) return false;
-        return $this->fromRegisteredPage($journals->first()->id, $target->url, $target->field, $quote);
+        if ($journals->count() !== 1 || ! $this->sameSite($journals->first()->official_url, $url)) return $stored;
+        return $this->fromRegisteredPage($journals->first()->id, $url, $target->field, $quote) || $stored;
     }
 
     public function fromRegisteredPage(int $journalId, string $url, string $field, string $quote): bool
@@ -101,6 +109,15 @@ class CrawledJournalSync
         $valid = true;
         (new ValidIssn)->validate('issn', $formatted, function () use (&$valid) { $valid = false; });
         return $valid ? $formatted : null;
+    }
+
+    private function storeScope(string $table, int $id, string $url, string $quote): bool
+    {
+        $record = DB::table($table)->where('id', $id)->first(['scope_excerpt', 'scope_source_url']);
+        if (! $record || ($record->scope_excerpt === $quote && $record->scope_source_url === $url)) return false;
+        DB::table($table)->where('id', $id)->update(['scope_excerpt' => $quote,
+            'scope_source_url' => $url, 'scope_checked_at' => now()->toDateString(), 'updated_at' => now()]);
+        return true;
     }
 
     private function sameSite(?string $official, string $evidence): bool

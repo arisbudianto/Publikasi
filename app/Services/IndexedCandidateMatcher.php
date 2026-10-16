@@ -21,29 +21,29 @@ class IndexedCandidateMatcher
         if ($index !== 'scopus') {
             // A source is eligible only when linked by ISSN to a published accreditation decision.
             $query = JournalSource::query()->whereNotNull('name')->whereHas('accreditations', fn ($q) => $q->where('match_status', 'matched')->where('e_issn_checksum_valid', true)->whereBetween('rank', [1, 4])->where('valid_to_year', '>=', now()->year));
-            $this->whereTerms($query, ['name', 'subject', 'article_titles'], $searchTerms);
+            $this->whereTerms($query, ['name', 'subject', 'article_titles', 'scope_excerpt'], $searchTerms);
             foreach ($query->with(['accreditations' => fn ($q) => $q->where('match_status', 'matched')->where('e_issn_checksum_valid', true)->whereBetween('rank', [1, 4])->where('valid_to_year', '>=', now()->year)->orderByDesc('decree_date')])->orderBy('id')->limit(500)->get() as $source) {
-                $evidence = trim($source->subject.' '.implode(' ', array_slice($source->article_titles ?? [], 0, 10)));
+                $evidence = filled($source->scope_excerpt)
+                    ? $source->scope_excerpt : trim($source->subject.' '.implode(' ', array_slice($source->article_titles ?? [], 0, 10)));
                 $matches = array_intersect($terms, $this->matcher->terms($evidence));
                 // Article titles can contain generic methods outside the journal's
                 // subject. Do not recommend a source solely on those incidental hits.
-                $subjectMatches = array_intersect($terms, $this->matcher->terms((string) $source->subject));
+                $subjectMatches = array_intersect($terms, $this->matcher->terms((string) ($source->scope_excerpt ?: $source->subject)));
                 if ($matches === [] || $subjectMatches === []) continue;
                 $results[] = ['name' => $source->name, 'issn' => $source->e_issn ?: $source->p_issn, 'publisher' => $source->publisher,
-                    'evidence' => 'Subjek dan judul artikel pada data sumber SINTA', 'matches' => array_values($matches),
+                    'evidence' => filled($source->scope_excerpt) ? 'Kutipan scope dari situs jurnal' : 'Subjek dan judul artikel pada data sumber SINTA', 'matches' => array_values($matches),
                     'score' => count($matches) + 2 * count($subjectMatches), 'sinta' => $source->accreditations->first(), 'scopus' => null,
                     'url' => route('sources.show', $source)];
             }
         }
         if ($index !== 'sinta') {
             $query = ScopusSource::query()->where('is_current', true)->where('source_type', 'Journal')->where('status', 'Active')->where('discontinued', false);
-            // The source list has no journal scope: its title is only preliminary topical evidence.
-            $this->whereTerms($query, ['source_title'], $searchTerms);
+            $this->whereTerms($query, ['source_title', 'scope_excerpt'], $searchTerms);
             foreach ($query->orderBy('id')->limit(1000)->get() as $source) {
-                $matches = array_intersect($terms, $this->matcher->terms($source->source_title));
+                $matches = array_intersect($terms, $this->matcher->terms($source->scope_excerpt ?: $source->source_title));
                 if ($matches === []) continue;
                 $results[] = ['name' => $source->source_title, 'issn' => $source->eissn ?: $source->issn, 'publisher' => $source->publisher,
-                    'evidence' => 'Nama jurnal pada daftar Scopus; scope belum tersedia', 'matches' => array_values($matches),
+                    'evidence' => filled($source->scope_excerpt) ? 'Kutipan scope dari situs jurnal' : 'Nama jurnal pada daftar Scopus; scope belum tersedia', 'matches' => array_values($matches),
                     'score' => count($matches), 'sinta' => null, 'scopus' => $source,
                     'url' => route('scopus.index', ['q' => $source->eissn ?: $source->issn ?: $source->source_title])];
             }

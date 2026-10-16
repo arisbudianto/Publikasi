@@ -5,6 +5,7 @@ use App\Models\Journal;
 use App\Services\JournalAccreditationLinker;
 use App\Services\JournalMonitoringAgent;
 use App\Services\CuratedJournalDiscovery;
+use App\Services\CrawlEvidenceBackfill;
 use App\Services\OperationalHealth;
 use App\Services\ScopusDiscontinuedDataset;
 use App\Services\ScopusSourceDataset;
@@ -51,6 +52,10 @@ Artisan::command('publikasi:crawl-sinta', function (SintaPageMonitor $monitor) {
 })->purpose('Periksa halaman resmi sumber SINTA secara bertahap dan simpan bukti');
 
 Schedule::command('publikasi:crawl-sinta')->dailyAt('04:00')->withoutOverlapping(30);
+
+Artisan::command('publikasi:sync-crawl-evidence {--limit=50} {--apply}', function (CrawlEvidenceBackfill $backfill) {
+    $this->line(json_encode($backfill->run((int) $this->option('limit'), (bool) $this->option('apply'))));
+})->purpose('Sinkronkan kutipan scope crawler yang telah tercatat pada 60 hari terakhir');
 
 Artisan::command('publikasi:discover-curated', function (CuratedJournalDiscovery $discovery) {
     $this->line(json_encode($discovery->tick()));

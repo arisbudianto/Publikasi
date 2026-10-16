@@ -8,7 +8,7 @@ use Throwable;
 class ScopusPageMonitor
 {
     public function __construct(private JournalPageFetcher $fetcher, private JournalEvidenceExtractor $extractor,
-        private CrawledJournalSync $sync) {}
+        private JournalScopeLinkFinder $scopeLinks, private CrawledJournalSync $sync) {}
 
     public function tick(): array
     {
@@ -51,15 +51,28 @@ class ScopusPageMonitor
             $result['checked']++;
             try {
                 $page = $this->fetcher->fetch($target->url);
+                $evidenceUrl = $target->url;
+                $quotes = $this->extractor->extract($page['body'], $target->field);
+                if ($target->field === 'scope' && $quotes === []
+                    && ($scopeUrl = $this->scopeLinks->find($page['body'], $target->url))) {
+                    try {
+                        $scopePage = $this->fetcher->fetch($scopeUrl);
+                        $page = $scopePage;
+                        $evidenceUrl = $scopeUrl;
+                        $quotes = $this->extractor->extract($page['body'], 'scope');
+                    } catch (Throwable) {
+                        // Retain the successful homepage check if the scope page fails.
+                    }
+                }
                 $hash = hash('sha256', $page['body']);
                 $changed = $hash !== $target->last_hash;
-                $quotes = $changed ? array_slice($this->extractor->extract($page['body'], $target->field), 0, 3) : [];
-                $added = DB::transaction(function () use ($target, $page, $hash, $changed, $quotes) {
+                $quotes = $changed ? array_slice($quotes, 0, 3) : [];
+                $added = DB::transaction(function () use ($target, $page, $evidenceUrl, $hash, $changed, $quotes) {
                     $check = DB::table('scopus_page_checks')->insertGetId(['target_id' => $target->id,
                         'status' => $changed ? 'changed' : 'unchanged', 'http_status' => $page['status'],
-                        'content_hash' => $hash, 'created_at' => now()]);
+                        'content_hash' => $hash, 'evidence_url' => $evidenceUrl, 'created_at' => now()]);
                     $added = 0;
-                    $synced = $quotes && $this->sync->fromScopus($target->id, $quotes[0]);
+                    $synced = $quotes && $this->sync->fromScopus($target->id, $quotes[0], $evidenceUrl);
                     if ($synced) DB::table('scopus_page_checks')->where('id', $check)->update(['synced' => true]);
                     foreach ($synced ? [] : $quotes as $quote) {
                         if (DB::table('scopus_page_candidates')->where('target_id', $target->id)

@@ -10,7 +10,8 @@ class JournalSource extends Model
 
     protected function casts(): array
     {
-        return ['education' => 'boolean', 'captured_at' => 'date', 'article_titles' => 'array', 'raw_identifiers' => 'array'];
+        return ['education' => 'boolean', 'captured_at' => 'date', 'scope_checked_at' => 'date',
+            'article_titles' => 'array', 'raw_identifiers' => 'array'];
     }
 
     public function journal()

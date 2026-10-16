@@ -37,11 +37,14 @@ class SintaPageMonitorTest extends TestCase
         });
         $first = app(SintaPageMonitor::class)->tick();
         $this->assertSame(15, $first['checked']);
-        $this->assertSame(15, $first['candidates']);
+        $this->assertSame(15, $first['synced']);
+        $this->assertSame(0, $first['candidates']);
         $this->assertSame(0, app(SintaPageMonitor::class)->tick()['checked']);
         $this->assertDatabaseCount('sinta_page_checks', 15);
         $this->assertDatabaseCount('journal_sources', 22);
         $this->assertDatabaseCount('journals', 0);
+        $this->assertDatabaseHas('journal_sources', ['source_id' => 1,
+            'scope_source_url' => 'https://journal.example.org/about']);
         $this->travel(1)->days();
         $this->assertSame(7, app(SintaPageMonitor::class)->tick()['checked']);
         $this->assertDatabaseCount('sinta_page_checks', 22);
@@ -108,7 +111,7 @@ class SintaPageMonitorTest extends TestCase
         $this->assertDatabaseMissing('sinta_page_checks', ['journal_source_id' => $old->id]);
     }
 
-    public function test_same_host_scope_link_produces_reviewable_evidence(): void
+    public function test_same_host_scope_link_updates_source_evidence(): void
     {
         $source = $this->source(1);
         config(['sinta_crawl.enabled' => true, 'sinta_crawl.daily_limit' => 1]);
@@ -122,10 +125,11 @@ class SintaPageMonitorTest extends TestCase
             }
         });
         $result = app(SintaPageMonitor::class)->tick();
-        $this->assertSame(1, $result['candidates']);
+        $this->assertSame(1, $result['synced']);
         $this->assertDatabaseHas('sinta_page_checks', ['journal_source_id' => $source->id,
             'url' => 'https://journal.example.org/scope']);
-        $this->assertDatabaseCount('sinta_page_candidates', 1);
+        $this->assertDatabaseHas('journal_sources', ['id' => $source->id,
+            'scope_source_url' => 'https://journal.example.org/scope']);
     }
 
     public function test_existing_m19_checks_reduce_the_shared_daily_budget(): void

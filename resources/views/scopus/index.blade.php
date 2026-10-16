@@ -15,21 +15,21 @@
     </form>
     <div class="indexed-summary"><strong>{{ number_format($sources->total(), 0, ',', '.') }}</strong> sumber sesuai filter <span>·</span> Status indeks dan kecocokan scope harus diperiksa pada sumber resmi.</div>
     <div class="table-wrap indexed-table"><table>
-        <thead><tr><th scope="col">Jurnal</th><th scope="col">ISSN</th><th scope="col">Scopus</th><th scope="col">Cakupan snapshot</th><th scope="col">Biaya publikasi</th><th scope="col">Estimasi review</th></tr></thead>
+        <thead><tr><th scope="col">Jurnal</th><th scope="col">ISSN</th><th scope="col">Scopus</th><th scope="col">Cakupan jurnal</th><th scope="col">Biaya publikasi</th><th scope="col">Estimasi review</th></tr></thead>
         <tbody>
         @forelse($sources as $source)
             <tr>
                 <td><strong>{{ $source->source_title }}</strong><small>{{ $source->publisher ?: 'Penerbit tidak tercatat' }} · {{ $source->source_type }}</small>@if($source->discontinued)<span class="indexed-warning">Ditandai discontinued</span>@endif</td>
                 <td>{{ $source->issn ?: $source->eissn ?: 'Tidak tercatat' }}@if($source->issn && $source->eissn && $source->issn !== $source->eissn)<small>eISSN {{ $source->eissn }}</small>@endif</td>
                 <td><span class="indexed-badge {{ $source->status === 'Active' && ! $source->discontinued ? 'indexed-active' : 'indexed-inactive' }}">{{ $source->status }}@if($source->discontinued) · discontinued @endif</span></td>
-                <td>{{ $source->coverage ?: 'Tidak tercatat' }}</td>
+                <td>@if($source->scope_excerpt){{ \Illuminate\Support\Str::limit($source->scope_excerpt, 220) }}<small><a href="{{ $source->scope_source_url }}" target="_blank" rel="noopener noreferrer">Sumber jurnal</a> · {{ $source->scope_checked_at?->format('d/m/Y') }}</small>@else<span class="indexed-unavailable">Belum tersedia</span>@endif<small>Cakupan indeks pada snapshot: {{ $source->coverage ?: 'tidak tercatat' }}</small></td>
                 <td class="indexed-unavailable">Belum tersedia</td>
                 <td class="indexed-unavailable">Belum tersedia</td>
             </tr>
         @empty<tr><td colspan="6">Belum ada hasil untuk filter ini.</td></tr>@endforelse
         </tbody>
     </table></div>
-    <p class="indexed-footnote">Status “Inactive” tidak selalu berarti “Discontinued by Scopus”. Data quartile, peluang diterima, biaya, dan waktu review belum tersedia. <a href="https://www.elsevier.com/products/scopus/content" target="_blank" rel="noopener noreferrer">Periksa sumber Elsevier ↗</a></p>
+    <p class="indexed-footnote">Kutipan cakupan berasal dari situs jurnal dan belum membuktikan status Scopus saat ini. Status “Inactive” tidak selalu berarti “Discontinued by Scopus”. Data quartile, peluang diterima, biaya, dan waktu review belum tersedia. <a href="https://www.elsevier.com/products/scopus/content" target="_blank" rel="noopener noreferrer">Periksa sumber Elsevier ↗</a></p>
     {{ $sources->links('pagination') }}
 </div>
 @endsection

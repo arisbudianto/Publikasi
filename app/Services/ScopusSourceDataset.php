@@ -69,10 +69,22 @@ class ScopusSourceDataset
             throw ValidationException::withMessages(['csv' => 'Snapshot terlalu kecil untuk mengganti katalog sumber.']);
         }
         DB::transaction(function () use ($rows, $month) {
+            $evidence = ScopusSource::where('is_current', true)->whereNotNull('scope_excerpt')
+                ->get(['source_record_id', 'issn', 'eissn', 'scope_excerpt', 'scope_source_url', 'scope_checked_at'])
+                ->keyBy('source_record_id');
             ScopusSource::where('is_current', true)->update(['is_current' => false]);
             $now = now();
             foreach (array_chunk($rows, 500) as $chunk) {
-                $records = array_map(fn ($row) => array_merge($row, ['snapshot_month' => $month, 'is_current' => true, 'created_at' => $now, 'updated_at' => $now]), $chunk);
+                $records = array_map(function ($row) use ($month, $now, $evidence) {
+                    $record = array_merge($row, ['snapshot_month' => $month, 'is_current' => true,
+                        'created_at' => $now, 'updated_at' => $now]);
+                    $old = $evidence->get($row['source_record_id']);
+                    $sameIdentity = $old && $old->issn === $row['issn'] && $old->eissn === $row['eissn'];
+                    $record += ['scope_excerpt' => $sameIdentity ? $old->scope_excerpt : null,
+                        'scope_source_url' => $sameIdentity ? $old->scope_source_url : null,
+                        'scope_checked_at' => $sameIdentity ? $old->scope_checked_at : null];
+                    return $record;
+                }, $chunk);
                 ScopusSource::upsert($records, ['source_record_id', 'snapshot_month'], ['source_title', 'issn', 'eissn', 'status', 'coverage', 'discontinued', 'source_type', 'publisher', 'asjc_codes', 'is_current', 'updated_at']);
             }
         });
