@@ -3,17 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\JournalAccreditation;
+use App\Services\JournalDirectory;
 use Illuminate\Http\Request;
 
 class JournalAccreditationController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, JournalDirectory $directory)
     {
         $data = $request->validate(['q' => 'nullable|string|max:120', 'rank' => 'nullable|integer|between:1,4']);
         $q = trim($data['q'] ?? '');
         $compact = strtoupper(str_replace('-', '', $q));
         $accreditations = JournalAccreditation::query()
-            ->with(['source:id,name,source_id', 'journal:id,name,issn,scope_summary,scope_source_url,checked_at,status'])
+            ->with([
+                'source:id,name,source_id',
+                'journal:id,name,issn,scope_summary,scope_source_url,checked_at,status',
+                'journal.observations' => fn ($observations) => $directory->currentObservations($observations)
+                    ->whereIn('kind', ['fee', 'time'])->orderByDesc('checked_at'),
+            ])
             ->whereBetween('rank', [1, 4])
             ->when($q !== '', fn ($query) => $query->where(function ($query) use ($q, $compact) {
                 $query->where('journal_name', 'like', '%'.addcslashes($q, '%_\\').'%')

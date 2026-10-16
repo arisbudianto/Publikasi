@@ -67,10 +67,30 @@ class SintaAccreditationTest extends TestCase
         $this->assertSame(2023, $matchedSourceRecord->valid_from_year);
         $this->assertSame(2028, $matchedSourceRecord->valid_to_year);
 
+        $journal->observations()->create([
+            'kind' => 'fee', 'label' => 'APC akses terbuka', 'value' => 'Gratis',
+            'amount_minor' => 0, 'currency' => 'IDR', 'fee_route' => 'apc_oa',
+            'verification' => 'verified', 'source_url' => 'https://example.org/fees', 'checked_at' => today(),
+        ]);
+        $journal->observations()->create([
+            'kind' => 'time', 'label' => 'Estimasi review', 'value' => '6 minggu',
+            'verification' => 'publisher_claim', 'source_url' => 'https://example.org/review', 'checked_at' => today(),
+        ]);
+        $journal->observations()->create([
+            'kind' => 'time', 'label' => 'Estimasi lama', 'value' => '99 minggu',
+            'verification' => 'verified', 'source_url' => 'https://example.org/old', 'checked_at' => today()->subYear(),
+            'effective_to' => today()->subDay(),
+        ]);
+
         $this->get('/akreditasi-sinta?q=24076899')
             ->assertOk()
             ->assertSee('Scope yang telah ditinjau secara editorial.')
             ->assertSee('Lihat sumber scope')
+            ->assertSee('IDR 0')
+            ->assertSee('6 minggu')
+            ->assertSee('Klaim penerbit, belum diverifikasi independen')
+            ->assertSee('Peluang diterima:')
+            ->assertDontSee('99 minggu')
             ->assertDontSee('Keputusan resmi');
 
         $invalid = JournalAccreditation::where('e_issn_raw', '2354911')->firstOrFail();
