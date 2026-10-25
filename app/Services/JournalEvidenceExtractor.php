@@ -38,6 +38,16 @@ class JournalEvidenceExtractor
             while ($heading && trim($heading->textContent) === '') {
                 $heading = $heading->previousSibling;
             }
+            // OJS content often wraps the paragraph in a div after its section heading.
+            if ($field === 'scope' && (! $heading || ! preg_match('/^h[1-6]$/i', $heading->nodeName))) {
+                $container = $node->parentNode;
+                if ($container && $container->nodeName !== 'body') {
+                    $heading = $container->previousSibling;
+                    while ($heading && trim($heading->textContent) === '') {
+                        $heading = $heading->previousSibling;
+                    }
+                }
+            }
             $context = $line.' '.($heading && preg_match('/^h[1-6]$/i', $heading->nodeName) ? $heading->textContent : '');
             if (mb_strlen($line) < 20 || mb_strlen($line) > 600 || ! preg_match($pattern, $context)) {
                 continue;

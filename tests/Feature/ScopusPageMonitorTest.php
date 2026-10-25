@@ -81,6 +81,29 @@ class ScopusPageMonitorTest extends TestCase
         $this->assertSame('https://journal.example.org/scope', $source->fresh()->scope_source_url);
     }
 
+    public function test_unchanged_page_can_fill_missing_scopus_scope(): void
+    {
+        $source = $this->source(32);
+        $body = '<html><body><h2>Aims and Scope</h2><p>This journal publishes original research on vocational learning and assessment.</p></body></html>';
+        DB::table('scopus_page_targets')->insert(['scopus_source_id' => $source->id,
+            'url' => 'https://journal.example.org/about', 'field' => 'scope', 'enabled' => true,
+            'last_hash' => hash('sha256', $body), 'created_at' => now(), 'updated_at' => now()]);
+        config(['scopus_crawl.enabled' => true]);
+        $this->app->instance(JournalPageFetcher::class, new class($body) extends JournalPageFetcher {
+            public function __construct(private string $body) {}
+            public function fetch(string $url): array
+            {
+                return ['status' => 200, 'body' => $this->body];
+            }
+        });
+
+        $result = app(ScopusPageMonitor::class)->tick();
+        $this->assertSame(0, $result['changed']);
+        $this->assertSame(1, $result['synced']);
+        $this->assertDatabaseHas('scopus_sources', ['id' => $source->id,
+            'scope_excerpt' => 'This journal publishes original research on vocational learning and assessment.']);
+    }
+
     public function test_shared_daily_quota_limits_scopus_checks(): void
     {
         config(['scopus_crawl.enabled' => true, 'scopus_crawl.daily_limit' => 10]);

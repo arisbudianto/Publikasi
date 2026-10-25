@@ -67,7 +67,10 @@ class ScopusPageMonitor
                 }
                 $hash = hash('sha256', $page['body']);
                 $changed = $hash !== $target->last_hash;
-                $quotes = $changed ? array_slice($quotes, 0, 3) : [];
+                $sourceId = DB::table('scopus_page_targets')->where('id', $target->id)->value('scopus_source_id');
+                $hasScope = DB::table('scopus_sources')->where('id', $sourceId)
+                    ->whereNotNull('scope_excerpt')->where('scope_excerpt', '!=', '')->exists();
+                $quotes = ($changed || ! $hasScope) ? array_slice($quotes, 0, 3) : [];
                 $added = DB::transaction(function () use ($target, $page, $evidenceUrl, $hash, $changed, $quotes) {
                     $check = DB::table('scopus_page_checks')->insertGetId(['target_id' => $target->id,
                         'status' => $changed ? 'changed' : 'unchanged', 'http_status' => $page['status'],

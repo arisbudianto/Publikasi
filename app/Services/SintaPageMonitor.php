@@ -69,7 +69,9 @@ class SintaPageMonitor
                 }
                 $hash = hash('sha256', $page['body']);
                 $changed = $hash !== $source->last_hash;
-                if (! $changed) {
+                $hasScope = DB::table('journal_sources')->where('id', $source->id)
+                    ->whereNotNull('scope_excerpt')->where('scope_excerpt', '!=', '')->exists();
+                if (! $changed && $hasScope) {
                     $quotes = [];
                 }
                 $added = DB::transaction(function () use ($source, $url, $page, $hash, $changed, $quotes) {
