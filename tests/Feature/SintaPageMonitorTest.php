@@ -161,6 +161,28 @@ class SintaPageMonitorTest extends TestCase
             'scope_source_url' => 'https://journal.example.org/scope']);
     }
 
+    public function test_unchanged_scope_page_can_fill_missing_existing_source_evidence(): void
+    {
+        $source = $this->source(90);
+        $body = '<html><body><h2>Focus and Scope</h2><div><p>This journal publishes research on vocational education and learning assessment.</p></div></body></html>';
+        DB::table('sinta_page_states')->insert(['journal_source_id' => $source->id,
+            'last_hash' => hash('sha256', $body), 'created_at' => now(), 'updated_at' => now()]);
+        config(['sinta_crawl.enabled' => true, 'sinta_crawl.daily_limit' => 1]);
+        $this->app->instance(JournalPageFetcher::class, new class($body) extends JournalPageFetcher {
+            public function __construct(private string $body) {}
+            public function fetch(string $url): array
+            {
+                return ['status' => 200, 'body' => $this->body];
+            }
+        });
+
+        $result = app(SintaPageMonitor::class)->tick();
+        $this->assertSame(0, $result['changed']);
+        $this->assertSame(1, $result['synced']);
+        $this->assertDatabaseHas('journal_sources', ['id' => $source->id,
+            'scope_excerpt' => 'This journal publishes research on vocational education and learning assessment.']);
+    }
+
     public function test_existing_m19_checks_reduce_the_shared_daily_budget(): void
     {
         for ($i = 1; $i <= 20; $i++) {
