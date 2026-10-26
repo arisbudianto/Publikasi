@@ -85,16 +85,16 @@ class CrawledJournalSync
                 'checked_at' => now()->toDateString(), 'reuse_status' => 'crawler-source'], $journal);
             return true;
         }
-        if (! in_array($field, ['fee', 'time'], true)) return false;
+        if (! in_array($field, ['fee', 'time', 'frequency', 'language'], true)) return false;
         $value = mb_substr($quote, 0, 255);
         if (DB::table('journal_observations')->where('journal_id', $journalId)->where('kind', $field)
             ->where('source_url', $url)->where('value', $value)->whereNull('retired_at')->exists()) return false;
         DB::transaction(function () use ($journalId, $field, $url, $value) {
             DB::table('journal_observations')->where('journal_id', $journalId)->where('kind', $field)
-                ->where('source_url', $url)->where('verification', 'publisher_claim')->whereNull('retired_at')
+                ->where('source_url', $url)->where('label', 'Bukti crawler dari situs jurnal')->whereNull('retired_at')
                 ->update(['retired_at' => now(), 'updated_at' => now()]);
             DB::table('journal_observations')->insert(['journal_id' => $journalId, 'kind' => $field,
-                'label' => $field === 'fee' ? 'Biaya menurut situs jurnal' : 'Waktu menurut situs jurnal',
+                'label' => 'Bukti crawler dari situs jurnal',
                 'value' => $value, 'verification' => 'publisher_claim', 'source_url' => $url,
                 'checked_at' => now()->toDateString(), 'created_at' => now(), 'updated_at' => now()]);
         });
