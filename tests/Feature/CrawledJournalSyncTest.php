@@ -8,6 +8,7 @@ use App\Models\JournalSource;
 use App\Models\ScopusSource;
 use App\Services\CrawledJournalSync;
 use App\Services\JournalPageFetcher;
+use App\Services\JournalMetadataSourceSeeder;
 use App\Services\ScopusPageMonitor;
 use App\Services\SintaPageMonitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +18,30 @@ use Tests\TestCase;
 class CrawledJournalSyncTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_publisher_observations_register_for_daily_crawl_without_overwriting_manual_data(): void
+    {
+        $source = $this->source();
+        $journal = Journal::create(['name' => $source->name, 'publisher' => $source->publisher,
+            'issn' => $source->e_issn, 'official_url' => $source->official_url,
+            'scope_summary' => 'Pendidikan', 'scope_source_url' => $source->official_url,
+            'subject' => 'Pendidikan', 'checked_at' => today(), 'status' => 'published']);
+        $url = 'https://journal.example.org/fees';
+        DB::table('journal_observations')->insert(['journal_id' => $journal->id,
+            'kind' => 'fee', 'label' => 'Biaya penerbit', 'value' => 'IDR 750.000',
+            'amount_minor' => 75000000, 'currency' => 'IDR', 'verification' => 'publisher_claim',
+            'source_url' => $url, 'checked_at' => today(), 'created_at' => now(), 'updated_at' => now()]);
+        $this->assertSame(1, app(JournalMetadataSourceSeeder::class)->run()['created']);
+        $this->assertSame(0, app(JournalMetadataSourceSeeder::class)->run()['created']);
+        $this->assertDatabaseHas('m19_sources', ['journal_id' => $journal->id, 'field' => 'fee',
+            'url' => $url, 'enabled' => true]);
+        $this->assertTrue(app(CrawledJournalSync::class)->fromRegisteredPage($journal->id, $url,
+            'fee', 'The article processing charge is IDR 900,000 after acceptance.'));
+        $this->assertDatabaseHas('journal_observations', ['journal_id' => $journal->id,
+            'amount_minor' => 75000000, 'retired_at' => null]);
+        $this->assertDatabaseHas('journal_observations', ['journal_id' => $journal->id,
+            'value' => 'The article processing charge is IDR 900,000 after acceptance.']);
+    }
 
     private function source(bool $decision = true): JournalSource
     {

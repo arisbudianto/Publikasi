@@ -26,6 +26,8 @@ class JournalEvidenceExtractor
             'fee' => '/\b(fee|charge|apc|biaya|gratis|free of charge)\b/i',
             'time' => '/\b(review|decision|waktu peninjauan|lama proses)\b/i',
             'acceptance' => '/\b(acceptance rate|rejection rate|tingkat penerimaan|tingkat penolakan)\b/i',
+            'frequency' => '/\b(publish(?:ed|es)?|publication|issues?|terbit|diterbitkan)\b/i',
+            'language' => '/\b(language|bahasa|manuscripts?|naskah)\b/i',
             default => null,
         };
         if ($pattern === null) {
@@ -66,6 +68,12 @@ class JournalEvidenceExtractor
                 continue;
             }
             if ($field === 'acceptance' && ! preg_match('/\d+(?:[.,]\d+)?\s*%/', $line)) {
+                continue;
+            }
+            if ($field === 'frequency' && ! preg_match('/\b(?:two|three|four|six|dua|tiga|empat|enam|[2346])\s+(?:issues?|times?|nomor|kali)\s+(?:per|a|setiap|dalam)\s+(?:year|tahun)|\b(?:biannual|triannual|quarterly|bimonthly|dua|tiga|empat|enam)\b.{0,35}\b(?:year|tahun)\b/iu', $line)) {
+                continue;
+            }
+            if ($field === 'language' && ! preg_match('/\b(?:English|Indonesian|Bahasa Indonesia|Inggris)\b/iu', $line)) {
                 continue;
             }
             $quotes[$line] = $line;

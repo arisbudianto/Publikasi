@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Models\Journal;
 use App\Services\JournalAccreditationLinker;
 use App\Services\JournalMonitoringAgent;
+use App\Services\JournalMetadataSourceSeeder;
 use App\Services\CuratedJournalDiscovery;
 use App\Services\CrawlEvidenceBackfill;
 use App\Services\OperationalHealth;
@@ -30,6 +31,11 @@ Artisan::command('m19:tick', function (JournalMonitoringAgent $agent) {
     $this->line(json_encode($agent->tick()));
 })->purpose('Periksa halaman jurnal yang disetujui dan catat kandidat perubahan');
 
+Artisan::command('publikasi:seed-journal-metadata', function (JournalMetadataSourceSeeder $seeder) {
+    $this->line(json_encode($seeder->run()));
+})->purpose('Daftarkan bukti penerbit jurnal terbit sebagai sumber pembaruan otomatis');
+
+Schedule::command('publikasi:seed-journal-metadata')->dailyAt('02:54')->withoutOverlapping(10);
 Schedule::command('m19:tick')->dailyAt('03:00')->withoutOverlapping(30);
 
 Artisan::command('publikasi:crawl-scopus-journals', function (ScopusPageMonitor $monitor) {
